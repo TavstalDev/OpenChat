@@ -1,2 +1,16 @@
 General:
   NoPermission: "%prefix% &cNincs jogosultságod ehhez."
+
+AntiSpam:
+  ChatCooldown: "%prefix% &cKérlek várj %time% másodpercet mielőtt újra írsz a chatre."
+  CommandCooldown: "%prefix% &cKérlek várj %time% másodpercet mielőtt újra használnád a parancsot."
+  RepeatedMessages: "%prefix% &cNe ismételd meg ugyanazt az üzenetet."
+
+AntiCaps:
+  TooManyCaps: "%prefix% &cTúl sok nagybetűt használsz az üzenetedben."
+
+AntiAd:
+  AdvertisementDetected: "%prefix% &cHirdetés észlelve az üzenetedben."
+
+AntiSwear:
+  SwearWordDetected: "%prefix% &cSzitokszó észlelve az üzenetedben."
