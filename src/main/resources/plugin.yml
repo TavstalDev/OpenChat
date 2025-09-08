@@ -1,0 +1,9 @@
+main: io.github.tavstaldev.openChat.OpenChat
+version: '1.0.0'
+
+name: OpenChat
+api-version: '1.21'
+prefix: OpenChat
+authors: [ Tavstal ]
+description: An open-source chat filter plugin
+website: https://tavstaldev.github.io
