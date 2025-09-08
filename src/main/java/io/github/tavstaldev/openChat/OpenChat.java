@@ -4,13 +4,19 @@ import io.github.tavstaldev.minecorelib.PluginBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.VersionUtils;
-import io.github.tavstaldev.openChat.events.ChatListener;
+import io.github.tavstaldev.openChat.events.ChatEventListener;
+import io.github.tavstaldev.openChat.events.PlayerEventListener;
+import io.github.tavstaldev.openChat.models.AntiAdvertisementSystem;
+import io.github.tavstaldev.openChat.models.AntiSwearSystem;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Set;
 
 public final class OpenChat extends PluginBase {
     public static OpenChat Instance;
+    private AntiAdvertisementSystem advertisementSystem;
+    private AntiSwearSystem antiSwearSystem;
 
     public static PluginLogger Logger() {
         return Instance.getCustomLogger();
@@ -23,7 +29,12 @@ public final class OpenChat extends PluginBase {
     public static FileConfiguration Config() {
         return Instance.getConfig();
     }
-
+    public static AntiAdvertisementSystem AdvertisementSystem() {
+        return Instance.advertisementSystem;
+    }
+    public static AntiSwearSystem AntiSwearSystem() {
+        return Instance.antiSwearSystem;
+    }
 
     public OpenChat() {
         super("https://github.com/TavstalDev/OpenChat/releases/latest");
@@ -53,7 +64,11 @@ public final class OpenChat extends PluginBase {
         }
 
         // Register Events
-        new ChatListener();
+        new PlayerEventListener(this);
+        new ChatEventListener(this);
+
+        advertisementSystem = new AntiAdvertisementSystem();
+        antiSwearSystem = new AntiSwearSystem();
 
         _logger.Ok(String.format("%s has been successfully loaded.", getProjectName()));
         if (getConfig().getBoolean("checkForUpdates", true)) {
