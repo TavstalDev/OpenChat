@@ -19,38 +19,412 @@ public class OpenChatConfiguration extends ConfigurationBase {
         resolve("usePlayerLocale", true);
         resolve("checkForUpdates", true);
         resolve("debug", false);
-        resolve("prefix", "&cBedWars&fQuests &8»");
+        resolve("prefix", "&bOpen&3Chat &8»");
 
-        // Dates
-        resolve("dates.daily-refresh", LocalDate.now().plusDays(1).atStartOfDay().toString());
-        resolve("dates.weekly-refresh", LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)).atStartOfDay().toString());
+        // Punishments
+        resolve("punishments.mute", "litebans:mute %player% %time% %reason%");
+        resolve("punishments.warn", "litebans:warn %player% %reason%");
+        resolve("punishments.kick", "kick %player% %reason%");
+        resolve("punishments.ban", "litebans:ban %player% %time% %reason%");
+        resolve("punishments.tempban", "litebans:tempban %player% %time% %reason%");
 
-        // Storage
-        resolve("storage.type", "sqlite");
-        resolve("storage.filename", "database");
-        resolve("storage.host", "localhost");
-        resolve("storage.port", 3306);
-        resolve("storage.database", "minecraft");
-        resolve("storage.username", "root");
-        resolve("storage.password", "ascent");
-        resolve("storage.tablePrefix", "bwq");
+        // Anti-Spam
+        resolve("antiSpam.enabled", true);
+        resolve("antiSpam.maxMessages", 5);
+        resolve("antiSpam.perSeconds", 10);
+        resolve("antiSpam.punishment", "MUTE");
+        resolve("antiSpam.punishmentTime", "15m");
+        resolve("antiSpam.punishmentMessage", "Please do not spam!");
+        resolve("antiSpam.exemptPermission", "openchat.bypass.antispam");
 
-        // GUI
-        resolve("gui.placeholderItem", "BLACK_STAINED_GLASS_PANE");
-        resolve("gui.noPreviousPageItem", "BLACK_STAINED_GLASS_PANE");
-        resolve("gui.previousPageItem", "ARROW");
-        resolve("gui.currentPageItem", "PAPER");
-        resolve("gui.noNextPageItem", "BLACK_STAINED_GLASS_PANE");
-        resolve("gui.nextPageItem", "ARROW");
-        resolve("gui.closeItem", "BARRIER");
-        resolve("gui.backItem", "SPRUCE_DOOR");
-        resolve("gui.titleItem", "RED_BED");
-        resolve("gui.achievementItem", "DIAMOND");
-        resolve("gui.dailyQuestItem", "PAPER");
-        resolve("gui.completedDailyQuestItem", "MAP");
-        resolve("gui.weeklyQuestItem", "PAPER");
-        resolve("gui.completedWeeklyQuestItem", "MAP");
-        resolve("gui.lockedAchievementItem", "GRAY_DYE");
-        resolve("gui.completedAchievementItem", "LIME_DYE");
+        // Anti-Advertisement
+        resolve("antiAdvertisement.enabled", true);
+        resolve("antiAdvertisement.regex", "(?i)\\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:[a-z]{2,}))\\b");
+        resolve("antiAdvertisement.whitelist", new String[]{
+                "mestermc.hu",
+                "discord.gg/mestermc",
+                "youtube.com/mestermc",
+                "facebook.com/mestermc",
+                "tiktok.com/@mestermc"
+        });
+        resolve("antiAdvertisement.punishment", "WARN");
+        resolve("antiAdvertisement.punishmentTime", "15m");
+        resolve("antiAdvertisement.punishmentMessage", "Please do not advertise here!");
+        resolve("antiAdvertisement.exemptPermission", "openchat.bypass.antiadvertisement");
+
+        // Anti-Caps
+        resolve("antiCaps.enabled", true);
+        resolve("antiCaps.minLength", 10);
+        resolve("antiCaps.percentage", 70);
+        resolve("antiCaps.exemptPermission", "openchat.bypass.anticaps");
+        resolve("antiCaps.punishment", "WARN");
+        resolve("antiCaps.punishmentTime", "15m");
+        resolve("antiCaps.punishmentMessage", "Please do not use excessive capital letters!");
+
+        // Anto-swear
+        resolve("antiSwear.enabled", true);
+        resolve("antiSwear.similarCharacters", true);
+        resolve("antiSwear.characterMapping", new String[]{
+                "a4@",
+                "b8",
+                "e3",
+                "g9",
+                "i1!|",
+                "l1!|",
+                "o0",
+                "s5$",
+                "t7+",
+                "z2"
+        });
+        resolve("antiSwear.swearWords", new String[]{
+                "ass",
+                "asshole",
+                "bitch",
+                "bastard",
+                "cunt",
+                "damn",
+                "dick",
+                "fuck",
+                "hell",
+                "piss",
+                "pussy",
+                "retard",
+                "shit",
+                "slut",
+                "twat",
+                "whore",
+                "chink",
+                "dyke",
+                "fag",
+                "faggot",
+                "gook",
+                "kike",
+                "nigger",
+                "spic",
+                "tranny",
+                "wetback",
+                "blowjob",
+                "cock",
+                "ejaculate",
+                "jerkoff",
+                "masturbate",
+                "orgasm",
+                "penis",
+                "semen",
+                "vagina",
+                "Agyatlan",
+                "Agyfasz",
+                "Agyhalott",
+                "Agyonkúrt",
+                "Agyonvert",
+                "Agyrákos",
+                "AIDS-es",
+                "Aszaltfaszú",
+                "Aszott",
+                "Átbaszott",
+                "Balfasz",
+                "Balfészek",
+                "Baromfifasz",
+                "Baszhatatlan",
+                "Basznivaló",
+                "Bebaszott",
+                "Befosi",
+                "Békapicsa",
+                "Bélböfi",
+                "Bélszél",
+                "Brunya",
+                "Büdösszájú",
+                "Búvalbaszott",
+                "Buzeráns",
+                "Buzernyák",
+                "Buzi",
+                "Buzikurva",
+                "Cafat",
+                "Cafka",
+                "Céda",
+                "Cérnafaszú",
+                "Cottonfej",
+                "Cseszett",
+                "Csibefasz",
+                "Csipszar",
+                "Csirkefaszú",
+                "Csitri",
+                "Csöcs",
+                "Csöcsfej",
+                "Csöppszar",
+                "Csupaszfarkú",
+                "Cuncipunci",
+                "Deformáltfaszú",
+                "Dobseggű",
+                "Dughatatlan",
+                "Dunyhavalagú",
+                "Duplafaszú",
+                "Ebfasz",
+                "Elbaszott",
+                "Extrahülye",
+                "Fasszopó",
+                "Fasz",
+                "Fasz-emulátor",
+                "Faszagyú",
+                "Faszarc",
+                "Faszfej",
+                "Faszfészek",
+                "Faszkalap",
+                "Faszk-arika",
+                "Faszkedvelő",
+                "Faszkópé",
+                "Faszogány",
+                "Faszpörgettyű",
+                "Faszsapka",
+                "Faszszagú",
+                "Fasztalan",
+                "Fasztarisznya",
+                "Fasztengely",
+                "Fasztolvaj",
+                "Faszváladék",
+                "Faszverő",
+                "Félrebaszott",
+                "Félrefingott",
+                "Félreszart",
+                "Félribanc",
+                "Fing",
+                "Fölcsinált",
+                "Fölfingott",
+                "Fos",
+                "Foskemence",
+                "Fospisztoly",
+                "Fospumpa",
+                "Fostalicska",
+                "Fütyi",
+                "Fütyinyalogató",
+                "Fütykös",
+                "Geci",
+                "Gecinyelő",
+                "Geciszaró",
+                "Geciszívó",
+                "Genny",
+                "Gennyesszájú",
+                "Gennygóc",
+                "Genyac",
+                "Genyó",
+                "Gólyafos",
+                "Görbefaszú",
+                "Gyennyszopó",
+                "Gyíkfing",
+                "Hájpacni",
+                "Hátbabaszott",
+                "Házikurva",
+                "Hererákos",
+                "Hígagyú",
+                "Hikomat",
+                "Hímnőstény",
+                "Hímringyó",
+                "Hiperstrici",
+                "Hitler-imádó",
+                "Hitlerista",
+                "Hüje",
+                "Hüle",
+                "Hülye",
+                "Hülyécske",
+                "Hülyegyerek",
+                "Inkubátor-szökevény",
+                "Integrált barom",
+                "Ionizált faszú",
+                "Irdatlanul köcsög",
+                "Íveltfaszú",
+                "Jókora fasz",
+                "Kaka",
+                "Kakamatyi",
+                "Kaki",
+                "Kaksi",
+                "Kecskebaszó",
+                "Képlékeny faszú",
+                "Kétfaszú",
+                "Kétszer agyonbaszott",
+                "Ki-bebaszott",
+                "Kibaszott",
+                "Kifingott",
+                "Kiherélt",
+                "Kikakkantott",
+                "Kikészült",
+                "Kimagaslóan fasz",
+                "Kimondhatatlan pöcs",
+                "Kisfütyi",
+                "Klotyószagú",
+                "Kojak-faszú",
+                "Kopárfaszú",
+                "Kotonszökevény",
+                "Középszar",
+                "Kretén",
+                "Kuki",
+                "Kula",
+                "Kunkorított faszú",
+                "Kurva",
+                "Kurvaanyjú",
+                "Kurvapecér",
+                "Kutyakaki",
+                "Kutyapina",
+                "Kutyaszar",
+                "Lankadtfaszú",
+                "Lebaszirgált",
+                "Lebaszott",
+                "Lecseszett",
+                "Lemenstruált",
+                "Leokádott",
+                "Lepkefing",
+                "Leprafészek",
+                "Leszart",
+                "Leszbikus",
+                "Lőcs",
+                "Lőcsgéza",
+                "Lófasz",
+                "Lógócsöcsű",
+                "Lóhugy",
+                "Lotyó",
+                "Lucskos",
+                "Lugnya",
+                "Lyukasbelű",
+                "Lyukasfaszú",
+                "Lyukát vakaró",
+                "Lyuktalanított",
+                "Mamutsegg",
+                "Maszturbációs görcs",
+                "Maszturbagép",
+                "Maszturbáltatott",
+                "Megfingatott",
+                "Megkettyintett",
+                "Megkúrt",
+                "Megszopatott",
+                "Mesterséges faszú",
+                "Méteres kékeres",
+                "Mikrotökű",
+                "Mocskos",
+                "Mojfing",
+                "Műfaszú",
+                "Muff",
+                "Multifasz",
+                "Műtöttpofájú",
+                "Náci",
+                "Nagyfejű",
+                "Nikotinpatkány",
+                "Nimfomániás",
+                "Nuna",
+                "Nunci",
+                "Nuncóka",
+                "Nyalábfasz",
+                "Nyelestojás",
+                "Nyúlszar",
+                "Ondónyelő",
+                "Ordenálé",
+                "Összebaszott",
+                "Ötcsillagos fasz",
+                "Óvszerezett",
+                "Pénisz",
+                "Peremesfaszú",
+                "Picsa",
+                "Picsafej",
+                "Picsameresztő",
+                "Picsánnyalt",
+                "Picsánrugott",
+                "Picsányi",
+                "Pina",
+                "Pisa",
+                "Pisaszagú",
+                "Pisis",
+                "Pöcs",
+                "Pöcsfej",
+                "Porbafingó",
+                "Pornóbuzi",
+                "Pornómániás",
+                "Pudvás",
+                "Pudváslikú",
+                "Puhafaszú",
+                "Punci",
+                "Puncimókus",
+                "Puncis",
+                "Punciutáló",
+                "Puncivirág",
+                "Qki",
+                "Qrva",
+                "Qtyaszar",
+                "Rabló",
+                "Rágcsáltfaszú",
+                "Redva",
+                "Repedtsarkú",
+                "Rétó-román",
+                "Rézhasú",
+                "Ribanc",
+                "Riherongy",
+                "Ritka fogú",
+                "Rőfös fasz",
+                "Rojtospicsájú",
+                "Rongyospinájú",
+                "Rossz kurva",
+                "Segg",
+                "Seggarc",
+                "Seggdugó",
+                "Seggfej",
+                "Seggnyaló",
+                "Seggszőr",
+                "Seggtorlasz",
+                "Strici",
+                "Suttyó",
+                "Sutyerák",
+                "Szálkafaszú",
+                "Szar",
+                "Szaralak",
+                "Szárazfing",
+                "Szarbojler",
+                "Szarcsimbók",
+                "Szarevő",
+                "Szarfaszú",
+                "Szarházi",
+                "Szarjankó",
+                "Szarnivaló",
+                "Szarosvalagú",
+                "Szarrágó",
+                "Szarszagú",
+                "Szarszájú",
+                "Szartragacs",
+                "Szarzsák",
+                "Szégyencsicska",
+                "Szifiliszes",
+                "Szivattyús kurva",
+                "Szófosó",
+                "Szop-o-matic",
+                "Szopógép",
+                "Szopógörcs",
+                "Szopós kurva",
+                "Szopottfarkú",
+                "Szűklyukú",
+                "Szúnyogfaszni",
+                "Szuperbuzi",
+                "Szuperkurva",
+                "Szűzhártya-repedéses",
+                "Szűzkurva",
+                "Szűzpicsa",
+                "Szűzpunci",
+                "Tetves",
+                "Tikfos",
+                "Tikszar",
+                "Tompatökű",
+                "Törpefaszú",
+                "Toszatlan",
+                "Toszott",
+                "Tyúkfasznyi",
+                "Tyúkszar",
+                "Vadfasz",
+                "Valag",
+                "Valagváladék",
+                "Végbélféreg",
+                "Xar",
+                "Zsugorított faszú"
+        });
+        resolve("antiSwear.exemptPermission", "openchat.bypass.antiswear");
+        resolve("antiSwear.punishment", "WARN");
+        resolve("antiSwear.punishmentTime", "15m");
+        resolve("antiSwear.punishmentMessage", "Please watch your language!");
+
+
     }
 }
