@@ -15,8 +15,6 @@ plugins {
 // Define project properties for versions and package name
 val javaVersion: String by project
 val paperApiVersion: String by project
-val hikariCpVersion: String by project
-val snakeYamlVersion: String by project
 val mineCoreLibVersion: String by project
 val projectPackageName = "${project.group}.openChat"
 
@@ -69,8 +67,6 @@ tasks.shadowJar {
     manifest {
         attributes["paperweight-mappings-namespace"] = "spigot" // Add custom manifest attributes
     }
-    // Relocate packages to avoid conflicts
-    relocate("org.slf4j", "${projectPackageName}.shadow.slf4j")
 }
 
 // Ensure the Shadow JAR task runs during the build process
