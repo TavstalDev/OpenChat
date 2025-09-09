@@ -4,7 +4,10 @@ import io.github.tavstaldev.minecorelib.PluginBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.VersionUtils;
+import io.github.tavstaldev.openChat.commands.CommandChat;
+import io.github.tavstaldev.openChat.events.BlockEventListener;
 import io.github.tavstaldev.openChat.events.ChatEventListener;
+import io.github.tavstaldev.openChat.events.ItemEventListener;
 import io.github.tavstaldev.openChat.events.PlayerEventListener;
 import io.github.tavstaldev.openChat.models.AntiAdvertisementSystem;
 import io.github.tavstaldev.openChat.models.AntiSwearSystem;
@@ -28,6 +31,9 @@ public final class OpenChat extends PluginBase {
 
     public static FileConfiguration Config() {
         return Instance.getConfig();
+    }
+    public static OpenChatConfiguration OCConfig() {
+        return (OpenChatConfiguration)Instance._config;
     }
     public static AntiAdvertisementSystem AdvertisementSystem() {
         return Instance.advertisementSystem;
@@ -66,9 +72,18 @@ public final class OpenChat extends PluginBase {
         // Register Events
         new PlayerEventListener(this);
         new ChatEventListener(this);
+        new ItemEventListener(this);
+        new BlockEventListener(this);
 
         advertisementSystem = new AntiAdvertisementSystem();
         antiSwearSystem = new AntiSwearSystem();
+
+        // Register Commands
+        _logger.Debug("Registering commands...");
+        var command = getCommand("openchat");
+        if (command != null) {
+            command.setExecutor(new CommandChat());
+        }
 
         _logger.Ok(String.format("%s has been successfully loaded.", getProjectName()));
         if (getConfig().getBoolean("checkForUpdates", true)) {
@@ -96,7 +111,11 @@ public final class OpenChat extends PluginBase {
         _translator.Load();
         _logger.Debug("Localizations reloaded.");
         _logger.Debug("Reloading configuration...");
-        this.reloadConfig();
+        this._config.load();
         _logger.Debug("Configuration reloaded.");
+
+        advertisementSystem = new AntiAdvertisementSystem();
+        antiSwearSystem = new AntiSwearSystem();
+        _logger.Ok(String.format("%s has been successfully reloaded.", getProjectName()));
     }
 }
