@@ -7,3 +7,74 @@ prefix: OpenChat
 authors: [ Tavstal ]
 description: An open-source chat filter plugin
 website: https://tavstaldev.github.io
+
+Permissions:
+  openchat.commands.reload:
+    description: Allows the player to use the /openchat reload command.
+    default: op
+  openchat.commands.version:
+    description: Allows the player to use the /openchat version command.
+    default: op
+  openchat.commands.help:
+    description: Allows the player to use the /openchat help command.
+    default: true
+  openchat.commands.clear:
+    description: Allows the player to use the /openchat clear command.
+    default: op
+  openchat.bypass.clear:
+    description: Bypass the chat clear
+    default: op
+  openchat.bypass.anticaps:
+    description: Bypass the anti-caps feature
+    default: op
+  openchat.bypass.antispam:
+    description: Bypass the anti-spam feature
+    default: op
+  openchat.bypass.antiad:
+    description: Bypass the anti-advertisement feature
+    default: op
+  openchat.bypass.antiswear:
+    description: Bypass the anti-swear feature
+    default: op
+  openchat.bypass:
+    description: Bypass all chat restrictions
+    default: op
+    children:
+      openchat.bypass.anticaps: true
+      openchat.bypass.antispam: true
+      openchat.bypass.antiad: true
+      openchat.bypass.antiswear: true
+      openchat.bypass.clear: true
+  openchat.admin:
+    description: Collection of admin permissions
+    default: op
+    children:
+      openchat.bypass: true
+      openchat.commands.reload: true
+      openchat.commands.version: true
+      openchat.commands.help: true
+      openchat.commands.clear: true
+
+commands:
+    openchat:
+        description: Main command for OpenChat
+        usage: /openchat
+        permission: openchat.commands.help
+        aliases: [ "oc", "chatfilter" ]
+        subcommands:
+            help:
+                description: "Show help for the openchat command"
+                usage: "/openchat help"
+                permission: openchat.commands.help
+            version:
+                description: "Show the version of the plugin"
+                usage: "/openchat version"
+                permission: openchat.commands.version
+            reload:
+                description: "Reload the plugin"
+                usage: "/openchat reload"
+                permission: openchat.commands.reload
+            clear:
+                description: "Clear the chat for all players"
+                usage: "/openchat clear"
+                permission: openchat.commands.clear
