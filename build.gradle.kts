@@ -1,5 +1,5 @@
 /**
- * Configures the Gradle build script for the BedWarsQuests project.
+ * Configures the Gradle build script for the OpenChat project.
  * This script sets up plugins, repositories, dependencies, and tasks required for building the project.
  */
 
