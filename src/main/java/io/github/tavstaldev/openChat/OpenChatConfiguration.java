@@ -2,8 +2,7 @@ package io.github.tavstaldev.openChat;
 
 import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class OpenChatConfiguration extends ConfigurationBase {
 
@@ -11,47 +10,78 @@ public class OpenChatConfiguration extends ConfigurationBase {
         super(OpenChat.Instance, "config.yml", null);
     }
 
+    // General
+    public String locale, prefix;
+    public boolean usePlayerLocale, checkForUpdates, debug;
+
+    // Anti-Spam
+    public boolean antiSpamEnabled;
+    public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates;
+    public List<String> antiSpamExecuteCommand;
+    public String antiSpamExemptPermission;
+
+    // Anti-Advertisement
+    public boolean antiAdvertisementEnabled;
+    public String antiAdvertisementRegex;
+    public List<String> antiAdvertisementWhitelist;
+    public List<String> antiAdvertisementExecuteCommand;
+    public String antiAdvertisementExemptPermission;
+
+    // Anti-Caps
+    public boolean antiCapsEnabled;
+    public int antiCapsMinLength, antiCapsPercentage;
+    public List<String> antiCapsExecuteCommand;
+    public String antiCapsExemptPermission;
+
+    // Anti-Swear
+    public boolean antiSwearEnabled;
+    // Character mapping and bad words are not stored here, since they are only called
+    // when initializing the AntiSwearSystem class, so storing them here would be redundant.
+    public List<String> antiSwearExecuteCommand;
+    public String antiSwearExemptPermission;
+
     @Override
     protected void loadDefaults() {
         // General
-        resolve("locale", "hun");
-        resolve("usePlayerLocale", true);
-        resolve("checkForUpdates", true);
-        resolve("debug", false);
-        resolve("prefix", "&bOpen&3Chat &8»");
+        locale = resolveGet("locale", "hun");
+        usePlayerLocale = resolveGet("usePlayerLocale", true);
+        checkForUpdates = resolveGet("checkForUpdates", true);
+        debug = resolveGet("debug", false);
+        prefix = resolveGet("prefix", "&bOpen&3Chat &8»");
 
         // Anti-Spam
-        resolve("antiSpam.enabled", true);
-        resolve("antiSpam.chatDelay", 2);
-        resolve("antiSpam.commandDelay", 2);
-        resolve("antiSpam.maxDuplicates", 2);
-        resolve("antiSpam.executeCommand", new String[] { "kick {player} Please do not spam" });
-        resolve("antiSpam.exemptPermission", "openchat.bypass.antispam");
+        antiSpamEnabled = resolveGet("antiSpam.enabled", true);
+        antiSpamChatDelay = resolveGet("antiSpam.chatDelay", 2);
+        antiSpamCommandDelay = resolveGet("antiSpam.commandDelay", 2);
+        antiSpamMaxDuplicates= resolveGet("antiSpam.maxDuplicates", 2);
+        antiSpamExemptPermission = resolveGet("antiSpam.exemptPermission", "openchat.bypass.antispam");
+        antiSpamExecuteCommand =  resolveGet("antiSpam.executeCommand", new ArrayList<>(List.of("kick {player} Please do not spam")));
 
         // Anti-Advertisement
-        resolve("antiAdvertisement.enabled", true);
-        resolve("antiAdvertisement.regex", "(?i)\\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:[a-z]{2,}))\\b");
-        resolve("antiAdvertisement.whitelist", new String[]{
+        antiAdvertisementEnabled = resolveGet("antiAdvertisement.enabled", true);
+        antiAdvertisementRegex = resolveGet("antiAdvertisement.regex", "(?i)\\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:[a-z]{2,}))\\b");
+        antiAdvertisementWhitelist = resolveGet("antiAdvertisement.whitelist", new ArrayList<>(List.of(
                 "mestermc.hu",
                 "discord.gg/mestermc",
                 "youtube.com/mestermc",
                 "facebook.com/mestermc",
                 "tiktok.com/@mestermc"
-        });
-        resolve("antiAdvertisement.executeCommand", new String[] { "kick {player} Please do not spam" });
-        resolve("antiAdvertisement.exemptPermission", "openchat.bypass.antiadvertisement");
+        )));
+        antiAdvertisementExemptPermission = resolveGet("antiAdvertisement.exemptPermission", "openchat.bypass.antiadvertisement");
+        antiAdvertisementExecuteCommand = resolveGet("antiAdvertisement.executeCommand", new ArrayList<>(List.of("kick {player} Please do not advertise")));
 
         // Anti-Caps
-        resolve("antiCaps.enabled", true);
-        resolve("antiCaps.minLength", 10);
-        resolve("antiCaps.percentage", 70);
-        resolve("antiCaps.exemptPermission", "openchat.bypass.anticaps");
-        resolve("antiCaps.executeCommand", new String[] { "kick {player} Please do not spam" });
+        antiCapsEnabled = resolveGet("antiCaps.enabled", true);
+        antiCapsMinLength = resolveGet("antiCaps.minLength", 10);
+        antiCapsPercentage = resolveGet("antiCaps.percentage", 70);
+        antiCapsExemptPermission = resolveGet("antiCaps.exemptPermission", "openchat.bypass.anticaps");
+        antiCapsExecuteCommand = resolveGet("antiCaps.executeCommand", new ArrayList<>(List.of("kick {player} Please do not spam")));
 
         // Anto-swear
-        resolve("antiSwear.enabled", true);
+       antiSwearEnabled = resolveGet("antiSwear.enabled", true);
         Map<Character, String> characterMappings = new HashMap<>();
         characterMappings.put('a', "[aA@4]");
+        characterMappings.put('á', "[áÁaA@4]");
         characterMappings.put('e', "[eE3]");
         characterMappings.put('i', "[iI1!íÍ]");
         characterMappings.put('o', "[oO0óÓ]");
@@ -62,9 +92,9 @@ public class OpenChatConfiguration extends ConfigurationBase {
         characterMappings.put('g', "[gG9]");
         characterMappings.put('b', "[bB8]");
         characterMappings.put('z', "[zZ2]");
-        resolve("antiSwear.characterMapping", characterMappings);
+        resolveGet("antiSwear.characterMapping", characterMappings);
         //#region Swear words
-        resolve("antiSwear.swearWords", new String[]{
+        resolveGet("antiSwear.swearWords", new String[]{
                 "ass",
                 "asshole",
                 "bitch",
@@ -519,10 +549,115 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "xvideos",
                 "xxx",
                 "zsíragy",
-                "zsugorított faszú"
+                "zsugorított faszú",
+                "hitler",
+                "basszodj",
+                "retkes",
+                "ótvaros",
+                "cigány",
+                "kurva",
+                "nyomorék",
+                "basszad",
+                "rákos",
+                "cici",
+                "rohadj",
+                "baszál",
+                "basszál",
+                "anyadat",
+                "pinuja",
+                "idiota",
+                "idióta",
+                "fasztalan",
+                "fityma",
+                "megbaszlak",
+                "megkurlak",
+                "baszlak",
+                "kurlak",
+                "retek",
+                "gerinctelen",
+                "féreg",
+                "szopás",
+                "köcsög",
+                "pinés",
+                "szopi le",
+                "csöves",
+                "mangalica",
+                "hímvesző",
+                "hímveszővel",
+                "szopd",
+                "szopj",
+                "halj meg",
+                "halj ki",
+                "porno",
+                "pornó",
+                "puresz",
+                "poresz",
+                "rák a beled",
+                "csicska",
+                "agyatlan",
+                "mocsok",
+                "mocskod",
+                "anyatokkal",
+                "halj éhen",
+                "degenerált",
+                "dagadék",
+                "dagadt",
+                "zsíragy",
+                "keys",
+                "kill yourself",
+                "xvideos",
+                "pornhub",
+                "cornhub",
+                "xxx",
+                "nagymellek",
+                "rosszlányok",
+                "rószlányok",
+                "rosszlanyok",
+                "drug",
+                "drugs",
+                "drogos",
+                "drogozni",
+                "kokain",
+                "anfetamin",
+                "joint",
+                "meth",
+                "eki",
+                "marihuana",
+                "marihónaja",
+                "metamphetamine",
+                "ekidzseki",
+                "nyalj ki",
+                "nyalj meg",
+                "nigga",
+                "néger",
+                "degenerált",
+                "degen",
+                "bazd",
+                "bazmeg",
+                "bazdmeg",
+                "bazd meg"
         });
         //#endregion
-        resolve("antiSwear.exemptPermission", "openchat.bypass.antiswear");
-        resolve("antiSwear.executeCommand", new String[] { "kick {player} Please do not spam" });
+        //#region Swear whitelist
+        resolveGet("antiSwear.whitelist", new String[]{
+                "hello",
+                "helló",
+                "shuttle",
+                "görbe",
+                "gyerek",
+                "kicsi",
+                "szarvas",
+                "szarvasbogár",
+                "szemét",
+                "szeméttelep",
+                "szifon",
+                "szégyen",
+                "szégyentelen",
+                "tökös",
+                "törpe"
+        });
+        //#endregion
+        antiSwearExemptPermission = resolveGet("antiSwear.exemptPermission", "openchat.bypass.antiswear");
+        antiSwearExecuteCommand = resolveGet("antiSwear.executeCommand", new ArrayList<>(List.of("kick {player} Please do not swear")));
     }
 }
