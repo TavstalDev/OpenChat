@@ -78,7 +78,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
         antiCapsExecuteCommand = resolveGet("antiCaps.executeCommand", new ArrayList<>(List.of("kick {player} Please do not spam")));
 
         // Anto-swear
-       antiSwearEnabled = resolveGet("antiSwear.enabled", true);
+        antiSwearEnabled = resolveGet("antiSwear.enabled", true);
         Map<Character, String> characterMappings = new HashMap<>();
         characterMappings.put('a', "[aA@4]");
         characterMappings.put('á', "[áÁaA@4]");
@@ -654,7 +654,8 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "szégyen",
                 "szégyentelen",
                 "tökös",
-                "törpe"
+                "törpe",
+                "szeretek"
         });
         //#endregion
         antiSwearExemptPermission = resolveGet("antiSwear.exemptPermission", "openchat.bypass.antiswear");
