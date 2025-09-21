@@ -30,6 +30,7 @@ public class ChatEventListener implements Listener {
         Player source = event.getPlayer();
         PlayerCache cache = PlayerCacheManager.get(source.getUniqueId());
         String rawMessage = event.getMessage();
+        cache.setLastChatMessage(rawMessage);
         OpenChatConfiguration config = OpenChat.OCConfig();
 
         // Anti-spam
@@ -108,7 +109,6 @@ public class ChatEventListener implements Listener {
         }
 
         //event.setMessage(rawMessage.replace("&", "§"));
-        cache.setLastChatMessage(rawMessage);
         int spamDelay = config.antiSpamChatDelay;
         if (spamDelay > 0)
         {
