@@ -29,7 +29,7 @@ java {
 
 // Define repositories for dependency resolution
 repositories {
-    mavenLocal()
+    //mavenLocal()
     mavenCentral() // Central Maven repository
     maven {
         name = "papermc"
