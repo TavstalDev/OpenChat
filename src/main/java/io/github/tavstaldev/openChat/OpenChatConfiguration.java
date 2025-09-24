@@ -16,7 +16,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
     // Anti-Spam
     public boolean antiSpamEnabled;
-    public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates;
+    public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates, antiSpamMaxCommandDuplicates;
     public List<String> antiSpamExecuteCommand;
     public String antiSpamExemptPermission;
 
@@ -54,6 +54,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
         antiSpamChatDelay = resolveGet("antiSpam.chatDelay", 2);
         antiSpamCommandDelay = resolveGet("antiSpam.commandDelay", 2);
         antiSpamMaxDuplicates= resolveGet("antiSpam.maxDuplicates", 2);
+        antiSpamMaxCommandDuplicates= resolveGet("antiSpam.maxCommandDuplicates", 0);
         antiSpamExemptPermission = resolveGet("antiSpam.exemptPermission", "openchat.bypass.antispam");
         antiSpamExecuteCommand =  resolveGet("antiSpam.executeCommand", new ArrayList<>(List.of("kick {player} Please do not spam")));
 

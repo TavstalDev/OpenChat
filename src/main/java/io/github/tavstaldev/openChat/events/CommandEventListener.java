@@ -76,7 +76,9 @@ public class CommandEventListener implements Listener {
         cache.setLastCommand(command);
 
         // Feature: anti-spam
-        if (config.antiSpamMaxDuplicates >= 1 && config.antiSpamMaxDuplicates <= cache.getCommandSpamCount()) {
+        // TODO: Add command whitelist, so certain commands are ignored by the anti-spam system.
+        // such as /msg, /tell, /r, /reply, /party, /guild, etc.
+        if (config.antiSpamMaxCommandDuplicates >= 1 && config.antiSpamMaxCommandDuplicates <= cache.getCommandSpamCount()) {
             // Cancel the event if the player exceeds the allowed duplicate commands.
             event.setCancelled(true);
             OpenChat.Instance.sendLocalizedMsg(player, "AntiSpam.RepeatedCommands");
