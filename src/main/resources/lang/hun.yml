@@ -11,7 +11,7 @@ Commands:
     Desc: "Információkat mutat a parancsokról."
     Title: "&e=== &aOpenChat Súgó &e=== &aOldal &c%current_page%&a/&c%max_page% &e==="
     Info: "   &c[] &7- &6Kötelező   &c<> &7- &6Opcionális"
-    Line: "&2/bwgui %subcommand%&a%syntax% &8» &7%description%"
+    Line: "&2/openchat %subcommand%&a%syntax% &8» &7%description%"
     Bottom: "&e====== %previous_btn%&6%current_page%&e/&6%max_page%%next_btn% &e======"
     PrevBtn: "&a<<< "
     NextBtn: " &a>>>"
