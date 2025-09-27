@@ -17,28 +17,43 @@ public class OpenChatConfiguration extends ConfigurationBase {
     // Anti-Spam
     public boolean antiSpamEnabled;
     public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates, antiSpamMaxCommandDuplicates;
-    public List<String> antiSpamExecuteCommand;
+    public Set<String> antiSpamCommandWhitelist;
+    public Set<String> antiSpamExecuteCommand;
     public String antiSpamExemptPermission;
 
     // Anti-Advertisement
     public boolean antiAdvertisementEnabled;
     public String antiAdvertisementRegex;
-    public List<String> antiAdvertisementWhitelist;
-    public List<String> antiAdvertisementExecuteCommand;
+    public Set<String> antiAdvertisementWhitelist;
+    public Set<String> antiAdvertisementExecuteCommand;
     public String antiAdvertisementExemptPermission;
 
     // Anti-Caps
     public boolean antiCapsEnabled;
     public int antiCapsMinLength, antiCapsPercentage;
-    public List<String> antiCapsExecuteCommand;
+    public Set<String> antiCapsExecuteCommand;
     public String antiCapsExemptPermission;
 
     // Anti-Swear
     public boolean antiSwearEnabled;
     // Character mapping and bad words are not stored here, since they are only called
     // when initializing the AntiSwearSystem class, so storing them here would be redundant.
-    public List<String> antiSwearExecuteCommand;
+    public Set<String> antiSwearExecuteCommand;
     public String antiSwearExemptPermission;
+
+    // Command Blocker
+    public boolean commandBlockerEnabled;
+    public boolean commandBlockerEnableBypass;
+    public String commandBlockerBypassPermission;
+    public Set<String> commandBlockerCommands;
+
+    // Tab completion
+    public boolean tabCompletionEnabled;
+    public String tabCompletionExemptPermission;
+
+    // OP-Protection
+    public boolean opProtectionEnabled;
+    public Set<String> opProtectionOperators;
 
     @Override
     protected void loadDefaults() {
@@ -52,16 +67,36 @@ public class OpenChatConfiguration extends ConfigurationBase {
         // Anti-Spam
         antiSpamEnabled = resolveGet("antiSpam.enabled", true);
         antiSpamChatDelay = resolveGet("antiSpam.chatDelay", 2);
+        antiSpamMaxDuplicates= resolveGet("antiSpam.maxDuplicates", 3);
         antiSpamCommandDelay = resolveGet("antiSpam.commandDelay", 2);
-        antiSpamMaxDuplicates= resolveGet("antiSpam.maxDuplicates", 2);
-        antiSpamMaxCommandDuplicates= resolveGet("antiSpam.maxCommandDuplicates", 0);
+        antiSpamMaxCommandDuplicates= resolveGet("antiSpam.maxCommandDuplicates", 3);
+        antiSpamCommandWhitelist = new LinkedHashSet<>(resolveGet("antiSpam.commandWhitelist", List.of(
+                "/msg",
+                "/tell",
+                "/w",
+                "/r",
+                "/reply",
+                "/t",
+                "/me",
+                "/whisper",
+                "/warp",
+                "/warps",
+                "/home",
+                "/spawn",
+                "/joinqueue",
+                "/leavequeue",
+                "/kit",
+                "/kits",
+                "/party"
+        )));
         antiSpamExemptPermission = resolveGet("antiSpam.exemptPermission", "openchat.bypass.antispam");
-        antiSpamExecuteCommand =  resolveGet("antiSpam.executeCommand", new ArrayList<>(List.of("kick {player} Please do not spam")));
+        antiSpamExecuteCommand =  new LinkedHashSet<>(resolveGet("antiSpam.executeCommand", List.of("kick {player} Please do not spam")));
+
 
         // Anti-Advertisement
         antiAdvertisementEnabled = resolveGet("antiAdvertisement.enabled", true);
         antiAdvertisementRegex = resolveGet("antiAdvertisement.regex", "(?i)\\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:[a-z]{2,}))\\b");
-        antiAdvertisementWhitelist = resolveGet("antiAdvertisement.whitelist", new ArrayList<>(List.of(
+        antiAdvertisementWhitelist = new LinkedHashSet<>(resolveGet("antiAdvertisement.whitelist", List.of(
                 "mestermc.hu",
                 "discord.gg/mestermc",
                 "youtube.com/mestermc",
@@ -69,18 +104,18 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "tiktok.com/@mestermc"
         )));
         antiAdvertisementExemptPermission = resolveGet("antiAdvertisement.exemptPermission", "openchat.bypass.antiadvertisement");
-        antiAdvertisementExecuteCommand = resolveGet("antiAdvertisement.executeCommand", new ArrayList<>(List.of("kick {player} Please do not advertise")));
+        antiAdvertisementExecuteCommand = new LinkedHashSet<>(resolveGet("antiAdvertisement.executeCommand", List.of("kick {player} Please do not advertise")));
 
         // Anti-Caps
         antiCapsEnabled = resolveGet("antiCaps.enabled", true);
         antiCapsMinLength = resolveGet("antiCaps.minLength", 10);
         antiCapsPercentage = resolveGet("antiCaps.percentage", 70);
         antiCapsExemptPermission = resolveGet("antiCaps.exemptPermission", "openchat.bypass.anticaps");
-        antiCapsExecuteCommand = resolveGet("antiCaps.executeCommand", new ArrayList<>(List.of("kick {player} Please do not spam")));
+        antiCapsExecuteCommand = new LinkedHashSet<>(resolveGet("antiCaps.executeCommand", List.of("kick {player} Please do not spam")));
 
         // Anto-swear
         antiSwearEnabled = resolveGet("antiSwear.enabled", true);
-        Map<Character, String> characterMappings = new HashMap<>();
+        Map<Character, String> characterMappings = new LinkedHashMap<>();
         characterMappings.put('a', "[aA@4]");
         characterMappings.put('á', "[áÁaA@4]");
         characterMappings.put('e', "[eE3]");
@@ -660,6 +695,170 @@ public class OpenChatConfiguration extends ConfigurationBase {
         });
         //#endregion
         antiSwearExemptPermission = resolveGet("antiSwear.exemptPermission", "openchat.bypass.antiswear");
-        antiSwearExecuteCommand = resolveGet("antiSwear.executeCommand", new ArrayList<>(List.of("kick {player} Please do not swear")));
+        antiSwearExecuteCommand = new LinkedHashSet<>(resolveGet("antiSwear.executeCommand", List.of("kick {player} Please do not swear")));
+
+        // Command Blocker
+        commandBlockerEnabled = resolveGet("commandBlocker.enabled", true);
+        commandBlockerEnableBypass = resolveGet("commandBlocker.enableBypass", true);
+        commandBlockerBypassPermission = resolveGet("commandBlocker.bypassPermission", "openchat.bypass.commandblocker");
+        commandBlockerCommands = new LinkedHashSet<>(resolveGet("commandBlocker.commands", List.of(
+                "/?",
+                "/version",
+                "/ver",
+                "/icanhasbukkit",
+                "/about",
+                "/pl",
+                "/plugins",
+                "/bukkit:pl",
+                "/bukkit:plugins",
+                "/bukkit:version",
+                "/bukkit:ver",
+                "/bukkit:about",
+                "/bukkit:icanhasbukkit",
+                "/bukkit: null",
+                "/minecraft: null",
+                "/minecraft:me",
+                "/minecraft:tell",
+                "/minecraft",
+                "/minecraft:op",
+                "/minecraft:pardon-ip",
+                "/minecraft:pardon",
+                "/calculate",
+                "//calculate",
+                "//eval",
+                "/eval",
+                "//evalaute",
+                "/evaluate",
+                "//solve",
+                "/solve",
+                "/reload",
+                "/stop",
+                "/op",
+                "/execute",
+                "/sudo",
+                "/say",
+                "/pt bc",
+                "/bc"
+                )));
+
+
+        // Tab completion
+        tabCompletionEnabled = resolveGet("tabCompletion.enabled", true);
+        tabCompletionExemptPermission = resolveGet("tabCompletion.exemptPermission", "openchat.bypass.tabcompletion");
+        if (get("tabCompletion.entries") == null) {
+            var tabEntriesDefault = new LinkedHashMap<String, Object>();
+            var defaultEntries = new LinkedHashMap<String, Object>();
+            defaultEntries.put("priority", 0);
+            defaultEntries.put("commands", List.of(
+                    "/is",
+                    "/island",
+                    "/sellwands",
+                    "/spawners",
+                    "/warp",
+                    "/warps",
+                    "/team",
+                    "/balance",
+                    "/bal",
+                    "/home",
+                    "/sethome",
+                    "/delhome",
+                    "/ignore",
+                    "/emojis",
+                    "/kit",
+                    "/kits",
+                    "/list",
+                    "/msg",
+                    "/msgtoggle",
+                    "/pay",
+                    "/realname",
+                    "/spawn",
+                    "/suicide",
+                    "/tpa",
+                    "/tpaccept",
+                    "/tpdeny",
+                    "/tpahere",
+                    "/tptoggle",
+                    "/pwarp",
+                    "/playerwarps",
+                    "/pw",
+                    "/ah",
+                    "/auction",
+                    "/rewards",
+                    "/coinshop",
+                    "/help",
+                    "/tutorial",
+                    "/serverguide",
+                    "/worlds",
+                    "/rtp",
+                    "/toolskins",
+                    "/leaderboards",
+                    "/lottery",
+                    "/deliveries",
+                    "/levels",
+                    "/shop",
+                    "/jobs",
+                    "/quests",
+                    "/skills",
+                    "/factories",
+                    "/cosmetics",
+                    "/teams",
+                    "/dailyquests",
+                    "/tags",
+                    "/settings",
+                    "/discord",
+                    "/store",
+                    "/vote",
+                    "/website",
+                    "/referral",
+                    "/rules",
+                    "/nick",
+                    "/back",
+                    "/recipe",
+                    "/feed",
+                    "/disposal",
+                    "/near",
+                    "/craft",
+                    "/enderchest",
+                    "/ptime",
+                    "/heal",
+                    "/fly",
+                    "/pweather",
+                    "/repair",
+                    "/invsee",
+                    "/sellall",
+                    "/sellhand",
+                    "/enchants"
+            ));
+
+            var staffEntries = new LinkedHashMap<String, Object>();
+            staffEntries.put("priority", 1);
+            staffEntries.put("extend", "default");
+            staffEntries.put("commands", List.of(
+                    "/ban",
+                    "/banip",
+                    "/unban",
+                    "/unbanip",
+                    "/pardon",
+                    "/pardonip",
+                    "/banlist",
+                    "/changereason",
+                    "/check",
+                    "/history",
+                    "/kick",
+                    "/mute"
+            ));
+
+            tabEntriesDefault.put("default", defaultEntries);
+            tabEntriesDefault.put("staff", staffEntries);
+            resolve("tabCompletion.entries", tabEntriesDefault);
+        }
+
+        // OP-Protection
+        opProtectionEnabled = resolveGet("opProtection.enabled", false);
+        opProtectionOperators = new LinkedHashSet<>(resolveGet("opProtection.operators", List.of(
+                "Steve",
+                "Alex",
+                "Tavstal"
+        )));
     }
 }
