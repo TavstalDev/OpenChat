@@ -1,5 +1,6 @@
 package io.github.tavstaldev.openChat.models;
 
+import io.github.tavstaldev.openChat.OpenChat;
 import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
@@ -89,6 +90,8 @@ public class PlayerCache {
      */
     public void setLastCommand(String command) {
         if (command.equalsIgnoreCase(lastCommand)) {
+            if (OpenChat.CommandCheckerSystem().isSpamWhitelisted(command))
+                return;
             commandSpamCount++;
         } else {
             this.lastCommand = command;
