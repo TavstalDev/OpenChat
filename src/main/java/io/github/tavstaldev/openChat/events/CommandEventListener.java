@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerCommandSendEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.time.LocalDateTime;
@@ -72,12 +73,19 @@ public class CommandEventListener implements Listener {
             return;
         }
 
+        // Feature: command blocker
+        if (config.commandBlockerEnabled && (!config.commandBlockerEnableBypass || !player.hasPermission(config.commandBlockerBypassPermission))) {
+            if (OpenChat.CommandCheckerSystem().isBlocked(command)) {
+                event.setCancelled(true);
+                OpenChat.Instance.sendLocalizedMsg(player, "CommandBlocker.Blocked");
+                return;
+            }
+        }
+
         // Update the player's last executed command in the cache.
         cache.setLastCommand(command);
 
         // Feature: anti-spam
-        // TODO: Add command whitelist, so certain commands are ignored by the anti-spam system.
-        // such as /msg, /tell, /r, /reply, /party, /guild, etc.
         if (config.antiSpamMaxCommandDuplicates >= 1 && config.antiSpamMaxCommandDuplicates <= cache.getCommandSpamCount()) {
             // Cancel the event if the player exceeds the allowed duplicate commands.
             event.setCancelled(true);
@@ -94,5 +102,17 @@ public class CommandEventListener implements Listener {
 
         // Set the next allowed command execution time based on the configured delay.
         cache.commandDelay = LocalDateTime.now().plusSeconds(config.antiSpamCommandDelay);
+    }
+
+    /**
+     * Handles the PlayerCommandSendEvent to provide custom tab completions for commands.
+     *
+     * @param event The event triggered when a player requests tab completions for commands.
+     */
+    @EventHandler
+    public void onTabComplete(PlayerCommandSendEvent event) {
+        var source = event.getPlayer();
+        var commands = event.getCommands();
+        OpenChat.CommandCheckerSystem().getTabCompletions(source, commands);
     }
 }
