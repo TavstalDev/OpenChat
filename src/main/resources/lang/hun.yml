@@ -46,4 +46,11 @@ AntiSwear:
   Sign: "%prefix% &cA táblán szitokszó észlelve."
   AnvilRename: "%prefix% &cA tárgy névben szitokszó észlelve."
 
+CommandBlocker:
+  Blocked: "Ismeretlen parancs. Írd be a \"/help\" parancsot segítséghez."
+
+OpProtection:
+  Unallowed: "%prefix% &cA játékos nem kaphat operátori jogot."
+  Kick: "&cNem vagy jogosult operátor."
+
 FileVersion: 1
