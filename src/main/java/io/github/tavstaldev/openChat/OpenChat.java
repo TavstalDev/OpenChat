@@ -7,6 +7,7 @@ import io.github.tavstaldev.minecorelib.utils.VersionUtils;
 import io.github.tavstaldev.openChat.commands.CommandChat;
 import io.github.tavstaldev.openChat.events.*;
 import io.github.tavstaldev.openChat.models.AntiAdvertisementSystem;
+import io.github.tavstaldev.openChat.models.CommandCheckerSystem;
 import io.github.tavstaldev.openChat.models.AntiSwearSystem;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,6 +21,8 @@ public final class OpenChat extends PluginBase {
     public static OpenChat Instance; // Singleton instance of the plugin.
     private AntiAdvertisementSystem advertisementSystem; // System for detecting advertisements in chat.
     private AntiSwearSystem antiSwearSystem; // System for detecting swear words in chat.
+    private CommandCheckerSystem commandCheckerSystem; // System for checking commands.
+    private OpEventListener opEventListener; // Listener for operator-related events.
 
     /**
      * Retrieves the plugin's custom logger.
@@ -75,6 +78,10 @@ public final class OpenChat extends PluginBase {
         return Instance.antiSwearSystem;
     }
 
+    public static CommandCheckerSystem CommandCheckerSystem() {
+        return Instance.commandCheckerSystem;
+    }
+
     /**
      * Constructor for the OpenChat plugin.
      * Sets the URL for the latest release of the plugin.
@@ -117,10 +124,13 @@ public final class OpenChat extends PluginBase {
         new ItemEventListener(this);
         new BlockEventListener(this);
         new CommandEventListener(this);
+        opEventListener = new OpEventListener(this);
+        opEventListener.updateAllowedOperators();
 
         // Initialize systems for advertisement and swear word detection.
         advertisementSystem = new AntiAdvertisementSystem();
         antiSwearSystem = new AntiSwearSystem();
+        commandCheckerSystem = new CommandCheckerSystem();
 
         // Register commands.
         _logger.Debug("Registering commands...");
@@ -170,6 +180,8 @@ public final class OpenChat extends PluginBase {
 
         advertisementSystem = new AntiAdvertisementSystem();
         antiSwearSystem = new AntiSwearSystem();
+        commandCheckerSystem = new CommandCheckerSystem();
+        opEventListener.updateAllowedOperators();
         _logger.Ok(String.format("%s has been successfully reloaded.", getProjectName()));
     }
 }
