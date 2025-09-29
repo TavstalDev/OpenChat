@@ -9,6 +9,7 @@ import io.github.tavstaldev.openChat.events.*;
 import io.github.tavstaldev.openChat.models.AntiAdvertisementSystem;
 import io.github.tavstaldev.openChat.models.CommandCheckerSystem;
 import io.github.tavstaldev.openChat.models.AntiSwearSystem;
+import io.github.tavstaldev.openChat.tasks.CacheCleanTask;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -23,6 +24,7 @@ public final class OpenChat extends PluginBase {
     private AntiSwearSystem antiSwearSystem; // System for detecting swear words in chat.
     private CommandCheckerSystem commandCheckerSystem; // System for checking commands.
     private OpEventListener opEventListener; // Listener for operator-related events.
+    private CacheCleanTask cacheCleanTask; // Task for cleaning player caches.
 
     /**
      * Retrieves the plugin's custom logger.
@@ -138,6 +140,12 @@ public final class OpenChat extends PluginBase {
         if (command != null) {
             command.setExecutor(new CommandChat());
         }
+
+        // Register cache cleanup task.
+        if (cacheCleanTask != null && !cacheCleanTask.isCancelled())
+            cacheCleanTask.cancel();
+        cacheCleanTask = new CacheCleanTask(); // Runs every 5 minutes
+        cacheCleanTask.runTaskTimer(this, 0, 5 * 60 * 20);
 
         _logger.Ok(String.format("%s has been successfully loaded.", getProjectName()));
 
