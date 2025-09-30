@@ -36,7 +36,7 @@ public class CommandCheckerSystem {
                     combinedPattern.append("|");
                 }
                 String safeEntry = Pattern.quote(entry.trim());
-                combinedPattern.append("^").append(safeEntry).append(".*");
+                combinedPattern.append("^").append(safeEntry).append("\\b");
             }
             if (!combinedPattern.isEmpty()) {
                 OpenChat.Logger().Debug("Compiled command whitelist regex: (" + combinedPattern.toString() + ")");
@@ -58,7 +58,7 @@ public class CommandCheckerSystem {
                     combinedPattern.append("|");
                 }
                 String safeEntry = Pattern.quote(entry.trim());
-                combinedPattern.append("^").append(safeEntry).append(".*");
+                combinedPattern.append("^").append(safeEntry).append("\\b");
             }
             if (!combinedPattern.isEmpty()) {
                 OpenChat.Logger().Debug("Compiled command blocker regex: (" + combinedPattern.toString() + ")");
