@@ -111,6 +111,8 @@ public class CommandEventListener implements Listener {
      */
     @EventHandler
     public void onTabComplete(PlayerCommandSendEvent event) {
+        if (!OpenChat.OCConfig().tabCompletionEnabled)
+            return;
         var source = event.getPlayer();
         var commands = event.getCommands();
         OpenChat.CommandCheckerSystem().getTabCompletions(source, commands);
