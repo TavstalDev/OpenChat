@@ -145,7 +145,7 @@ public final class OpenChat extends PluginBase {
         if (cacheCleanTask != null && !cacheCleanTask.isCancelled())
             cacheCleanTask.cancel();
         cacheCleanTask = new CacheCleanTask(); // Runs every 5 minutes
-        cacheCleanTask.runTaskTimer(this, 0, 5 * 60 * 20);
+        cacheCleanTask.runTaskTimerAsynchronously(this, 0, 5 * 60 * 20);
 
         _logger.Ok(String.format("%s has been successfully loaded.", getProjectName()));
 
@@ -188,10 +188,18 @@ public final class OpenChat extends PluginBase {
         this._config.load();
         _logger.Debug("Configuration reloaded.");
 
+        // Reinitialize systems
         advertisementSystem = new AntiAdvertisementSystem();
         antiSwearSystem = new AntiSwearSystem();
         commandCheckerSystem = new CommandCheckerSystem();
         opEventListener.updateAllowedOperators();
+
+        // Restart cache cleanup task
+        if (cacheCleanTask != null && !cacheCleanTask.isCancelled())
+            cacheCleanTask.cancel();
+        cacheCleanTask = new CacheCleanTask(); // Runs every 5 minutes
+        cacheCleanTask.runTaskTimerAsynchronously(this, 0, 5 * 60 * 20);
+
         _logger.Ok(String.format("%s has been successfully reloaded.", getProjectName()));
     }
 }
