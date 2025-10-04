@@ -53,4 +53,8 @@ OpProtection:
   Unallowed: "%prefix% &cA játékos nem kaphat operátori jogot."
   Kick: "&cNem vagy jogosult operátor."
 
+Whisper:
+  Sender: "&8[&bÉn &3➡ &b%receiver%&8] &7» &f%message%"
+  Receiver: "&8[&b%sender% &3➡ &bÉn&8] &7» &f%message%"
+
 FileVersion: 1
