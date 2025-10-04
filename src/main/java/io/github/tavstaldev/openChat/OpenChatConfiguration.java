@@ -14,6 +14,10 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public String locale, prefix;
     public boolean usePlayerLocale, checkForUpdates, debug;
 
+    // Storage
+    public String storageType, storageFilename, storageHost, storageDatabase, storageUsername, storagePassword, storageTablePrefix;
+    public int storagePort;
+
     // Anti-Spam
     public boolean antiSpamEnabled;
     public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates, antiSpamMaxCommandDuplicates;
@@ -55,6 +59,28 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public boolean opProtectionEnabled;
     public Set<String> opProtectionOperators;
 
+    // Private Messaging
+    public boolean privateMessagingEnabled;
+
+    // Custom Chat
+    public boolean customChatEnabled;
+    public String customChatFormat;
+    public String customChatShoutFormat;
+    public String customChatQuestionFormat;
+    public boolean customChatShoutEnabled;
+    public String customChatShoutPermission;
+    public String customChatShoutPrefix;
+    public boolean customChatQuestionEnabled;
+    public String customChatQuestionPermission;
+    public String customChatQuestionPrefix;
+
+    // Mentions
+    public boolean mentionsEnabled;
+    public String mentionsDefaultDisplay, mentionsDefaultPreference, mentionsDefaultSound;
+    public double mentionsVolume, mentionsPitch;
+    public int mentionsCooldown, mentionsLimitPerMessage;
+    public boolean mentionsAllowSelfMention;
+
     @Override
     protected void loadDefaults() {
         // General
@@ -63,6 +89,16 @@ public class OpenChatConfiguration extends ConfigurationBase {
         checkForUpdates = resolveGet("checkForUpdates", true);
         debug = resolveGet("debug", false);
         prefix = resolveGet("prefix", "&bOpen&3Chat &8»");
+
+        // Storage
+        storageType = resolveGet("storage.type", "sqlite");
+        storageFilename = resolveGet("storage.filename", "database");
+        storageHost = resolveGet("storage.host", "localhost");
+        storagePort = resolveGet("storage.port", 3306);
+        storageDatabase = resolveGet("storage.database", "minecraft");
+        storageUsername = resolveGet("storage.username", "root");
+        storagePassword = resolveGet("storage.password", "ascent");
+        storageTablePrefix = resolveGet("storage.tablePrefix", "openchat");
 
         // Anti-Spam
         antiSpamEnabled = resolveGet("antiSpam.enabled", true);

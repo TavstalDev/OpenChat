@@ -4,6 +4,7 @@ import io.github.tavstaldev.openChat.OpenChat;
 import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Represents a cache for storing player-specific data related to chat and command usage.
@@ -17,6 +18,7 @@ public class PlayerCache {
     private String lastCommand = ""; // The last command executed by the player.
     private int commandSpamCount = 0; // The number of consecutive duplicate commands.
     public LocalDateTime commandDelay; // The timestamp of the last allowed command.
+    public UUID lastRepliedTo = null; // The UUID of the last player who sent a private message to this player.
 
     /**
      * Constructs a PlayerCache for the specified player.
