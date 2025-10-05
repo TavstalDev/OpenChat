@@ -16,6 +16,12 @@ plugins {
 val javaVersion: String by project
 val paperApiVersion: String by project
 val mineCoreLibVersion: String by project
+val hikariCpVersion: String by project
+val caffeineVersion: String by project
+val xseriesVersion: String by project
+val placeholderApiVersion: String by project
+val sirblobmanApiVersion: String by project
+val sirblobmanCombatLogVersion: String by project
 val projectPackageName = "${project.group}.openChat"
 
 // Configure Java toolchain and compatibility settings
@@ -35,6 +41,11 @@ repositories {
         name = "papermc"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
+    maven {
+        name = "sirblobman-public" // CombatLogX
+        url = uri("https://nexus.sirblobman.xyz/public/")
+    }
+    maven { url = uri("https://repo.extendedclip.com/releases/") } // PlaceholderAPI
 }
 
 // Define project dependencies
@@ -42,8 +53,21 @@ dependencies {
     // Paper API for Minecraft server development
     compileOnly("io.papermc.paper:paper-api:${paperApiVersion}")
 
+    // Placeholder API for placeholder support
+    compileOnly("me.clip:placeholderapi:${placeholderApiVersion}")
+
+    // CombatLogX API
+    compileOnly("com.github.sirblobman.api:core:${sirblobmanApiVersion}")
+    compileOnly("com.github.sirblobman.combatlogx:api:${sirblobmanCombatLogVersion}")
+
     // Custom library for core functionality
     implementation(files("libs/MineCoreLib-${mineCoreLibVersion}.jar"))
+    // HikariCP for database connection pooling
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
+    // SQL caching
+    implementation("com.github.ben-manes.caffeine:caffeine:${caffeineVersion}")
+    // XSeries
+    implementation("com.github.cryptomorin:XSeries:${xseriesVersion}")
 }
 
 // Disable the default JAR task
@@ -57,6 +81,15 @@ tasks.shadowJar {
     manifest {
         attributes["paperweight-mappings-namespace"] = "spigot" // Add custom manifest attributes
     }
+
+    exclude("com/google/**")
+    exclude("org/jspecify/**")
+    exclude("org/slf4j/**")
+
+    // Relocate packages to avoid conflicts
+    relocate("com.zaxxer.hikari", "${projectPackageName}.shadow.hikari")
+    relocate("com.cryptomorin.xseries", "${projectPackageName}.shadow.xseries")
+    relocate("com.github.benmanes.caffeine", "${projectPackageName}.shadow.caffeine")
 }
 
 // Ensure the Shadow JAR task runs during the build process
