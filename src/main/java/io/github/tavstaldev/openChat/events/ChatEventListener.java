@@ -6,6 +6,7 @@ import io.github.tavstaldev.openChat.OpenChatConfiguration;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.util.MentionUtils;
+import io.github.tavstaldev.openChat.util.PlayerUtil;
 import io.github.tavstaldev.openChat.util.VanishUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
@@ -170,7 +171,7 @@ public class ChatEventListener implements Listener {
 
         // Other replacements are handled by PlaceholderAPI above
         chatFormat = chatFormat.replace("{player}", source.getName())
-                .replace("{displayname}", source.displayName().examinableName())
+                .replace("{displayname}", PlayerUtil.getPlayerPlainDisplayName(source))
                 .replace("{message}", rawMessage);
 
         // Escape any other literal '%' signs
