@@ -73,6 +73,8 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public boolean customChatQuestionEnabled;
     public String customChatQuestionPermission;
     public String customChatQuestionPrefix;
+    public String customChatLegacyRichTextPermission;
+    public String customChatHexRichTextPermission;
 
     // Mentions
     public boolean mentionsEnabled;
@@ -896,5 +898,33 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "Alex",
                 "Tavstal"
         )));
+
+        // Private Messaging
+        privateMessagingEnabled = resolveGet("privateMessaging.enabled", true);
+
+        // Custom Chat
+        customChatEnabled = resolveGet("customChat.enabled", false);
+        customChatFormat = resolveGet("customChat.format", "<{player}> {message}");
+        customChatShoutEnabled = resolveGet("customChat.shoutEnabled", true);
+        customChatShoutFormat = resolveGet("customChat.shoutFormat", "[SHOUT] <{player}> {message}");
+        customChatShoutPermission = resolveGet("customChat.shoutPermission", "openchat.chat.shout");
+        customChatShoutPrefix = resolveGet("customChat.shoutPrefix", "!");
+        customChatQuestionEnabled = resolveGet("customChat.questionEnabled", true);
+        customChatQuestionFormat = resolveGet("customChat.questionFormat", "[QUESTION] <{player}> {message}");
+        customChatQuestionPermission = resolveGet("customChat.questionPermission", "openchat.chat.question");
+        customChatQuestionPrefix = resolveGet("customChat.questionPrefix", "?");
+        customChatLegacyRichTextPermission = resolveGet("customChat.legacyRichTextPermission", "openchat.chat.color");
+        customChatHexRichTextPermission = resolveGet("customChat.hexRichTextPermission", "openchat.chat.hexcolor");
+
+        // Mentions
+        mentionsEnabled = resolveGet("mentions.enabled", true);
+        mentionsDefaultDisplay = resolveGet("mentions.defaultDisplay", "ALL");
+        mentionsDefaultPreference = resolveGet("mentions.defaultPreference", "ALWAYS");
+        mentionsDefaultSound = resolveGet("mentions.defaultSound", "ENTITY_PLAYER_LEVELUP");
+        mentionsVolume = resolveGet("mentions.volume", 1.0);
+        mentionsPitch = resolveGet("mentions.pitch", 1.0);
+        mentionsCooldown = resolveGet("mentions.mentionCooldown", 3);
+        mentionsLimitPerMessage = resolveGet("mentions.maxMentionsPerMessage", 3);
+        mentionsAllowSelfMention = resolveGet("mentions.allowSelfMention", true);
     }
 }
