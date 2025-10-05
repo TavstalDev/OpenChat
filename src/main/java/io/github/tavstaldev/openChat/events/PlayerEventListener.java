@@ -1,5 +1,6 @@
 package io.github.tavstaldev.openChat.events;
 
+import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import org.bukkit.entity.Player;
@@ -32,11 +33,16 @@ public class PlayerEventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer(); // The player who joined the server.
+        var playerId = player.getUniqueId();
         PlayerCache playerCache = new PlayerCache(player); // Create a new cache for the player.
-        PlayerCacheManager.add(player.getUniqueId(), playerCache); // Add the player's cache to the manager.
+        PlayerCacheManager.add(playerId, playerCache); // Add the player's cache to the manager.
 
-        if (PlayerCacheManager.isMarkedForRemoval(player.getUniqueId()))
-            PlayerCacheManager.unmarkForRemoval(player.getUniqueId());
+        if (PlayerCacheManager.isMarkedForRemoval(playerId))
+            PlayerCacheManager.unmarkForRemoval(playerId);
+
+        if (OpenChat.database().getPlayerData(playerId).isEmpty()) {
+            OpenChat.database().addPlayerData(playerId);
+        }
     }
 
     /**

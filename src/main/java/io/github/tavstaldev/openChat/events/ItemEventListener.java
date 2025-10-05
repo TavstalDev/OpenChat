@@ -37,7 +37,7 @@ public class ItemEventListener implements Listener {
     public void onBookEdit(PlayerEditBookEvent event) {
         BookMeta bookMeta = event.getNewBookMeta(); // The metadata of the edited book.
         Player player = event.getPlayer(); // The player editing the book.
-        OpenChatConfiguration config = OpenChat.OCConfig(); // Retrieve the plugin configuration.
+        OpenChatConfiguration config = OpenChat.config(); // Retrieve the plugin configuration.
 
         // TODO: Add anti-advertisement check
 
@@ -48,7 +48,8 @@ public class ItemEventListener implements Listener {
 
         // Check the book title for swear words.
         if (bookMeta.hasTitle()) {
-            if (OpenChat.AntiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(bookMeta.title()))) {
+            //noinspection DataFlowIssue
+            if (OpenChat.antiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(bookMeta.title()))) {
                 event.setCancelled(true); // Cancel the event if a swear word is detected in the title.
                 OpenChat.Instance.sendLocalizedMsg(player, "AntiSwear.BookTitle"); // Notify the player.
                 return;
@@ -61,7 +62,7 @@ public class ItemEventListener implements Listener {
 
         // Check the book pages for swear words.
         for (Component page : bookMeta.pages()) {
-            if (OpenChat.AntiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(page))) {
+            if (OpenChat.antiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(page))) {
                 event.setCancelled(true); // Cancel the event if a swear word is detected in the content.
                 OpenChat.Instance.sendLocalizedMsg(player, "AntiSwear.BookContent"); // Notify the player.
                 return;

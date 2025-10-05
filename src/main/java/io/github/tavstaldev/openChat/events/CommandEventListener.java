@@ -19,12 +19,12 @@ import java.util.Map;
  * Implements features such as command cooldowns and anti-spam for repeated commands.
  */
 public class CommandEventListener implements Listener {
-    private final PluginLogger _logger = OpenChat.Logger().WithModule(CommandEventListener.class);
+    private final PluginLogger _logger = OpenChat.logger().withModule(CommandEventListener.class);
 
     public CommandEventListener(Plugin plugin) {
-        _logger.Debug("Registering command event listener...");
+        _logger.debug("Registering command event listener...");
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        _logger.Debug("Event listener registered.");
+        _logger.debug("Event listener registered.");
     }
 
     /**
@@ -38,7 +38,7 @@ public class CommandEventListener implements Listener {
         if (event.isCancelled())
             return;
 
-        var config = OpenChat.OCConfig(); // Plugin configuration.
+        var config = OpenChat.config(); // Plugin configuration.
         if (!config.antiSpamEnabled)
             return; // Exit if anti-spam is disabled.
 
@@ -49,7 +49,7 @@ public class CommandEventListener implements Listener {
 
         String command = event.getMessage(); // The command message.
         // Debug log the command execution
-        _logger.Debug("Player " + player.getName() + " executed command: " + command);
+        _logger.debug("Player " + player.getName() + " executed command: " + command);
 
 
         PlayerCache cache = PlayerCacheManager.get(player.getUniqueId()); // Retrieve the player's cache.
@@ -57,12 +57,12 @@ public class CommandEventListener implements Listener {
             return;
 
         // Feature: cooldown
-        if (LocalDateTime.now().isBefore(cache.commandDelay)) {
+        if (LocalDateTime.now().isBefore(cache.getCommandDelay())) {
             // Cancel the event if the player is still on cooldown.
             event.setCancelled(true);
             // The +1 ensures that it doesn't display 0 seconds remaining when the cooldown is about to expire
             OpenChat.Instance.sendLocalizedMsg(player, "AntiSpam.CommandCooldown",
-                    Map.of("time", String.valueOf(cache.commandDelay.getSecond() - LocalDateTime.now().getSecond() + 1)));
+                    Map.of("time", String.valueOf(cache.getCommandDelay().getSecond() - LocalDateTime.now().getSecond() + 1)));
 
             // Execute configured commands for cooldown violations.
             for (String cmd : config.antiSpamExecuteCommand) {
@@ -75,7 +75,7 @@ public class CommandEventListener implements Listener {
 
         // Feature: command blocker
         if (config.commandBlockerEnabled && (!config.commandBlockerEnableBypass || !player.hasPermission(config.commandBlockerBypassPermission))) {
-            if (OpenChat.CommandCheckerSystem().isBlocked(command)) {
+            if (OpenChat.commandCheckerSystem().isBlocked(command)) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(player, "CommandBlocker.Blocked");
                 return;
@@ -101,7 +101,7 @@ public class CommandEventListener implements Listener {
         }
 
         // Set the next allowed command execution time based on the configured delay.
-        cache.commandDelay = LocalDateTime.now().plusSeconds(config.antiSpamCommandDelay);
+        cache.setCommandDelay(LocalDateTime.now().plusSeconds(config.antiSpamCommandDelay));
     }
 
     /**
@@ -111,10 +111,10 @@ public class CommandEventListener implements Listener {
      */
     @EventHandler
     public void onTabComplete(PlayerCommandSendEvent event) {
-        if (!OpenChat.OCConfig().tabCompletionEnabled)
+        if (!OpenChat.config().tabCompletionEnabled)
             return;
         var source = event.getPlayer();
         var commands = event.getCommands();
-        OpenChat.CommandCheckerSystem().getTabCompletions(source, commands);
+        OpenChat.commandCheckerSystem().getTabCompletions(source, commands);
     }
 }

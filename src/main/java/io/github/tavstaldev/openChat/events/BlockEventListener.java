@@ -37,7 +37,7 @@ public class BlockEventListener implements Listener {
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Player player = event.getPlayer();
-        OpenChatConfiguration config = OpenChat.OCConfig();
+        OpenChatConfiguration config = OpenChat.config();
 
         // Check if anti-swear is enabled and the player is not exempt.
         if (!config.antiSwearEnabled || player.hasPermission(config.antiSwearExemptPermission)) {
@@ -46,7 +46,7 @@ public class BlockEventListener implements Listener {
 
         // Iterate through each line of the sign and check for swear words.
         for (Component line : event.lines()) {
-            if (OpenChat.AntiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(line))) {
+            if (OpenChat.antiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(line))) {
                 event.setCancelled(true); // Cancel the event if a swear word is detected.
                 OpenChat.Instance.sendLocalizedMsg(player, "AntiSwear.Sign"); // Notify the player.
                 return;
@@ -66,7 +66,7 @@ public class BlockEventListener implements Listener {
             return;
         }
 
-        OpenChatConfiguration config = OpenChat.OCConfig();
+        OpenChatConfiguration config = OpenChat.config();
 
         // Check if anti-swear is enabled and the player is not exempt.
         if (!config.antiSwearEnabled || player.hasPermission(config.antiSwearExemptPermission)) {
@@ -88,7 +88,7 @@ public class BlockEventListener implements Listener {
         }
 
         // Check if the display name contains swear words.
-        if (OpenChat.AntiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(result.displayName()))) {
+        if (OpenChat.antiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(result.displayName()))) {
             anvil.close(); // Close the anvil if a swear word is detected.
             OpenChat.Instance.sendLocalizedMsg(player, "AntiSwear.AnvilRename"); // Notify the player.
         }

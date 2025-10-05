@@ -5,6 +5,9 @@ import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.OpenChatConfiguration;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
+import io.github.tavstaldev.openChat.util.MentionUtils;
+import io.github.tavstaldev.openChat.util.VanishUtil;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,6 +18,8 @@ import org.bukkit.plugin.Plugin;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Listener for handling chat-related events in the OpenChat plugin.
@@ -22,7 +27,10 @@ import java.util.Map;
  * anti-capitalization, and anti-swearing.
  */
 public class ChatEventListener implements Listener {
-    private final PluginLogger _logger = OpenChat.Logger().WithModule(ChatEventListener.class);
+    private final PluginLogger _logger = OpenChat.logger().withModule(ChatEventListener.class);
+    private final Pattern minecraftUsernamePattern = Pattern.compile("([a-zA-Z0-9_]{3,16})(?![a-zA-Z0-9_])");
+    private final Pattern legacyPattern = Pattern.compile("(?i)[&§]([0-9a-fk-or])");
+    private final Pattern hexPattern = Pattern.compile("(?i)[&§]#([A-Fa-f0-9]{6})");
 
     /**
      * Constructor for ChatEventListener.
@@ -31,9 +39,9 @@ public class ChatEventListener implements Listener {
      * @param plugin The plugin instance to register the listener for.
      */
     public ChatEventListener(Plugin plugin) {
-        _logger.Debug("Registering chat event listener...");
+        _logger.debug("Registering chat event listener...");
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        _logger.Debug("Event listener registered.");
+        _logger.debug("Event listener registered.");
     }
 
     /**
@@ -47,22 +55,22 @@ public class ChatEventListener implements Listener {
         PlayerCache cache = PlayerCacheManager.get(source.getUniqueId()); // Retrieve the player's cache.
         String rawMessage = event.getMessage(); // The raw chat message.
         cache.setLastChatMessage(rawMessage); // Store the last chat message in the cache.
-        OpenChatConfiguration config = OpenChat.OCConfig(); // Retrieve the plugin configuration.
+        OpenChatConfiguration config = OpenChat.config(); // Retrieve the plugin configuration.
 
         // Debug log the received message to find false positives
-        _logger.Debug("Player " + source.getName() + " sent message: " + rawMessage);
+        _logger.debug("Player " + source.getName() + " sent message: " + rawMessage);
 
         // Anti-spam
         if (config.antiSpamEnabled && !source.hasPermission(config.antiSpamExemptPermission)) {
             // Feature: Chat cooldown
-            if (LocalDateTime.now().isBefore(cache.chatMessageDelay)) {
+            if (LocalDateTime.now().isBefore(cache.getChatMessageDelay())) {
                 event.setCancelled(true);
                 // The +1 ensures that it doesn't display 0 seconds remaining when the cooldown is about to expire
-                OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.ChatCooldown", Map.of("time", String.valueOf(cache.chatMessageDelay.getSecond() - LocalDateTime.now().getSecond() + 1)));
+                OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.ChatCooldown", Map.of("time", String.valueOf(cache.getChatMessageDelay().getSecond() - LocalDateTime.now().getSecond() + 1)));
                 for (String cmd : config.antiSpamExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()));
-                    });
+                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
+                    );
                 }
                 return;
             }
@@ -73,9 +81,9 @@ public class ChatEventListener implements Listener {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.RepeatedMessages");
                 for (String cmd : config.antiSpamExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()));
-                    });
+                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
+                    );
                 }
                 return;
             }
@@ -83,13 +91,13 @@ public class ChatEventListener implements Listener {
 
         // Anti-advertisement
         if (config.antiAdvertisementEnabled && !source.hasPermission(config.antiAdvertisementExemptPermission)) {
-            if (OpenChat.AdvertisementSystem().containsAdvertisement(rawMessage)) {
+            if (OpenChat.advertisementSystem().containsAdvertisement(rawMessage)) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiAd.AdvertisementDetected");
                 for (String cmd : config.antiAdvertisementExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()));
-                    });
+                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
+                    );
                 }
                 return;
             }
@@ -106,9 +114,9 @@ public class ChatEventListener implements Listener {
                     event.setCancelled(true);
                     OpenChat.Instance.sendLocalizedMsg(source, "AntiCaps.TooManyCaps");
                     for (String cmd : config.antiCapsExecuteCommand) {
-                        Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()));
-                        });
+                        Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
+                        );
                     }
                     return;
                 }
@@ -117,13 +125,13 @@ public class ChatEventListener implements Listener {
 
         // Anti-swear
         if (config.antiSwearEnabled && !source.hasPermission(config.antiSwearExemptPermission) ) {
-            if (OpenChat.AntiSwearSystem().containsSwearWord(rawMessage)) {
+            if (OpenChat.antiSwearSystem().containsSwearWord(rawMessage)) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSwear.WordDetected");
                 for (String cmd : config.antiSwearExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()));
-                    });
+                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
+                    );
                 }
                 return;
             }
@@ -131,6 +139,94 @@ public class ChatEventListener implements Listener {
 
         int spamDelay = config.antiSpamChatDelay;
         if (spamDelay > 0)
-            cache.chatMessageDelay = LocalDateTime.now().plusSeconds(spamDelay);
+            cache.setChatMessageDelay(LocalDateTime.now().plusSeconds(spamDelay));
+
+        // Custom chat formatting & Mentions
+        if (!config.customChatEnabled)
+        {
+            rawMessage = handleMentions(source, rawMessage, config);
+            event.setMessage(rawMessage);
+            return;
+        }
+        String chatFormat = config.customChatFormat;
+        if (config.customChatShoutEnabled && source.hasPermission(config.customChatShoutPermission) && rawMessage.startsWith(config.customChatShoutPrefix)) {
+            chatFormat = config.customChatShoutFormat;
+            rawMessage = rawMessage.substring(1); // Remove the shout prefix
+        } else if (config.customChatQuestionEnabled && source.hasPermission(config.customChatQuestionPermission) && rawMessage.startsWith(config.customChatQuestionPrefix)) {
+            chatFormat = config.customChatQuestionFormat;
+            rawMessage = rawMessage.substring(1); // Remove the question prefix
+        }
+        chatFormat = PlaceholderAPI.setPlaceholders(source, chatFormat);
+        if (!source.hasPermission(config.customChatHexRichTextPermission)) {
+            rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
+        }
+        if (!source.hasPermission(config.customChatLegacyRichTextPermission)) {
+            rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+        }
+        rawMessage = rawMessage.replaceAll("(?i)&([0-9a-fk-or])", "§$1");
+
+        // Mentions
+        rawMessage = handleMentions(source, rawMessage, config);
+
+        // Other replacements are handled by PlaceholderAPI above
+        chatFormat = chatFormat.replace("{player}", source.getName())
+                .replace("{displayname}", source.displayName().examinableName())
+                .replace("{message}", rawMessage);
+
+        // Escape any other literal '%' signs
+        chatFormat = chatFormat.replace("%", "%%");
+        event.setFormat(chatFormat);
+    }
+
+    /**
+     * Handles mentions in chat messages.
+     * Replaces mentions with formatted text and notifies mentioned players.
+     *
+     * @param source The player who sent the message.
+     * @param rawMessage The raw chat message.
+     * @param config The plugin configuration.
+     * @return The modified message with mentions handled.
+     */
+    private String handleMentions(Player source, String rawMessage, OpenChatConfiguration config) {
+        if (!config.mentionsEnabled) {
+            return rawMessage;
+        }
+
+        int mentionCount = 0;
+        StringBuilder newMessage = new StringBuilder();
+        int lastAppendPosition = 0;
+        final int maxMentionCount = config.mentionsLimitPerMessage;
+        final boolean allowSelfMention = config.mentionsAllowSelfMention;
+        Matcher matcher = minecraftUsernamePattern.matcher(rawMessage);
+        while (matcher.find() && mentionCount < maxMentionCount) {
+            String mentionName = matcher.group(0);
+            Player mentionedPlayer = Bukkit.getPlayerExact(mentionName);
+            if (mentionedPlayer == null)
+                continue;
+
+            if (mentionedPlayer.getUniqueId() == source.getUniqueId() && !allowSelfMention)
+                continue;
+
+            if (mentionedPlayer.getGameMode() == org.bukkit.GameMode.SPECTATOR)
+                continue;
+
+            if (VanishUtil.isVanished(mentionedPlayer))
+                continue;
+
+            if (!MentionUtils.mentionPlayer(mentionedPlayer, source))
+                continue;
+
+            newMessage.append(rawMessage, lastAppendPosition, matcher.start());
+            String replacement = "§e@" + mentionName + "§r";
+            newMessage.append(replacement);
+
+            lastAppendPosition = matcher.end();
+            mentionCount++;
+        }
+
+        if (lastAppendPosition < rawMessage.length()) {
+            newMessage.append(rawMessage, lastAppendPosition, rawMessage.length());
+        }
+        return newMessage.toString();
     }
 }

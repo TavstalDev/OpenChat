@@ -21,7 +21,7 @@ import java.util.UUID;
  * Ensures operator protection by restricting unauthorized operator actions.
  */
 public class OpEventListener implements Listener {
-    private final PluginLogger _logger = OpenChat.Logger().WithModule(OpEventListener.class);
+    private final PluginLogger _logger = OpenChat.logger().withModule(OpEventListener.class);
     private final Set<OfflinePlayer> allowedOperators = new HashSet<>();
 
     /**
@@ -31,9 +31,9 @@ public class OpEventListener implements Listener {
      * @param plugin The plugin instance to register the listener for.
      */
     public OpEventListener(Plugin plugin) {
-        _logger.Debug("Registering op event listener...");
+        _logger.debug("Registering op event listener...");
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        _logger.Debug("Event listener registered.");
+        _logger.debug("Event listener registered.");
     }
 
     /**
@@ -44,7 +44,7 @@ public class OpEventListener implements Listener {
      */
     @EventHandler
     public void onLoginOpCheck(AsyncPlayerPreLoginEvent event) {
-        var config = OpenChat.OCConfig();
+        var config = OpenChat.config();
         if (!config.opProtectionEnabled)
             return;
 
@@ -56,7 +56,7 @@ public class OpEventListener implements Listener {
 
         if (player.isOp() && this.allowedOperators.stream().noneMatch(allowedPlayer -> allowedPlayer.getUniqueId().equals(player.getUniqueId()))) {
             player.setOp(false);
-            String kickMessage = OpenChat.Translator().Localize("OpProtection.Kick");
+            String kickMessage = OpenChat.translator().localize("OpProtection.Kick");
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatUtils.translateColors(kickMessage, true));
         }
     }
@@ -72,7 +72,7 @@ public class OpEventListener implements Listener {
         if (event.isCancelled())
             return;
 
-        var config = OpenChat.OCConfig();
+        var config = OpenChat.config();
         if (!config.opProtectionEnabled)
             return;
 
@@ -87,7 +87,7 @@ public class OpEventListener implements Listener {
                 return;
 
             event.setCancelled(true);
-            OpenChat.Logger().Error("The targeted player is not in the allowed operators list. Command cancelled.");
+            OpenChat.logger().error("The targeted player is not in the allowed operators list. Command cancelled.");
         }
     }
 
@@ -102,7 +102,7 @@ public class OpEventListener implements Listener {
         if (event.isCancelled())
             return;
 
-        var config = OpenChat.OCConfig();
+        var config = OpenChat.config();
         if (!config.opProtectionEnabled)
             return;
 
@@ -115,6 +115,7 @@ public class OpEventListener implements Listener {
             }
 
             var targetPlayer = Bukkit.getOfflinePlayer(splitMessage[1]);
+            //noinspection ConstantValue
             if (targetPlayer == null)
                 return;
 
@@ -131,7 +132,7 @@ public class OpEventListener implements Listener {
      * De-ops any operators not in the allowed list.
      */
     public void updateAllowedOperators() {
-        var config = OpenChat.OCConfig();
+        var config = OpenChat.config();
         this.allowedOperators.clear();
         for (String username : config.opProtectionOperators) {
             OfflinePlayer player = Bukkit.getOfflinePlayer(username);
@@ -141,7 +142,7 @@ public class OpEventListener implements Listener {
         for (OfflinePlayer player : Bukkit.getOperators()) {
             if (!isAllowedOperator(player)) {
                 player.setOp(false);
-                _logger.Info("Deopped player " + player.getName() + " as they are not in the allowed operators list.");
+                _logger.info("Deopped player " + player.getName() + " as they are not in the allowed operators list.");
             }
         }
     }
