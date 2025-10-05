@@ -79,3 +79,35 @@ commands:
                 description: "Clear the chat for all players"
                 usage: "/openchat clear"
                 permission: openchat.commands.clear
+    mentions:
+      description: Main command for OpenMentions plugin.
+      usage: /mentions help
+      aliases: [ om, openmentions ]
+      permission: openchat.commands.mentions
+    whisper:
+      description: Send a private message to another player.
+      usage: /whisper <player> <message>
+      aliases: [ msg, tell, pm ]
+      permission: openchat.commands.whisper
+    whispertoggle:
+      description: Toggle receiving private messages.
+      usage: /whispertoggle
+      aliases: [ msgtoggle, pmtoggle, telltoggle ]
+      permission: openchat.commands.whispertoggle
+    reply:
+      description: Reply to the last private message received.
+      usage: /reply <message>
+      aliases: [ r ]
+      permission: openchat.commands.reply
+    ignore:
+      description: Ignore messages from a specific player.
+      usage: /ignore <player>
+      permission: openchat.commands.ignore
+    unignore:
+      description: Stop ignoring messages from a specific player.
+      usage: /unignore <player>
+      permission: openchat.commands.unignore
+    socialspy:
+      description: Toggle social spy to see private messages.
+      usage: /socialspy
+      permission: openchat.commands.socialspy

@@ -1,8 +1,9 @@
 General:
   NoPermission: "%prefix% &cNincs jogosultságod ehhez."
-  PlayerNotFound: "%prefix% &cNem sikerült megtalálni a következőt: '&e%player%&c'."
+  PlayerNotFound: "%prefix% &cNincs ilyen játékos."
   ChatMessage: "%prefix% &e%player% &amegemlített."
   ActionBarMessage: "&e%player% &amegemlített."
+  Error: "%prefix% &cHiba történt."
 
 Commands:
   ConsoleCaller: "%prefix% &cA parancsot csak játékosok használhatják."
@@ -48,6 +49,19 @@ Commands:
     Disabled: "%prefix% &aMár nem hagyod figyelmen kívül őt: &e%player%"
     AlreadyDisabled: "%prefix% &cNem hagyod figyelmen kívül őt: &e%player%"
     Self: "%prefix% &cNem hagyhatod figyelmen kívül saját magad."
+  Whisper:
+    Desc: "Privát üzenet küldése egy játékosnak."
+    Syntax: " [játékos] [üzenet]"
+    Usage: "%prefix% &aHasználat: &e/whisper [játékos] [üzenet]"
+  Reply:
+    Desc: "Válasz egy privát üzenetre."
+    Syntax: " [üzenet]"
+    Usage: "%prefix% &aHasználat: &e/reply [üzenet]"
+    NoOne: "%prefix% &cNincs kinek válaszolnod."
+  WhisperToggle:
+    Desc: "Privát üzenetek engedélyezése vagy letiltása."
+    Enabled: "%prefix% &aMostantól fogadsz privát üzeneteket."
+    Disabled: "%prefix% &cMár nem fogadsz privát üzeneteket."
   Mentions:
     Sound:
       Desc: "Beállítja az említés hangját."
@@ -95,7 +109,10 @@ OpProtection:
   Kick: "&cNem vagy jogosult operátor."
 
 Whisper:
+  Self: "%prefix% &cNem küldhetsz privát üzenetet saját magadnak."
   Sender: "&8[&bÉn &3➡ &b%receiver%&8] &7» &f%message%"
   Receiver: "&8[&b%sender% &3➡ &bÉn&8] &7» &f%message%"
+  Disabled: "%prefix% &e%player% &cnem fogad privát üzeneteket."
+
 
 FileVersion: 1
