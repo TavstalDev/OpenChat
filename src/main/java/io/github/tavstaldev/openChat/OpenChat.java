@@ -5,7 +5,7 @@ import io.github.tavstaldev.minecorelib.PluginBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.VersionUtils;
-import io.github.tavstaldev.openChat.commands.CommandChat;
+import io.github.tavstaldev.openChat.commands.*;
 import io.github.tavstaldev.openChat.database.IDatabase;
 import io.github.tavstaldev.openChat.database.MySqlDatabase;
 import io.github.tavstaldev.openChat.database.SqlLiteDatabase;
@@ -187,9 +187,14 @@ public final class OpenChat extends PluginBase {
 
         // Register commands.
         _logger.debug("Registering commands...");
-        var command = getCommand("openchat");
-        if (command != null) {
-            command.setExecutor(new CommandChat());
+        new CommandChat();
+        new CommandIgnore();
+        new CommandUnignore();
+        new CommandMentions();
+        if (config().privateMessagingEnabled) {
+            new CommandReply();
+            new CommandWhisper();
+            new CommandWhisperToggle();
         }
 
         // Register cache cleanup task.
