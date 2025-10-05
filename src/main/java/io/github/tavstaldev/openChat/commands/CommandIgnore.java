@@ -1,4 +1,58 @@
 package io.github.tavstaldev.openChat.commands;
 
-public class CommandIgnore {
+import io.github.tavstaldev.minecorelib.core.PluginLogger;
+import io.github.tavstaldev.minecorelib.utils.ChatUtils;
+import io.github.tavstaldev.openChat.OpenChat;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
+
+public class CommandIgnore implements CommandExecutor {
+    private final PluginLogger _logger = OpenChat.logger().withModule(CommandIgnore.class);
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        if (sender instanceof ConsoleCommandSender) {
+            _logger.info(ChatUtils.translateColors("Commands.ConsoleCaller", true).toString());
+            return true;
+        }
+        Player player = (Player) sender;
+
+        if (args.length != 1) {
+            OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Usage");
+            return true;
+        }
+
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+        if (target == null || !target.hasPlayedBefore()) {
+            OpenChat.Instance.sendLocalizedMsg(player, "General.PlayerNotFound", Map.of("player", args[0]));
+            return true;
+        }
+
+        var playerId = player.getUniqueId();
+        var targetId = target.getUniqueId();
+
+        if (playerId == targetId)
+        {
+            OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Self");
+            return true;
+        }
+
+        if (OpenChat.database().isPlayerIgnored(playerId, targetId))
+        {
+            OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.AlreadyEnabled", Map.of("player", args[0]));
+            return true;
+        }
+
+        OpenChat.database().addIgnoredPlayer(playerId, targetId);
+        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Enabled", Map.of("player", args[0]));
+        return true;
+    }
 }
