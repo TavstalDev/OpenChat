@@ -16,6 +16,17 @@ import java.util.Map;
 
 public class CommandIgnore implements CommandExecutor {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandIgnore.class);
+    @SuppressWarnings("FieldCanBeLocal")
+    private final String baseCommand = "ignore";
+
+    public CommandIgnore() {
+        var command = OpenChat.Instance.getCommand(baseCommand);
+        if (command == null) {
+            _logger.error("Could not get command /" + baseCommand + " from plugin.yml! Disabling command...");
+            return;
+        }
+        command.setExecutor(this);
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {

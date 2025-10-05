@@ -63,6 +63,15 @@ public class CommandMentions implements CommandExecutor {
             ))
     );
 
+    public CommandMentions() {
+        var command = OpenChat.Instance.getCommand(baseCommand);
+        if (command == null) {
+            _logger.error("Could not get command /" + baseCommand + " from plugin.yml! Disabling command...");
+            return;
+        }
+        command.setExecutor(this);
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (sender instanceof ConsoleCommandSender) {

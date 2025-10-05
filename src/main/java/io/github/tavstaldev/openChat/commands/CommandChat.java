@@ -51,6 +51,15 @@ public class CommandChat implements CommandExecutor {
         }
     };
 
+    public CommandChat() {
+        var command = OpenChat.Instance.getCommand(baseCommand);
+        if (command == null) {
+            _logger.error("Could not get command /" + baseCommand + " from plugin.yml! Disabling command...");
+            return;
+        }
+        command.setExecutor(this);
+    }
+
     /**
      * Handles the execution of commands.
      *
