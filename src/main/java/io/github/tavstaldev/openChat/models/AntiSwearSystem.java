@@ -27,7 +27,7 @@ public class AntiSwearSystem {
         Map<Character, String> characterMappings = getCharacterMappingsFromConfig();
 
         // Build regex patterns for banned words using character mappings.
-        for (String word : OpenChat.Config().getStringList("antiSwear.swearWords")) {
+        for (String word : OpenChat.config().getStringList("antiSwear.swearWords")) {
             StringBuilder regexWord = new StringBuilder();
             for (char c : word.toCharArray()) {
                 if (characterMappings.containsKey(c)) {
@@ -40,7 +40,7 @@ public class AntiSwearSystem {
         }
 
         // Combine all whitelist entries into a single regex pattern.
-        String combinedWhitelistRegex = "(" + String.join("|", OpenChat.Config().getStringList("antiSwear.whitelist")) + ")";
+        String combinedWhitelistRegex = "(" + String.join("|", OpenChat.config().getStringList("antiSwear.whitelist")) + ")";
         whitelistPattern = Pattern.compile(combinedWhitelistRegex, Pattern.CASE_INSENSITIVE);
 
         // Combine all banned words into a single regex pattern.
@@ -69,7 +69,7 @@ public class AntiSwearSystem {
      * @return A map of characters to their regex representations.
      */
     private Map<Character, String> getCharacterMappingsFromConfig() {
-        FileConfiguration config = OpenChat.Config();
+        FileConfiguration config = OpenChat.config();
         ConfigurationSection section = config.getConfigurationSection("antiSwear.characterMapping");
         Map<Character, String> mappings = new HashMap<>();
 

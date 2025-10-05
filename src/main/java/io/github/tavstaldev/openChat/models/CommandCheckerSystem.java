@@ -27,7 +27,7 @@ public class CommandCheckerSystem {
     public CommandCheckerSystem() {
         // Combine all whitelist entries into a single regex pattern.
         StringBuilder combinedPattern = new StringBuilder();
-        Set<String> entries = OpenChat.OCConfig().antiSpamCommandWhitelist;
+        Set<String> entries = OpenChat.config().antiSpamCommandWhitelist;
         if (!entries.isEmpty()) {
             for (String entry : entries) {
                 if (entry == null || entry.isEmpty()) continue;
@@ -39,7 +39,7 @@ public class CommandCheckerSystem {
                 combinedPattern.append("^").append(safeEntry).append("\\b");
             }
             if (!combinedPattern.isEmpty()) {
-                OpenChat.Logger().Debug("Compiled command whitelist regex: (" + combinedPattern.toString() + ")");
+                OpenChat.logger().debug("Compiled command whitelist regex: (" + combinedPattern.toString() + ")");
                 whitelistPattern = Pattern.compile("(" + combinedPattern.toString() + ")", Pattern.CASE_INSENSITIVE);
             }
             else
@@ -49,7 +49,7 @@ public class CommandCheckerSystem {
             whitelistPattern = null;
 
         combinedPattern = new StringBuilder();
-        entries = OpenChat.OCConfig().commandBlockerCommands;
+        entries = OpenChat.config().commandBlockerCommands;
         if (!entries.isEmpty()) {
             for (String entry : entries) {
                 if (entry == null || entry.isEmpty()) continue;
@@ -61,7 +61,7 @@ public class CommandCheckerSystem {
                 combinedPattern.append("^").append(safeEntry).append("\\b");
             }
             if (!combinedPattern.isEmpty()) {
-                OpenChat.Logger().Debug("Compiled command blocker regex: (" + combinedPattern.toString() + ")");
+                OpenChat.logger().debug("Compiled command blocker regex: (" + combinedPattern.toString() + ")");
                 blockedPattern = Pattern.compile("(" + combinedPattern.toString() + ")", Pattern.CASE_INSENSITIVE);
             }
             else
@@ -71,7 +71,7 @@ public class CommandCheckerSystem {
             blockedPattern = null;
 
         // Initialize tab completion groups from configuration.
-        var groupSection = OpenChat.OCConfig().getConfigurationSection("tabCompletion.entries");
+        var groupSection = OpenChat.config().getConfigurationSection("tabCompletion.entries");
         if (groupSection == null)
             return;
         for (var group : groupSection.getKeys(false)) {
@@ -103,7 +103,7 @@ public class CommandCheckerSystem {
         if (whitelistPattern == null) {
             return false;
         }
-        OpenChat.Logger().Debug("Checking command against whitelist: " + command);
+        OpenChat.logger().debug("Checking command against whitelist: " + command);
         return whitelistPattern.matcher(command).matches();
     }
 
@@ -117,7 +117,7 @@ public class CommandCheckerSystem {
         if (blockedPattern == null) {
             return false;
         }
-        OpenChat.Logger().Debug("Checking command against blocked list: " + command);
+        OpenChat.logger().debug("Checking command against blocked list: " + command);
         return blockedPattern.matcher(command).matches();
     }
 
@@ -128,7 +128,7 @@ public class CommandCheckerSystem {
      * @param completions The collection of available tab completions.
      */
     public void getTabCompletions(Player player, Collection<String> completions) {
-        var config = OpenChat.OCConfig();
+        var config = OpenChat.config();
         if (player.isOp() || player.hasPermission("*") || player.hasPermission(config.tabCompletionExemptPermission))
             return;
 
@@ -143,7 +143,7 @@ public class CommandCheckerSystem {
         {
             group = tabGroups.get("default");
             if (group == null) {
-                OpenChat.Logger().Warn("No default tab completion group found, and the player " + player.getName() + " does not belong to any group.");
+                OpenChat.logger().warn("No default tab completion group found, and the player " + player.getName() + " does not belong to any group.");
                 return;
             }
         }

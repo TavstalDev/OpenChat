@@ -18,7 +18,7 @@ public class AntiAdvertisementSystem {
      * Initializes the advertisement and whitelist patterns based on the plugin configuration.
      */
     public AntiAdvertisementSystem() {
-        OpenChatConfiguration _config = (OpenChatConfiguration) OpenChat.Config();
+        OpenChatConfiguration _config = (OpenChatConfiguration) OpenChat.config();
         adPattern = Pattern.compile(
                 _config.antiAdvertisementRegex, // Regex for detecting advertisements.
                 Pattern.CASE_INSENSITIVE // Case-insensitive matching.

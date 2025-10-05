@@ -2,6 +2,7 @@ package io.github.tavstaldev.openChat.models;
 
 import io.github.tavstaldev.openChat.OpenChat;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,11 +15,12 @@ public class PlayerCache {
     private final Player _player; // The player associated with this cache.
     private String lastChatMessage = ""; // The last chat message sent by the player.
     private int chatSpamCount = 0; // The number of consecutive duplicate chat messages.
-    public LocalDateTime chatMessageDelay; // The timestamp of the last allowed chat message.
+    private LocalDateTime chatMessageDelay; // The timestamp of the last allowed chat message.
     private String lastCommand = ""; // The last command executed by the player.
     private int commandSpamCount = 0; // The number of consecutive duplicate commands.
-    public LocalDateTime commandDelay; // The timestamp of the last allowed command.
-    public UUID lastRepliedTo = null; // The UUID of the last player who sent a private message to this player.
+    private LocalDateTime commandDelay; // The timestamp of the last allowed command.
+    private UUID lastRepliedTo = null; // The UUID of the last player who sent a private message to this player.
+    private LocalDateTime mentionCooldown; // The timestamp of the last mention notification.
 
     /**
      * Constructs a PlayerCache for the specified player.
@@ -92,12 +94,44 @@ public class PlayerCache {
      */
     public void setLastCommand(String command) {
         if (command.equalsIgnoreCase(lastCommand)) {
-            if (OpenChat.CommandCheckerSystem().isSpamWhitelisted(command))
+            if (OpenChat.commandCheckerSystem().isSpamWhitelisted(command))
                 return;
             commandSpamCount++;
         } else {
             this.lastCommand = command;
             commandSpamCount = 0;
         }
+    }
+
+    public LocalDateTime getChatMessageDelay() {
+        return chatMessageDelay;
+    }
+
+    public void setChatMessageDelay(LocalDateTime chatMessageDelay) {
+        this.chatMessageDelay = chatMessageDelay;
+    }
+
+    public LocalDateTime getCommandDelay() {
+        return commandDelay;
+    }
+
+    public void setCommandDelay(LocalDateTime commandDelay) {
+        this.commandDelay = commandDelay;
+    }
+
+    public @Nullable UUID getLastRepliedTo() {
+        return lastRepliedTo;
+    }
+
+    public void setLastRepliedTo(@Nullable UUID lastRepliedTo) {
+        this.lastRepliedTo = lastRepliedTo;
+    }
+
+    public LocalDateTime getMentionCooldown() {
+        return mentionCooldown;
+    }
+
+    public void setMentionCooldown(LocalDateTime mentionCooldown) {
+        this.mentionCooldown = mentionCooldown;
     }
 }
