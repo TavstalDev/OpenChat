@@ -1,5 +1,8 @@
 General:
   NoPermission: "%prefix% &cNincs jogosultságod ehhez."
+  PlayerNotFound: "%prefix% &cNem sikerült megtalálni a következőt: '&e%player%&c'."
+  ChatMessage: "%prefix% &e%player% &amegemlített."
+  ActionBarMessage: "&e%player% &amegemlített."
 
 Commands:
   ConsoleCaller: "%prefix% &cA parancsot csak játékosok használhatják."
@@ -9,12 +12,17 @@ Commands:
     InvalidPage: "%prefix% &cÉrvénytelen oldalszám."
   Help:
     Desc: "Információkat mutat a parancsokról."
-    Title: "&e=== &aOpenChat Súgó &e=== &aOldal &c%current_page%&a/&c%max_page% &e==="
-    Info: "   &c[] &7- &6Kötelező   &c<> &7- &6Opcionális"
-    Line: "&2/openchat %subcommand%&a%syntax% &8» &7%description%"
-    Bottom: "&e====== %previous_btn%&6%current_page%&e/&6%max_page%%next_btn% &e======"
-    PrevBtn: "&a<<< "
-    NextBtn: " &a>>>"
+    Title: "&8&m        &r &bOpen&3Chat &7Súgó &8&m    &r &7Oldal &3%current_page%&7/&3%max_page% &8&m        &r"
+    Info: |-
+      &r
+      &r  &c&l[]&r &8- &7Kötelező,   &e&l<>&r &8- &7Opcionális
+      &r
+    Line: "&r  &b/%command% %subcommand%&3%syntax% &8- &7%description%"
+    Bottom: |-
+      &r
+      &8&m                       &r %previous_btn%&3%current_page%&7/&3%max_page%%next_btn% &8&m                       &r
+    PrevBtn: "&b<< "
+    NextBtn: " &b>>"
   Version:
     Desc: "Megmutatja a plugin verzióját."
     Current: "%prefix% &aA OpenChat '&3%version%&a' verzióját használod."
@@ -26,6 +34,39 @@ Commands:
   Clear:
     Desc: "Kitörli a chatet."
     Done: "%prefix% &aA chat törölve."
+  Ignore:
+    Desc: "Egy játékos figyelmen kívül hagyása."
+    Syntax: " [játékos]"
+    Usage: "%prefix% &aHasználat: &e/ignore [játékos]"
+    Enabled: "%prefix% &aMostantól figyelmen kívül hagyod őt: &e%player%"
+    AlreadyEnabled: "%prefix% &cMár figyelmen kívül hagyod őt: &e%player%"
+    Self: "%prefix% &cNem hagyhatod figyelmen kívül saját magad."
+  Unignore:
+    Desc: "Egy játékos figyelmen kívül hagyásának megszüntetése."
+    Syntax: " [játékos]"
+    Usage: "%prefix% &aHasználat: &e/unignore [játékos]"
+    Disabled: "%prefix% &aMár nem hagyod figyelmen kívül őt: &e%player%"
+    AlreadyDisabled: "%prefix% &cNem hagyod figyelmen kívül őt: &e%player%"
+    Self: "%prefix% &cNem hagyhatod figyelmen kívül saját magad."
+  Mentions:
+    Sound:
+      Desc: "Beállítja az említés hangját."
+      Syntax: " [hang]"
+      Usage: "%prefix% &aHasználat: &e/mentions sound [hang]"
+      Invalid: "%prefix% &cA(z) &e%value%&c hang beállítás érvénytelen."
+      Set: "%prefix% &aAz említés hangját beállítottad erre: &e%value%&a."
+    Display:
+      Desc: "Beállítja az említés megjelenítésének módját."
+      Syntax: " [érték]"
+      Usage: "%prefix% &aHasználat: &e/mentions display [érték]"
+      Invalid: "%prefix% &cA(z) &e%value%&c megjelenítési beállítás érvénytelen."
+      Set: "%prefix% &aAz említés megjelenítését beállítottad erre: &e%value%&a."
+    Preference:
+      Desc: "Beállítja az említés preferenciáját."
+      Syntax: " [érték]"
+      Usage: "%prefix% &aHasználat: &e/mentions preference [érték]"
+      Invalid: "%prefix% &cA(z) &e%value%&c preferenciabeállítás érvénytelen."
+      Set: "%prefix% &aAz említés preferenciáját beállítottad erre: &e%value%&a."
 
 AntiSpam:
   ChatCooldown: "%prefix% &cKérlek várj %time% másodpercet mielőtt újra írsz a chatre."
