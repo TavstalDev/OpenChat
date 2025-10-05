@@ -20,10 +20,13 @@ public class CacheCleanTask extends BukkitRunnable {
             }
 
             var date = LocalDateTime.now();
-            if (playerCache.chatMessageDelay.isAfter(date))
+            if (playerCache.getChatMessageDelay().isAfter(date))
                 continue;
 
-            if (playerCache.commandDelay.isAfter(date))
+            if (playerCache.getCommandDelay().isAfter(date))
+                continue;
+
+            if (playerCache.getMentionCooldown().isAfter(date))
                 continue;
 
             PlayerCacheManager.remove(playerId);
