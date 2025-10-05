@@ -23,7 +23,9 @@ import java.util.Map;
  * Handles various subcommands such as help, version, reload, and clear.
  */
 public class CommandChat implements CommandExecutor {
-    private final PluginLogger _logger = OpenChat.Logger().WithModule(CommandChat.class);
+    private final PluginLogger _logger = OpenChat.logger().withModule(CommandChat.class);
+    @SuppressWarnings("FieldCanBeLocal")
+    private final String baseCommand = "openchat";
     private final List<SubCommandData> _subCommands = new ArrayList<>() {
         {
             // HELP
@@ -62,7 +64,7 @@ public class CommandChat implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         // Handle commands sent from the console
         if (sender instanceof ConsoleCommandSender) {
-            _logger.Info(ChatUtils.translateColors("Commands.ConsoleCaller", true).toString());
+            _logger.info(ChatUtils.translateColors("Commands.ConsoleCaller", true).toString());
             return true;
         }
 
@@ -113,7 +115,7 @@ public class CommandChat implements CommandExecutor {
                             OpenChat.Instance.sendLocalizedMsg(player, "Commands.Version.Outdated", Map.of("link", OpenChat.Instance.getDownloadUrl()));
                         }
                     }).exceptionally(e -> {
-                        _logger.Error("Failed to determine update status: " + e.getMessage());
+                        _logger.error("Failed to determine update status: " + e.getMessage());
                         return null;
                     });
                     return true;
@@ -207,24 +209,26 @@ public class CommandChat implements CommandExecutor {
                 continue;
             }
 
-            subCommand.send(OpenChat.Instance, player);
+            subCommand.send(OpenChat.Instance, player, baseCommand);
         }
 
         // Display navigation buttons for the help menu
-        String previousBtn = OpenChat.Instance.Localize(player, "Commands.Help.PrevBtn");
-        String nextBtn = OpenChat.Instance.Localize(player, "Commands.Help.NextBtn");
-        String bottomMsg = OpenChat.Instance.Localize(player, "Commands.Help.Bottom")
+        String previousBtn = OpenChat.Instance.localize(player, "Commands.Help.PrevBtn");
+        String nextBtn = OpenChat.Instance.localize(player, "Commands.Help.NextBtn");
+        String bottomMsg = OpenChat.Instance.localize(player, "Commands.Help.Bottom")
                 .replace("%current_page%", String.valueOf(page))
                 .replace("%max_page%", String.valueOf(maxPage));
 
         Map<String, Component> bottomParams = new HashMap<>();
         if (page > 1)
-            bottomParams.put("previous_btn", ChatUtils.translateColors(previousBtn, true).clickEvent(ClickEvent.runCommand("/openchat help " + (page - 1))));
+            bottomParams.put("previous_btn", ChatUtils.translateColors(previousBtn, true)
+                    .clickEvent(ClickEvent.runCommand(String.format("/%s help %s", baseCommand, page - 1))));
         else
             bottomParams.put("previous_btn", ChatUtils.translateColors(previousBtn, true));
 
         if (!reachedEnd && maxPage >= page + 1)
-            bottomParams.put("next_btn", ChatUtils.translateColors(nextBtn, true).clickEvent(ClickEvent.runCommand("/openchat help " + (page + 1))));
+            bottomParams.put("next_btn", ChatUtils.translateColors(nextBtn, true)
+                    .clickEvent(ClickEvent.runCommand(String.format("/%s help %s", baseCommand, page + 1))));
         else
             bottomParams.put("next_btn", ChatUtils.translateColors(nextBtn, true));
 
