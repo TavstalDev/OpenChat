@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class CommandWhisper implements CommandExecutor {
     @SuppressWarnings("FieldCanBeLocal")
@@ -46,7 +47,8 @@ public class CommandWhisper implements CommandExecutor {
             return true;
         }
 
-        var targetData = OpenChat.database().getPlayerData(target.getUniqueId());
+        var targetId = target.getUniqueId();
+        var targetData = OpenChat.database().getPlayerData(targetId);
         if (targetData.isEmpty()) {
             OpenChat.Instance.sendCommandReply(sender, "General.Error");
             return true;
@@ -57,25 +59,49 @@ public class CommandWhisper implements CommandExecutor {
             return true;
         }
 
-        String senderName = "&4Console";
+        String senderName;
+        UUID sourceId;
         if (sender instanceof Player senderPlayer) {
-            if (senderPlayer.getUniqueId().equals(target.getUniqueId())) {
+            var senderId = senderPlayer.getUniqueId();
+            if (senderId.equals(targetId)) {
                 OpenChat.Instance.sendCommandReply(sender, "Whisper.Self");
                 return true;
             }
 
-            if (OpenChat.database().isPlayerIgnored(target.getUniqueId(), senderPlayer.getUniqueId())) {
+            if (OpenChat.database().isPlayerIgnored(targetId, senderId)) {
                 OpenChat.Instance.sendCommandReply(sender, "Whisper.Disabled", Map.of("player", PlayerUtil.getPlayerPlainDisplayName(target)));
                 return true;
             }
             senderName = PlayerUtil.getPlayerPlainDisplayName(senderPlayer);
-            PlayerCacheManager.get(senderPlayer.getUniqueId()).setLastRepliedTo(target.getUniqueId());
-            PlayerCacheManager.get(target.getUniqueId()).setLastRepliedTo(senderPlayer.getUniqueId());
+            PlayerCacheManager.get(senderId).setLastRepliedTo(targetId);
+            PlayerCacheManager.get(targetId).setLastRepliedTo(senderId);
+            sourceId = senderId;
+        } else {
+            sourceId = null;
+            senderName = "&4Console";
         }
 
         String message = String.join(" ", args).substring(args[0].length()).trim();
         OpenChat.Instance.sendCommandReply(sender, "Whisper.Sender", Map.of("receiver", PlayerUtil.getPlayerPlainDisplayName(target), "message", message));
         OpenChat.Instance.sendLocalizedMsg(target, "Whisper.Receiver", Map.of("sender", senderName, "message", message));
+        if (OpenChat.config().privateMessagingSocialSpyEnabled) {
+            OpenChat.Instance.getServer().getOnlinePlayers().stream()
+                    // 1. Filter out the sender (if Player) and the receiver
+                    .filter(p -> {
+                        UUID pId = p.getUniqueId();
+                        return !pId.equals(targetId) && !pId.equals(sourceId);
+                    })
+                    // 2. Filter for players who have the spy permission
+                    .filter(p -> OpenChat.database().isSocialSpyEnabled(p))
+                    // 3. Process the remaining players
+                    .forEach(p -> {
+                        OpenChat.Instance.sendLocalizedMsg(p, "Whisper.Spy", Map.of(
+                                "sender", senderName,
+                                "receiver", PlayerUtil.getPlayerPlainDisplayName(target),
+                                "message", message
+                        ));
+                    });
+        }
         return true;
     }
 }

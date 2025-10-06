@@ -1,6 +1,5 @@
 package io.github.tavstaldev.openChat.commands;
 
-import com.cryptomorin.xseries.XSound;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.models.command.SubCommandData;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
@@ -8,6 +7,7 @@ import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.models.EMentionDisplay;
 import io.github.tavstaldev.openChat.models.EMentionPreference;
 import io.github.tavstaldev.openChat.util.SoundUtils;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
@@ -107,14 +107,14 @@ public class CommandMentions implements CommandExecutor {
                         return true;
                     }
 
-                    Optional<XSound> sound = SoundUtils.getSound(args[1]);
+                    Optional<Sound> sound = SoundUtils.getSound(args[1]);
                     if (sound.isEmpty()) {
                         OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Sound.Invalid", Map.of("value", args[1]));
                         return true;
                     }
 
                     var playerId = player.getUniqueId();
-                    String soundName = sound.get().name();
+                    String soundName = sound.get().name().asString();
                     var dataOpt = OpenChat.database().getPlayerData(playerId);
                     if (dataOpt.isEmpty()) {
                         OpenChat.Instance.sendLocalizedMsg(player, "General.Error");

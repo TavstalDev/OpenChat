@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class CommandReply implements CommandExecutor {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandReply.class);
@@ -47,7 +48,8 @@ public class CommandReply implements CommandExecutor {
             return true;
         }
 
-        PlayerCache cache = PlayerCacheManager.get(player.getUniqueId());
+        var sourceId = player.getUniqueId();
+        PlayerCache cache = PlayerCacheManager.get(sourceId);
         if (cache.getLastRepliedTo() == null) {
             OpenChat.Instance.sendCommandReply(sender, "Commands.Reply.NoOne");
             return true;
@@ -59,7 +61,8 @@ public class CommandReply implements CommandExecutor {
             return true;
         }
 
-        var targetData = OpenChat.database().getPlayerData(target.getUniqueId());
+        var targetId = target.getUniqueId();
+        var targetData = OpenChat.database().getPlayerData(targetId);
         if (targetData.isEmpty()) {
             OpenChat.Instance.sendCommandReply(sender, "General.Error");
             return true;
@@ -70,19 +73,39 @@ public class CommandReply implements CommandExecutor {
             return true;
         }
 
-        if (player.getUniqueId().equals(target.getUniqueId())) {
+        if (sourceId.equals(targetId)) {
             OpenChat.Instance.sendCommandReply(sender, "Whisper.Self");
             return true;
         }
 
-        if (OpenChat.database().isPlayerIgnored(target.getUniqueId(), player.getUniqueId())) {
+        if (OpenChat.database().isPlayerIgnored(targetId, sourceId)) {
             OpenChat.Instance.sendCommandReply(sender, "Whisper.Disabled", Map.of("player", PlayerUtil.getPlayerPlainDisplayName(target)));
             return true;
         }
 
         String message = String.join(" ", args).trim();
-        OpenChat.Instance.sendCommandReply(sender, "Whisper.Sender", Map.of("receiver", PlayerUtil.getPlayerPlainDisplayName(target), "message", message));
-        OpenChat.Instance.sendLocalizedMsg(target, "Whisper.Receiver", Map.of("sender", PlayerUtil.getPlayerPlainDisplayName(player), "message", message));
+        String targetName = PlayerUtil.getPlayerPlainDisplayName(target);
+        String sourceName = PlayerUtil.getPlayerPlainDisplayName(player);
+        OpenChat.Instance.sendCommandReply(sender, "Whisper.Sender", Map.of("receiver", targetName, "message", message));
+        OpenChat.Instance.sendLocalizedMsg(target, "Whisper.Receiver", Map.of("sender", sourceName, "message", message));
+        if (OpenChat.config().privateMessagingSocialSpyEnabled) {
+            OpenChat.Instance.getServer().getOnlinePlayers().stream()
+                    // 1. Filter out the sender (if Player) and the receiver
+                    .filter(p -> {
+                        UUID pId = p.getUniqueId();
+                        return !pId.equals(targetId) && !pId.equals(sourceId);
+                    })
+                    // 2. Filter for players who have the spy permission
+                    .filter(p -> OpenChat.database().isSocialSpyEnabled(p))
+                    // 3. Process the remaining players
+                    .forEach(p -> {
+                        OpenChat.Instance.sendLocalizedMsg(p, "Whisper.Spy", Map.of(
+                                "sender", sourceName,
+                                "receiver", targetName,
+                                "message", message
+                        ));
+                    });
+        }
         return true;
     }
 }
