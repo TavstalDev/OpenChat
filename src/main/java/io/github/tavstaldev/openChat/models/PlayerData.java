@@ -5,9 +5,11 @@ import java.util.UUID;
 public class PlayerData {
     private final UUID uuid;
 
-    private byte channel;
+    private boolean publicChatDisabled;
 
     private boolean whisperEnabled;
+
+    private boolean socialSpyEnabled;
 
     private String mentionSound;
 
@@ -15,10 +17,11 @@ public class PlayerData {
 
     private EMentionPreference mentionPreference;
 
-    public PlayerData(UUID uuid, byte channel, boolean whisperEnabled, String mentionSound, EMentionDisplay mentionDisplay, EMentionPreference mentionPreference) {
+    public PlayerData(UUID uuid, boolean publicChatDisabled, boolean whisperEnabled, boolean socialSpyEnabled, String mentionSound, EMentionDisplay mentionDisplay, EMentionPreference mentionPreference) {
         this.uuid = uuid;
-        this.channel = channel;
+        this.publicChatDisabled = publicChatDisabled;
         this.whisperEnabled = whisperEnabled;
+        this.socialSpyEnabled = socialSpyEnabled;
         this.mentionSound = mentionSound;
         this.mentionDisplay = mentionDisplay;
         this.mentionPreference = mentionPreference;
@@ -28,12 +31,12 @@ public class PlayerData {
         return uuid;
     }
 
-    public byte getChannel() {
-        return channel;
+    public boolean isPublicChatDisabled() {
+        return publicChatDisabled;
     }
 
-    public void setChannel(byte channel) {
-        this.channel = channel;
+    public void setPublicChatDisabled(boolean publicChatDisabled) {
+        this.publicChatDisabled = publicChatDisabled;
     }
 
     public boolean isWhisperEnabled() {
@@ -42,6 +45,14 @@ public class PlayerData {
 
     public void setWhisperEnabled(boolean whisperEnabled) {
         this.whisperEnabled = whisperEnabled;
+    }
+
+    public boolean isSocialSpyEnabled() {
+        return socialSpyEnabled;
+    }
+
+    public void setSocialSpyEnabled(boolean socialSpyEnabled) {
+        this.socialSpyEnabled = socialSpyEnabled;
     }
 
     public String getMentionSound() {

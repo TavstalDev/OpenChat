@@ -8,6 +8,7 @@ import io.github.tavstaldev.openChat.OpenChatConfiguration;
 import io.github.tavstaldev.openChat.models.EMentionDisplay;
 import io.github.tavstaldev.openChat.models.EMentionPreference;
 import io.github.tavstaldev.openChat.models.PlayerData;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
@@ -25,7 +26,7 @@ public class SqlLiteDatabase implements IDatabase {
     private OpenChatConfiguration _config;
     private final Cache<@NotNull UUID, PlayerData> _playerCache = Caffeine.newBuilder()
             .maximumSize(1000)
-            .expireAfterWrite(2, TimeUnit.MINUTES)
+            .expireAfterWrite(3, TimeUnit.MINUTES)
             .build();
     private final Cache<@NotNull UUID, Set<UUID>> _ignoredPlayerCache = Caffeine.newBuilder()
             .maximumSize(1000)
@@ -50,14 +51,14 @@ public class SqlLiteDatabase implements IDatabase {
 
     @Override
     public void update() {
-        addPlayerDataSql = String.format("INSERT INTO %s_players (PlayerId, Channel, WhisperEnabled, Sound, Display, Preference) " +
-                        "VALUES (?, ?, ?, ?, ?, ?);",
+        addPlayerDataSql = String.format("INSERT INTO %s_players (PlayerId, PublicChatDisabled, WhisperEnabled, SocialSpyEnabled, Sound, Display, Preference) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?);",
                 _config.storageTablePrefix);
 
         removePlayerDataSql = String.format("DELETE FROM %s_players WHERE PlayerId=?;",
                 _config.storageTablePrefix);
 
-        updatePlayerDataSql = String.format("UPDATE %s_players SET Channel=?, WhisperEnabled=?, Sound=?, Display=?, Preference=? " +
+        updatePlayerDataSql = String.format("UPDATE %s_players SET PublicChatDisabled=?, WhisperEnabled=?, SocialSpyEnabled=?, Sound=?, Display=?, Preference=? " +
                         "WHERE PlayerId=?;",
                 _config.storageTablePrefix);
 
@@ -97,8 +98,9 @@ public class SqlLiteDatabase implements IDatabase {
             // Players table
             String sql = String.format("CREATE TABLE IF NOT EXISTS %s_players (" +
                             "PlayerId VARCHAR(36) PRIMARY KEY, " +
-                            "Channel TINYINT NOT NULL," +
+                            "PublicChatDisabled BOOLEAN NOT NULL," +
                             "WhisperEnabled BOOLEAN NOT NULL," +
+                            "SocialSpyEnabled BOOLEAN NOT NULL," +
                             "Sound VARCHAR(200) NOT NULL, " +
                             "Display VARCHAR(32) NOT NULL, " +
                             "Preference VARCHAR(32) NOT NULL);",
@@ -119,20 +121,22 @@ public class SqlLiteDatabase implements IDatabase {
         }
     }
 
+    //#region Player Data Management
     @Override
     public void addPlayerData(UUID playerId) {
         try (Connection connection = CreateConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(addPlayerDataSql)) {
                 statement.setString(1, playerId.toString());
-                statement.setByte(2, (byte)0);
+                statement.setBoolean(2, false);
                 statement.setBoolean(3, true);
-                statement.setString(4, _config.mentionsDefaultSound);
-                statement.setString(5, _config.mentionsDefaultDisplay);
-                statement.setString(6, _config.mentionsDefaultPreference);
+                statement.setBoolean(4, false);
+                statement.setString(5, _config.mentionsDefaultSound);
+                statement.setString(6, _config.mentionsDefaultDisplay);
+                statement.setString(7, _config.mentionsDefaultPreference);
                 statement.executeUpdate();
             }
 
-            _playerCache.put(playerId, new PlayerData(playerId, (byte)0, true,
+            _playerCache.put(playerId, new PlayerData(playerId, false, true, false,
                     _config.mentionsDefaultSound,
                     EMentionDisplay.valueOf(_config.mentionsDefaultDisplay),
                     EMentionPreference.valueOf(_config.mentionsDefaultPreference)));
@@ -145,12 +149,13 @@ public class SqlLiteDatabase implements IDatabase {
     public void updatePlayerData(PlayerData newData) {
         try (Connection connection = CreateConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(updatePlayerDataSql)) {
-                statement.setByte(1, newData.getChannel());
+                statement.setBoolean(1, newData.isPublicChatDisabled());
                 statement.setBoolean(2, newData.isWhisperEnabled());
-                statement.setString(3, newData.getMentionSound());
-                statement.setString(4, newData.getMentionDisplay().name());
-                statement.setString(5, newData.getMentionPreference().name());
-                statement.setString(6, newData.getUuid().toString());
+                statement.setBoolean(3, newData.isSocialSpyEnabled());
+                statement.setString(4, newData.getMentionSound());
+                statement.setString(5, newData.getMentionDisplay().name());
+                statement.setString(6, newData.getMentionPreference().name());
+                statement.setString(7, newData.getUuid().toString());
                 statement.executeUpdate();
             }
 
@@ -188,8 +193,9 @@ public class SqlLiteDatabase implements IDatabase {
                     if (result.next()) {
                         data = new PlayerData(
                                 UUID.fromString(result.getString("PlayerId")),
-                                result.getByte("Channel"),
+                                result.getBoolean("PublicChatDisabled"),
                                 result.getBoolean("WhisperEnabled"),
+                                result.getBoolean("SocialSpyEnabled"),
                                 result.getString("Sound"),
                                 EMentionDisplay.valueOf(result.getString("Display")),
                                 EMentionPreference.valueOf(result.getString("Preference"))
@@ -208,6 +214,28 @@ public class SqlLiteDatabase implements IDatabase {
         return Optional.ofNullable(data);
     }
 
+    @Override
+    public boolean isPublicChatDisabled(UUID playerId) {
+        var data = _playerCache.getIfPresent(playerId);
+        if (data != null) {
+            return data.isPublicChatDisabled();
+        }
+        return getPlayerData(playerId).map(PlayerData::isPublicChatDisabled).orElse(false);
+    }
+
+    @Override
+    public boolean isSocialSpyEnabled(Player player) {
+        var playerId = player.getUniqueId();
+        var data = _playerCache.getIfPresent(playerId);
+        if (data != null) {
+            return data.isSocialSpyEnabled() && player.hasPermission("openchat.socialspy");
+        }
+        return getPlayerData(playerId).map(PlayerData::isSocialSpyEnabled).orElse(false) && player.hasPermission("openchat.socialspy");
+    }
+
+    //#endregion
+
+    //#region Ignore Management
     @Override
     public void addIgnoredPlayer(UUID playerId, UUID ignoredPlayerId) {
         try (Connection connection = CreateConnection()) {
@@ -271,4 +299,5 @@ public class SqlLiteDatabase implements IDatabase {
         _ignoredPlayerCache.put(playerId, data);
         return data.contains(ignoredPlayerId);
     }
+    //#endregion
 }

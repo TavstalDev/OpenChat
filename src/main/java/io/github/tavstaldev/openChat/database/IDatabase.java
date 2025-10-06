@@ -1,6 +1,7 @@
 package io.github.tavstaldev.openChat.database;
 
 import io.github.tavstaldev.openChat.models.PlayerData;
+import org.bukkit.entity.Player;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,10 @@ public interface IDatabase {
     void removePlayerData(UUID playerId);
 
     Optional<PlayerData> getPlayerData(UUID playerId);
+
+    boolean isPublicChatDisabled(UUID playerId);
+
+    boolean isSocialSpyEnabled(Player player);
 
 
     void addIgnoredPlayer(UUID playerId, UUID ignoredPlayerId);
