@@ -1,11 +1,12 @@
 package io.github.tavstaldev.openChat.util;
 
-import com.cryptomorin.xseries.XSound;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.EMentionDisplay;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -88,17 +89,21 @@ public class MentionUtils {
         String actionBarMessage = OpenChat.Instance.getTranslator().localize(player, "General.ActionBarMessage", Map.of("player", mentioner.getName()));
         float volume = (float)OpenChat.config().mentionsVolume;
         float pitch = (float)OpenChat.config().mentionsPitch;
-        XSound sound;
-        Optional<XSound> soundResult = SoundUtils.getSound(soundKey);
+        Sound sound;
+        Optional<Sound> soundResult = SoundUtils.getSound(soundKey, volume, pitch);
         // Fallback sound if not found
-        sound = soundResult.orElse(XSound.ENTITY_PLAYER_LEVELUP);
-
+        sound = soundResult.orElse(
+                Sound.sound(Key.key("entity.player.levelup"),
+                Sound.Source.MASTER,
+                volume,
+                pitch
+        ));
         switch (display) {
             case ALL: {
                 OpenChat.Instance.sendLocalizedMsg(player, "General.ChatMessage", Map.of("player", mentioner.getName()));
                 player.sendActionBar(ChatUtils.translateColors(actionBarMessage, true));
                 if (!isSilent)
-                    sound.play(player, volume, pitch);
+                    player.playSound(sound);
                 break;
             }
             case ONLY_CHAT: {
@@ -107,7 +112,7 @@ public class MentionUtils {
             }
             case ONLY_SOUND: {
                 if (!isSilent)
-                    sound.play(player, volume, pitch);
+                    player.playSound(sound);
                 break;
             }
             case ONLY_ACTIONBAR: {
@@ -117,7 +122,7 @@ public class MentionUtils {
             case CHAT_AND_SOUND: {
                 OpenChat.Instance.sendLocalizedMsg(player, "General.ChatMessage", Map.of("player", mentioner.getName()));
                 if (!isSilent)
-                    sound.play(player, volume, pitch);
+                    player.playSound(sound);
                 break;
             }
             case CHAT_AND_ACTIONBAR: {
@@ -128,7 +133,7 @@ public class MentionUtils {
             case ACTIONBAR_AND_SOUND: {
                 player.sendActionBar(ChatUtils.translateColors(actionBarMessage, true));
                 if (!isSilent)
-                    sound.play(player, volume, pitch);
+                    player.playSound(sound);
                 break;
             }
         }

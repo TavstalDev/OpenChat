@@ -1,8 +1,9 @@
 package io.github.tavstaldev.openChat.util;
 
-import com.cryptomorin.xseries.XSound;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.openChat.OpenChat;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -16,20 +17,29 @@ public class SoundUtils {
     /** Logger instance for logging messages related to SoundUtils. */
     private static final PluginLogger _logger = OpenChat.logger().withModule(SoundUtils.class);
 
-    /**
-     * Retrieves an XSound object based on the provided sound name.
-     *
-     * @param name The name of the sound to retrieve. Must not be null.
-     * @return An Optional containing the XSound object if found, or an empty Optional if the name is "none" or invalid.
-     */
-    public static Optional<XSound> getSound(@NotNull String name) {
+    public static Optional<Sound> getSound(@NotNull String name) {
+        return  getSound(name, 1.0f, 1.0f);
+    }
+
+    public static Optional<Sound> getSound(@NotNull String name, float volume, float pitch) {
+        @SuppressWarnings("PatternValidation")
+        String key = name.toLowerCase(Locale.ROOT);
         try {
-            String key = name.toLowerCase(Locale.ROOT);
             // Fixes null pointer exception
             if ("none".equalsIgnoreCase(key))
                 return Optional.empty();
 
-            return XSound.of(key);
+            if (key.contains("_"))
+                key = key.replace("_", ".");
+
+            @SuppressWarnings("PatternValidation")
+            Key soundKey = Key.key(key);
+            return Optional.of(Sound.sound(
+                    soundKey,
+                    Sound.Source.MASTER,
+                    volume,
+                    pitch
+            ));
         }
         catch (Exception ex) {
             _logger.debug("Failed to get sound for name: " + name);

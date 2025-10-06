@@ -66,8 +66,6 @@ dependencies {
     implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
     // SQL caching
     implementation("com.github.ben-manes.caffeine:caffeine:${caffeineVersion}")
-    // XSeries
-    implementation("com.github.cryptomorin:XSeries:${xseriesVersion}")
 }
 
 // Disable the default JAR task
@@ -88,7 +86,6 @@ tasks.shadowJar {
 
     // Relocate packages to avoid conflicts
     relocate("com.zaxxer.hikari", "${projectPackageName}.shadow.hikari")
-    relocate("com.cryptomorin.xseries", "${projectPackageName}.shadow.xseries")
     relocate("com.github.benmanes.caffeine", "${projectPackageName}.shadow.caffeine")
 }
 
