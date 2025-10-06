@@ -42,7 +42,7 @@ public class CommandWhisper implements CommandExecutor {
         }
 
         Player target = OpenChat.Instance.getServer().getPlayerExact(args[0]);
-        if (target == null || !target.isOnline() || VanishUtil.isVanished(target)) {
+        if (target == null || !target.isOnline() || (VanishUtil.isVanished(target) && !sender.hasPermission(OpenChat.config().privateMessagingVanishBypassPermission))) {
             OpenChat.Instance.sendCommandReply(sender, "General.PlayerNotFound", Map.of("player", args[0]));
             return true;
         }

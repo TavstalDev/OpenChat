@@ -56,7 +56,7 @@ public class CommandReply implements CommandExecutor {
         }
 
         Player target = OpenChat.Instance.getServer().getPlayer(cache.getLastRepliedTo());
-        if (target == null || !target.isOnline() || VanishUtil.isVanished(target)) {
+        if (target == null || !target.isOnline() || (VanishUtil.isVanished(target) && !sender.hasPermission(OpenChat.config().privateMessagingVanishBypassPermission))) {
             OpenChat.Instance.sendCommandReply(sender, "General.PlayerNotFound", Map.of("player", args[0]));
             return true;
         }

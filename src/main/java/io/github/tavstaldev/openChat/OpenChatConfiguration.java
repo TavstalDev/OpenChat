@@ -63,6 +63,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public boolean privateMessagingEnabled;
     public boolean privateMessagingSocialSpyEnabled;
     public String privateMessagingSocialSpyPermission;
+    public String privateMessagingVanishBypassPermission;
 
     // Custom Chat
     public boolean customChatEnabled;
@@ -905,6 +906,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
         privateMessagingEnabled = resolveGet("privateMessaging.enabled", true);
         privateMessagingSocialSpyEnabled = resolveGet("privateMessaging.socialSpyEnabled", true);
         privateMessagingSocialSpyPermission = resolveGet("privateMessaging.socialSpyPermission", "openchat.socialspy");
+        privateMessagingVanishBypassPermission = resolveGet("privateMessaging.vanishBypassPermission", "openchat.bypass.vanish");
 
         // Custom Chat
         customChatEnabled = resolveGet("customChat.enabled", false);
