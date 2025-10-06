@@ -61,9 +61,13 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
     // Private Messaging
     public boolean privateMessagingEnabled;
+    public boolean privateMessagingSocialSpyEnabled;
+    public String privateMessagingSocialSpyPermission;
 
     // Custom Chat
     public boolean customChatEnabled;
+    public int customChatLocalChatDistance;
+    public String customChatLocalChatExemptPermission;
     public String customChatFormat;
     public String customChatShoutFormat;
     public String customChatQuestionFormat;
@@ -899,9 +903,13 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
         // Private Messaging
         privateMessagingEnabled = resolveGet("privateMessaging.enabled", true);
+        privateMessagingSocialSpyEnabled = resolveGet("privateMessaging.socialSpyEnabled", true);
+        privateMessagingSocialSpyPermission = resolveGet("privateMessaging.socialSpyPermission", "openchat.socialspy");
 
         // Custom Chat
         customChatEnabled = resolveGet("customChat.enabled", false);
+        customChatLocalChatDistance = resolveGet("customChat.localChatDistance", 200);
+        customChatLocalChatExemptPermission = resolveGet("customChat.localChatExemptPermission", "openchat.bypass.localchat");
         customChatFormat = resolveGet("customChat.format", "<{player}> {message}");
         customChatShoutEnabled = resolveGet("customChat.shoutEnabled", true);
         customChatShoutFormat = resolveGet("customChat.shoutFormat", "[SHOUT] <{player}> {message}");
