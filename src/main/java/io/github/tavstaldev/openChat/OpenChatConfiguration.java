@@ -169,7 +169,6 @@ public class OpenChatConfiguration extends ConfigurationBase {
         resolveGet("antiSwear.characterMapping", characterMappings);
         //#region Swear words
         resolveGet("antiSwear.swearWords", new String[]{
-                "ass",
                 "asshole",
                 "bitch",
                 "bastard",
@@ -695,7 +694,6 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "anfetamin",
                 "joint",
                 "meth",
-                "eki",
                 "marihuana",
                 "marihónaja",
                 "metamphetamine",
