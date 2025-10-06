@@ -62,6 +62,14 @@ Commands:
     Desc: "Privát üzenetek engedélyezése vagy letiltása."
     Enabled: "%prefix% &aMostantól fogadsz privát üzeneteket."
     Disabled: "%prefix% &cMár nem fogadsz privát üzeneteket."
+  SocialSpy:
+    Desc: "Engedélyezi vagy letiltja, hogy lásd más játékosok privát üzeneteit."
+    Enabled: "%prefix% &aMostantól látod más játékosok privát üzeneteit."
+    Disabled: "%prefix% &cMár nem látod más játékosok privát üzeneteit."
+  PublicChat:
+    Desc: "Be- vagy kikapcsolja a nyilvános chatet."
+    Enabled: "%prefix% &aMostantól látod a nyilvános chatet."
+    Disabled: "%prefix% &cMár nem látod a nyilvános chatet."
   Mentions:
     Sound:
       Desc: "Beállítja az említés hangját."
@@ -112,6 +120,7 @@ Whisper:
   Self: "%prefix% &cNem küldhetsz privát üzenetet saját magadnak."
   Sender: "&8[&bÉn &3➡ &b%receiver%&8] &7» &f%message%"
   Receiver: "&8[&b%sender% &3➡ &bÉn&8] &7» &f%message%"
+  Spy: "&8(&c<hover:show_text:'&cSocial Spy'>👁</hover>&8) &8[&b%sender% &3➡ &b%receiver%&8] &7» &f%message%"
   Disabled: "%prefix% &e%player% &cnem fogad privát üzeneteket."
 
 
