@@ -19,6 +19,7 @@ import org.bukkit.plugin.Plugin;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +54,8 @@ public class ChatEventListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onChat(AsyncPlayerChatEvent event) {
         Player source = event.getPlayer(); // The player who sent the message.
-        PlayerCache cache = PlayerCacheManager.get(source.getUniqueId()); // Retrieve the player's cache.
+        var sourceId = source.getUniqueId();
+        PlayerCache cache = PlayerCacheManager.get(sourceId); // Retrieve the player's cache.
         String rawMessage = event.getMessage(); // The raw chat message.
         cache.setLastChatMessage(rawMessage); // Store the last chat message in the cache.
         OpenChatConfiguration config = OpenChat.config(); // Retrieve the plugin configuration.
@@ -64,10 +66,11 @@ public class ChatEventListener implements Listener {
         // Anti-spam
         if (config.antiSpamEnabled && !source.hasPermission(config.antiSpamExemptPermission)) {
             // Feature: Chat cooldown
-            if (LocalDateTime.now().isBefore(cache.getChatMessageDelay())) {
+            var chatCooldown = cache.getChatMessageDelay();
+            if (LocalDateTime.now().isBefore(chatCooldown)) {
                 event.setCancelled(true);
                 // The +1 ensures that it doesn't display 0 seconds remaining when the cooldown is about to expire
-                OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.ChatCooldown", Map.of("time", String.valueOf(cache.getChatMessageDelay().getSecond() - LocalDateTime.now().getSecond() + 1)));
+                OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.ChatCooldown", Map.of("time", String.valueOf(chatCooldown.getSecond() - LocalDateTime.now().getSecond() + 1)));
                 for (String cmd : config.antiSpamExecuteCommand) {
                     Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
@@ -150,13 +153,75 @@ public class ChatEventListener implements Listener {
             return;
         }
         String chatFormat = config.customChatFormat;
+        boolean forceGlobal = false;
         if (config.customChatShoutEnabled && source.hasPermission(config.customChatShoutPermission) && rawMessage.startsWith(config.customChatShoutPrefix)) {
             chatFormat = config.customChatShoutFormat;
             rawMessage = rawMessage.substring(1); // Remove the shout prefix
+            forceGlobal = true;
         } else if (config.customChatQuestionEnabled && source.hasPermission(config.customChatQuestionPermission) && rawMessage.startsWith(config.customChatQuestionPrefix)) {
             chatFormat = config.customChatQuestionFormat;
             rawMessage = rawMessage.substring(1); // Remove the question prefix
+            forceGlobal = true;
         }
+
+        // Remove recipient players who have ignored the sender or disabled public chat
+        if (!(forceGlobal || source.hasPermission(config.customChatLocalChatExemptPermission))) {
+            if (config.customChatLocalChatDistance > 0) {
+                event.getRecipients().removeIf(recipient -> {
+                    UUID recipientId = recipient.getUniqueId();
+                    // 0. Never remove the sender themselves
+                    if (recipientId.equals(sourceId)) {
+                        return false;
+                    }
+
+                    // 1. Never remove if the recipient has social spy enabled
+                    if (OpenChat.database().isSocialSpyEnabled(recipient)) {
+                        return false;
+                    }
+
+                    // 2. Always remove if the recipient has ignored the sender
+                    if (OpenChat.database().isPlayerIgnored(recipientId, sourceId)) {
+                        return true;
+                    }
+
+                    // 3, Remove if not in the same world
+                    if (!recipient.getWorld().getUID().equals(source.getWorld().getUID())) {
+                        return true;
+                    }
+
+                    // 4. Remove if public chat is disabled
+                    if (OpenChat.database().isPublicChatDisabled(recipientId)) {
+                        return true;
+                    }
+
+                    // 4. Remove if public chat is disabled AND the recipient is outside the local chat distance
+                    var distance = Math.abs(recipient.getLocation().distance(source.getLocation()));
+                    return distance > config.customChatLocalChatDistance;
+                });
+            } else {
+                event.getRecipients().removeIf(recipient -> {
+                    UUID recipientId = recipient.getUniqueId();
+                    // 0. Never remove the sender themselves
+                    if (recipientId.equals(sourceId)) {
+                        return false;
+                    }
+
+                    // 1. Never remove if the recipient has social spy enabled
+                    if (OpenChat.database().isSocialSpyEnabled(recipient)) {
+                        return false;
+                    }
+
+                    // 2. Remove if public chat is disabled
+                    if (OpenChat.database().isPublicChatDisabled(recipientId)) {
+                        return true;
+                    }
+
+                    // 3. Remove if the recipient has ignored the sender
+                    return OpenChat.database().isPlayerIgnored(recipient.getUniqueId(), sourceId);
+                });
+            }
+        }
+
         chatFormat = PlaceholderAPI.setPlaceholders(source, chatFormat);
         if (!source.hasPermission(config.customChatHexRichTextPermission)) {
             rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
