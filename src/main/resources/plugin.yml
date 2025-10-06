@@ -111,3 +111,8 @@ commands:
       description: Toggle social spy to see private messages.
       usage: /socialspy
       permission: openchat.commands.socialspy
+    chattoggle:
+      description: Toggle public chat visibility.
+      usage: /chattoggle
+      aliases: [ togglechat, pubicchat ]
+      permission: openchat.commands.chat
