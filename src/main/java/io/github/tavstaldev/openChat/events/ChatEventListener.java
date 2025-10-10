@@ -53,6 +53,9 @@ public class ChatEventListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGH)
     public void onChat(AsyncPlayerChatEvent event) {
+        if (event.isCancelled())
+            return;
+
         Player source = event.getPlayer(); // The player who sent the message.
         var sourceId = source.getUniqueId();
         PlayerCache cache = PlayerCacheManager.get(sourceId); // Retrieve the player's cache.
