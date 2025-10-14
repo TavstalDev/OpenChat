@@ -51,7 +51,7 @@ public class ChatEventListener implements Listener {
      *
      * @param event The chat event triggered when a player sends a message.
      */
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled())
             return;
