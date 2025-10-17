@@ -91,7 +91,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
     @Override
     protected void loadDefaults() {
         // General
-        locale = resolveGet("locale", "hun");
+        locale = resolveGet("locale", "eng");
         usePlayerLocale = resolveGet("usePlayerLocale", true);
         checkForUpdates = resolveGet("checkForUpdates", true);
         debug = resolveGet("debug", false);
@@ -156,7 +156,204 @@ public class OpenChatConfiguration extends ConfigurationBase {
         antiCapsExemptPermission = resolveGet("antiCaps.exemptPermission", "openchat.bypass.anticaps");
         antiCapsExecuteCommand = new LinkedHashSet<>(resolveGet("antiCaps.executeCommand", List.of("kick {player} Please do not spam")));
 
-        // Anto-swear
+        // OP-Protection
+        opProtectionEnabled = resolveGet("opProtection.enabled", false);
+        opProtectionOperators = new LinkedHashSet<>(resolveGet("opProtection.operators", List.of(
+                "Steve",
+                "Alex",
+                "Tavstal"
+        )));
+
+        // Private Messaging
+        privateMessagingEnabled = resolveGet("privateMessaging.enabled", true);
+        privateMessagingSocialSpyEnabled = resolveGet("privateMessaging.socialSpyEnabled", true);
+        privateMessagingSocialSpyPermission = resolveGet("privateMessaging.socialSpyPermission", "openchat.socialspy");
+        privateMessagingVanishBypassPermission = resolveGet("privateMessaging.vanishBypassPermission", "openchat.bypass.vanish");
+
+        // Custom Chat
+        customChatEnabled = resolveGet("customChat.enabled", false);
+        customChatLocalChatDistance = resolveGet("customChat.localChatDistance", 200);
+        customChatLocalChatExemptPermission = resolveGet("customChat.localChatExemptPermission", "openchat.bypass.localchat");
+        customChatFormat = resolveGet("customChat.format", "<{player}> {message}");
+        customChatShoutEnabled = resolveGet("customChat.shoutEnabled", true);
+        customChatShoutFormat = resolveGet("customChat.shoutFormat", "[SHOUT] <{player}> {message}");
+        customChatShoutPermission = resolveGet("customChat.shoutPermission", "openchat.chat.shout");
+        customChatShoutPrefix = resolveGet("customChat.shoutPrefix", "!");
+        customChatQuestionEnabled = resolveGet("customChat.questionEnabled", true);
+        customChatQuestionFormat = resolveGet("customChat.questionFormat", "[QUESTION] <{player}> {message}");
+        customChatQuestionPermission = resolveGet("customChat.questionPermission", "openchat.chat.question");
+        customChatQuestionPrefix = resolveGet("customChat.questionPrefix", "?");
+        customChatLegacyRichTextPermission = resolveGet("customChat.legacyRichTextPermission", "openchat.chat.color");
+        customChatHexRichTextPermission = resolveGet("customChat.hexRichTextPermission", "openchat.chat.hexcolor");
+
+        // Mentions
+        mentionsEnabled = resolveGet("mentions.enabled", true);
+        mentionsDefaultDisplay = resolveGet("mentions.defaultDisplay", "ALL");
+        mentionsDefaultPreference = resolveGet("mentions.defaultPreference", "ALWAYS");
+        mentionsDefaultSound = resolveGet("mentions.defaultSound", "ENTITY_PLAYER_LEVELUP");
+        mentionsVolume = resolveGet("mentions.volume", 1.0);
+        mentionsPitch = resolveGet("mentions.pitch", 1.0);
+        mentionsCooldown = resolveGet("mentions.mentionCooldown", 3);
+        mentionsLimitPerMessage = resolveGet("mentions.maxMentionsPerMessage", 3);
+        mentionsAllowSelfMention = resolveGet("mentions.allowSelfMention", true);
+
+        // Command Blocker
+        commandBlockerEnabled = resolveGet("commandBlocker.enabled", true);
+        commandBlockerEnableBypass = resolveGet("commandBlocker.enableBypass", true);
+        commandBlockerBypassPermission = resolveGet("commandBlocker.bypassPermission", "openchat.bypass.commandblocker");
+        commandBlockerCommands = new LinkedHashSet<>(resolveGet("commandBlocker.commands", List.of(
+                "/?",
+                "/version",
+                "/ver",
+                "/icanhasbukkit",
+                "/about",
+                "/pl",
+                "/plugins",
+                "/bukkit:pl",
+                "/bukkit:plugins",
+                "/bukkit:version",
+                "/bukkit:ver",
+                "/bukkit:about",
+                "/bukkit:icanhasbukkit",
+                "/bukkit: null",
+                "/minecraft: null",
+                "/minecraft:me",
+                "/minecraft:tell",
+                "/minecraft",
+                "/minecraft:op",
+                "/minecraft:pardon-ip",
+                "/minecraft:pardon",
+                "/calculate",
+                "//calculate",
+                "//eval",
+                "/eval",
+                "//evalaute",
+                "/evaluate",
+                "//solve",
+                "/solve",
+                "/reload",
+                "/stop",
+                "/op",
+                "/execute",
+                "/sudo",
+                "/say",
+                "/pt bc",
+                "/bc"
+        )));
+
+
+        // Tab completion
+        tabCompletionEnabled = resolveGet("tabCompletion.enabled", true);
+        tabCompletionExemptPermission = resolveGet("tabCompletion.exemptPermission", "openchat.bypass.tabcompletion");
+        if (get("tabCompletion.entries") == null) {
+            var tabEntriesDefault = new LinkedHashMap<String, Object>();
+            var defaultEntries = new LinkedHashMap<String, Object>();
+            defaultEntries.put("priority", 0);
+            defaultEntries.put("commands", List.of(
+                    "/is",
+                    "/island",
+                    "/sellwands",
+                    "/spawners",
+                    "/warp",
+                    "/warps",
+                    "/team",
+                    "/balance",
+                    "/bal",
+                    "/home",
+                    "/sethome",
+                    "/delhome",
+                    "/ignore",
+                    "/emojis",
+                    "/kit",
+                    "/kits",
+                    "/list",
+                    "/msg",
+                    "/msgtoggle",
+                    "/pay",
+                    "/realname",
+                    "/spawn",
+                    "/suicide",
+                    "/tpa",
+                    "/tpaccept",
+                    "/tpdeny",
+                    "/tpahere",
+                    "/tptoggle",
+                    "/pwarp",
+                    "/playerwarps",
+                    "/pw",
+                    "/ah",
+                    "/auction",
+                    "/rewards",
+                    "/coinshop",
+                    "/help",
+                    "/tutorial",
+                    "/serverguide",
+                    "/worlds",
+                    "/rtp",
+                    "/toolskins",
+                    "/leaderboards",
+                    "/lottery",
+                    "/deliveries",
+                    "/levels",
+                    "/shop",
+                    "/jobs",
+                    "/quests",
+                    "/skills",
+                    "/factories",
+                    "/cosmetics",
+                    "/teams",
+                    "/dailyquests",
+                    "/tags",
+                    "/settings",
+                    "/discord",
+                    "/store",
+                    "/vote",
+                    "/website",
+                    "/referral",
+                    "/rules",
+                    "/nick",
+                    "/back",
+                    "/recipe",
+                    "/feed",
+                    "/disposal",
+                    "/near",
+                    "/craft",
+                    "/enderchest",
+                    "/ptime",
+                    "/heal",
+                    "/fly",
+                    "/pweather",
+                    "/repair",
+                    "/invsee",
+                    "/sellall",
+                    "/sellhand",
+                    "/enchants"
+            ));
+
+            var staffEntries = new LinkedHashMap<String, Object>();
+            staffEntries.put("priority", 1);
+            staffEntries.put("extend", "default");
+            staffEntries.put("commands", List.of(
+                    "/ban",
+                    "/banip",
+                    "/unban",
+                    "/unbanip",
+                    "/pardon",
+                    "/pardonip",
+                    "/banlist",
+                    "/changereason",
+                    "/check",
+                    "/history",
+                    "/kick",
+                    "/mute"
+            ));
+
+            tabEntriesDefault.put("default", defaultEntries);
+            tabEntriesDefault.put("staff", staffEntries);
+            resolve("tabCompletion.entries", tabEntriesDefault);
+        }
+
+        // Anti-swear
         antiSwearEnabled = resolveGet("antiSwear.enabled", true);
         Map<Character, String> characterMappings = new LinkedHashMap<>();
         characterMappings.put('a', "[aA@4]");
@@ -732,202 +929,5 @@ public class OpenChatConfiguration extends ConfigurationBase {
         //#endregion
         antiSwearExemptPermission = resolveGet("antiSwear.exemptPermission", "openchat.bypass.antiswear");
         antiSwearExecuteCommand = new LinkedHashSet<>(resolveGet("antiSwear.executeCommand", List.of("kick {player} Please do not swear")));
-
-        // Command Blocker
-        commandBlockerEnabled = resolveGet("commandBlocker.enabled", true);
-        commandBlockerEnableBypass = resolveGet("commandBlocker.enableBypass", true);
-        commandBlockerBypassPermission = resolveGet("commandBlocker.bypassPermission", "openchat.bypass.commandblocker");
-        commandBlockerCommands = new LinkedHashSet<>(resolveGet("commandBlocker.commands", List.of(
-                "/?",
-                "/version",
-                "/ver",
-                "/icanhasbukkit",
-                "/about",
-                "/pl",
-                "/plugins",
-                "/bukkit:pl",
-                "/bukkit:plugins",
-                "/bukkit:version",
-                "/bukkit:ver",
-                "/bukkit:about",
-                "/bukkit:icanhasbukkit",
-                "/bukkit: null",
-                "/minecraft: null",
-                "/minecraft:me",
-                "/minecraft:tell",
-                "/minecraft",
-                "/minecraft:op",
-                "/minecraft:pardon-ip",
-                "/minecraft:pardon",
-                "/calculate",
-                "//calculate",
-                "//eval",
-                "/eval",
-                "//evalaute",
-                "/evaluate",
-                "//solve",
-                "/solve",
-                "/reload",
-                "/stop",
-                "/op",
-                "/execute",
-                "/sudo",
-                "/say",
-                "/pt bc",
-                "/bc"
-                )));
-
-
-        // Tab completion
-        tabCompletionEnabled = resolveGet("tabCompletion.enabled", true);
-        tabCompletionExemptPermission = resolveGet("tabCompletion.exemptPermission", "openchat.bypass.tabcompletion");
-        if (get("tabCompletion.entries") == null) {
-            var tabEntriesDefault = new LinkedHashMap<String, Object>();
-            var defaultEntries = new LinkedHashMap<String, Object>();
-            defaultEntries.put("priority", 0);
-            defaultEntries.put("commands", List.of(
-                    "/is",
-                    "/island",
-                    "/sellwands",
-                    "/spawners",
-                    "/warp",
-                    "/warps",
-                    "/team",
-                    "/balance",
-                    "/bal",
-                    "/home",
-                    "/sethome",
-                    "/delhome",
-                    "/ignore",
-                    "/emojis",
-                    "/kit",
-                    "/kits",
-                    "/list",
-                    "/msg",
-                    "/msgtoggle",
-                    "/pay",
-                    "/realname",
-                    "/spawn",
-                    "/suicide",
-                    "/tpa",
-                    "/tpaccept",
-                    "/tpdeny",
-                    "/tpahere",
-                    "/tptoggle",
-                    "/pwarp",
-                    "/playerwarps",
-                    "/pw",
-                    "/ah",
-                    "/auction",
-                    "/rewards",
-                    "/coinshop",
-                    "/help",
-                    "/tutorial",
-                    "/serverguide",
-                    "/worlds",
-                    "/rtp",
-                    "/toolskins",
-                    "/leaderboards",
-                    "/lottery",
-                    "/deliveries",
-                    "/levels",
-                    "/shop",
-                    "/jobs",
-                    "/quests",
-                    "/skills",
-                    "/factories",
-                    "/cosmetics",
-                    "/teams",
-                    "/dailyquests",
-                    "/tags",
-                    "/settings",
-                    "/discord",
-                    "/store",
-                    "/vote",
-                    "/website",
-                    "/referral",
-                    "/rules",
-                    "/nick",
-                    "/back",
-                    "/recipe",
-                    "/feed",
-                    "/disposal",
-                    "/near",
-                    "/craft",
-                    "/enderchest",
-                    "/ptime",
-                    "/heal",
-                    "/fly",
-                    "/pweather",
-                    "/repair",
-                    "/invsee",
-                    "/sellall",
-                    "/sellhand",
-                    "/enchants"
-            ));
-
-            var staffEntries = new LinkedHashMap<String, Object>();
-            staffEntries.put("priority", 1);
-            staffEntries.put("extend", "default");
-            staffEntries.put("commands", List.of(
-                    "/ban",
-                    "/banip",
-                    "/unban",
-                    "/unbanip",
-                    "/pardon",
-                    "/pardonip",
-                    "/banlist",
-                    "/changereason",
-                    "/check",
-                    "/history",
-                    "/kick",
-                    "/mute"
-            ));
-
-            tabEntriesDefault.put("default", defaultEntries);
-            tabEntriesDefault.put("staff", staffEntries);
-            resolve("tabCompletion.entries", tabEntriesDefault);
-        }
-
-        // OP-Protection
-        opProtectionEnabled = resolveGet("opProtection.enabled", false);
-        opProtectionOperators = new LinkedHashSet<>(resolveGet("opProtection.operators", List.of(
-                "Steve",
-                "Alex",
-                "Tavstal"
-        )));
-
-        // Private Messaging
-        privateMessagingEnabled = resolveGet("privateMessaging.enabled", true);
-        privateMessagingSocialSpyEnabled = resolveGet("privateMessaging.socialSpyEnabled", true);
-        privateMessagingSocialSpyPermission = resolveGet("privateMessaging.socialSpyPermission", "openchat.socialspy");
-        privateMessagingVanishBypassPermission = resolveGet("privateMessaging.vanishBypassPermission", "openchat.bypass.vanish");
-
-        // Custom Chat
-        customChatEnabled = resolveGet("customChat.enabled", false);
-        customChatLocalChatDistance = resolveGet("customChat.localChatDistance", 200);
-        customChatLocalChatExemptPermission = resolveGet("customChat.localChatExemptPermission", "openchat.bypass.localchat");
-        customChatFormat = resolveGet("customChat.format", "<{player}> {message}");
-        customChatShoutEnabled = resolveGet("customChat.shoutEnabled", true);
-        customChatShoutFormat = resolveGet("customChat.shoutFormat", "[SHOUT] <{player}> {message}");
-        customChatShoutPermission = resolveGet("customChat.shoutPermission", "openchat.chat.shout");
-        customChatShoutPrefix = resolveGet("customChat.shoutPrefix", "!");
-        customChatQuestionEnabled = resolveGet("customChat.questionEnabled", true);
-        customChatQuestionFormat = resolveGet("customChat.questionFormat", "[QUESTION] <{player}> {message}");
-        customChatQuestionPermission = resolveGet("customChat.questionPermission", "openchat.chat.question");
-        customChatQuestionPrefix = resolveGet("customChat.questionPrefix", "?");
-        customChatLegacyRichTextPermission = resolveGet("customChat.legacyRichTextPermission", "openchat.chat.color");
-        customChatHexRichTextPermission = resolveGet("customChat.hexRichTextPermission", "openchat.chat.hexcolor");
-
-        // Mentions
-        mentionsEnabled = resolveGet("mentions.enabled", true);
-        mentionsDefaultDisplay = resolveGet("mentions.defaultDisplay", "ALL");
-        mentionsDefaultPreference = resolveGet("mentions.defaultPreference", "ALWAYS");
-        mentionsDefaultSound = resolveGet("mentions.defaultSound", "ENTITY_PLAYER_LEVELUP");
-        mentionsVolume = resolveGet("mentions.volume", 1.0);
-        mentionsPitch = resolveGet("mentions.pitch", 1.0);
-        mentionsCooldown = resolveGet("mentions.mentionCooldown", 3);
-        mentionsLimitPerMessage = resolveGet("mentions.maxMentionsPerMessage", 3);
-        mentionsAllowSelfMention = resolveGet("mentions.allowSelfMention", true);
     }
 }

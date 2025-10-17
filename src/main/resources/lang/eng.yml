@@ -1,0 +1,127 @@
+General:
+  NoPermission: "%prefix% &cYou don't have permission for this."
+  PlayerNotFound: "%prefix% &cPlayer not found."
+  ChatMessage: "%prefix% &e%player% &amentioned you."
+  ActionBarMessage: "&e%player% &amentioned you."
+  Error: "%prefix% &cAn error occurred."
+
+Commands:
+  ConsoleCaller: "%prefix% &cOnly players can use this command."
+  UnknownError: "%prefix% &cAn unknown error occurred. Please report it!"
+  InGame: "%prefix% &cYou can't use this command while in an active game."
+  Common:
+    InvalidPage: "%prefix% &cInvalid page number."
+  Help:
+    Desc: "Shows info about the commands."
+    Title: "&8&m        &r &bOpen&3Chat &7Help &8&m    &r &7Page &3%current_page%&7/&3%max_page% &8&m        &r"
+    Info: |-
+      &r
+      &r  &c&l[]&r &8- &7Required,   &e&l<>&r &8- &7Optional
+      &r
+    Line: "&r  &b/%command% %subcommand%&3%syntax% &8- &7%description%"
+    Bottom: |-
+      &r
+      &8&m                       &r %previous_btn%&3%current_page%&7/&3%max_page%%next_btn% &8&m                       &r
+    PrevBtn: "&b<< "
+    NextBtn: " &b>>"
+  Version:
+    Desc: "Shows the plugin version."
+    Current: "%prefix% &aYou're using OpenChat version '&3%version%&a'."
+    UpToDate: "%prefix% &aOpenChat is up to date."
+    Outdated: "%prefix% &cOpenChat is outdated. Download it here: &e%link%"
+  Reload:
+    Desc: "Reloads the plugin config and messages."
+    Done: "%prefix% &aPlugin reloaded."
+  Clear:
+    Desc: "Clears the chat."
+    Done: "%prefix% &aChat cleared."
+  Ignore:
+    Desc: "Ignore a player."
+    Syntax: " [player]"
+    Usage: "%prefix% &aUsage: &e/ignore [player]"
+    Enabled: "%prefix% &aYou are now ignoring &e%player%"
+    AlreadyEnabled: "%prefix% &cYou are already ignoring &e%player%"
+    Self: "%prefix% &cYou can't ignore yourself."
+  Unignore:
+    Desc: "Stop ignoring a player."
+    Syntax: " [player]"
+    Usage: "%prefix% &aUsage: &e/unignore [player]"
+    Disabled: "%prefix% &aYou are no longer ignoring &e%player%"
+    AlreadyDisabled: "%prefix% &cYou are not ignoring &e%player%"
+    Self: "%prefix% &cYou can't unignore yourself."
+  Whisper:
+    Desc: "Send a private message to a player."
+    Syntax: " [player] [message]"
+    Usage: "%prefix% &aUsage: &e/whisper [player] [message]"
+  Reply:
+    Desc: "Reply to a private message."
+    Syntax: " [message]"
+    Usage: "%prefix% &aUsage: &e/reply [message]"
+    NoOne: "%prefix% &cYou have no one to reply to."
+  WhisperToggle:
+    Desc: "Toggle private messages on or off."
+    Enabled: "%prefix% &aYou will now receive private messages."
+    Disabled: "%prefix% &cYou will no longer receive private messages."
+  SocialSpy:
+    Desc: "Toggle seeing other players' private messages."
+    Enabled: "%prefix% &aYou can now see other players' private messages."
+    Disabled: "%prefix% &cYou can no longer see other players' private messages."
+  PublicChat:
+    Desc: "Toggle the public chat on or off."
+    Enabled: "%prefix% &aYou can now see the public chat."
+    Disabled: "%prefix% &cYou can no longer see the public chat."
+  Mentions:
+    Sound:
+      Desc: "Set your mention sound."
+      Syntax: " [sound]"
+      Usage: "%prefix% &aUsage: &e/mentions sound [sound]"
+      Invalid: "%prefix% &cThe sound setting &e%value%&c is invalid."
+      Set: "%prefix% &aYour mention sound has been set to &e%value%&a."
+    Display:
+      Desc: "Set your mention display mode."
+      Syntax: " [value]"
+      Usage: "%prefix% &aUsage: &e/mentions display [value]"
+      Invalid: "%prefix% &cThe display setting &e%value%&c is invalid."
+      Set: "%prefix% &aYour mention display has been set to &e%value%&a."
+    Preference:
+      Desc: "Set your mention preference."
+      Syntax: " [value]"
+      Usage: "%prefix% &aUsage: &e/mentions preference [value]"
+      Invalid: "%prefix% &cThe preference setting &e%value%&c is invalid."
+      Set: "%prefix% &aYour mention preference has been set to &e%value%&a."
+
+AntiSpam:
+  ChatCooldown: "%prefix% &cPlease wait %time% seconds before chatting again."
+  CommandCooldown: "%prefix% &cPlease wait %time% seconds before using that command again."
+  RepeatedMessages: "%prefix% &cDon't repeat the same message."
+  RepeatedCommands: "%prefix% &cDon't repeat the same command."
+
+AntiCaps:
+  TooManyCaps: "%prefix% &cYou are using too many capital letters in your message."
+
+AntiAd:
+  AdvertisementDetected: "%prefix% &cAdvertisement detected in your message."
+
+AntiSwear:
+  WordDetected: "%prefix% &cSwear word detected in your message."
+  BookTitle: "%prefix% &cSwear word detected in the book title."
+  BookContent: "%prefix% &cSwear word detected in the book content."
+  Sign: "%prefix% &cSwear word detected on the sign."
+  AnvilRename: "%prefix% &cSwear word detected in the item name."
+
+CommandBlocker:
+  Blocked: "Unknown command. Type \"/help\" for assistance."
+
+OpProtection:
+  Unallowed: "%prefix% &cThis player cannot be given operator rights."
+  Kick: "&cYou are not allowed to be an operator."
+
+Whisper:
+  Self: "%prefix% &cYou can't send a private message to yourself."
+  Sender: "&8[&bMe &3➡ &b%receiver%&8] &7» &f%message%"
+  Receiver: "&8[&b%sender% &3➡ &bMe&8] &7» &f%message%"
+  Spy: "&8(&c<hover:show_text:'&cSocial Spy'>👁</hover>&8) &8[&b%sender% &3➡ &b%receiver%&8] &7» &f%message%"
+  Disabled: "%prefix% &e%player% &cis not accepting private messages."
+
+
+FileVersion: 1
