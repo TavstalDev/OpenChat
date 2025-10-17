@@ -95,6 +95,11 @@ public class SqlLiteDatabase implements IDatabase {
     @Override
     public void checkSchema() {
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to check schema!");
+                return;
+            }
+
             // Players table
             String sql = String.format("CREATE TABLE IF NOT EXISTS %s_players (" +
                             "PlayerId VARCHAR(36) PRIMARY KEY, " +
@@ -125,6 +130,11 @@ public class SqlLiteDatabase implements IDatabase {
     @Override
     public void addPlayerData(UUID playerId) {
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to add player data!");
+                return;
+            }
+
             try (PreparedStatement statement = connection.prepareStatement(addPlayerDataSql)) {
                 statement.setString(1, playerId.toString());
                 statement.setBoolean(2, false);
@@ -148,6 +158,11 @@ public class SqlLiteDatabase implements IDatabase {
     @Override
     public void updatePlayerData(PlayerData newData) {
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to update player data!");
+                return;
+            }
+
             try (PreparedStatement statement = connection.prepareStatement(updatePlayerDataSql)) {
                 statement.setBoolean(1, newData.isPublicChatDisabled());
                 statement.setBoolean(2, newData.isWhisperEnabled());
@@ -168,6 +183,11 @@ public class SqlLiteDatabase implements IDatabase {
     @Override
     public void removePlayerData(UUID playerId) {
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to remove player data!");
+                return;
+            }
+
             try (PreparedStatement statement = connection.prepareStatement(removePlayerDataSql)) {
                 statement.setString(1, playerId.toString());
                 statement.executeUpdate();
@@ -187,6 +207,11 @@ public class SqlLiteDatabase implements IDatabase {
         }
 
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to get player data!");
+                return Optional.empty();
+            }
+
             try (PreparedStatement statement = connection.prepareStatement(getPlayerDataSql)) {
                 statement.setString(1, playerId.toString());
                 try (ResultSet result = statement.executeQuery()) {
@@ -239,6 +264,11 @@ public class SqlLiteDatabase implements IDatabase {
     @Override
     public void addIgnoredPlayer(UUID playerId, UUID ignoredPlayerId) {
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to add ignore data!");
+                return;
+            }
+
             try (PreparedStatement statement = connection.prepareStatement(addIgnoredPlayerSql)) {
                 statement.setString(1, playerId.toString());
                 statement.setString(2, ignoredPlayerId.toString());
@@ -259,6 +289,11 @@ public class SqlLiteDatabase implements IDatabase {
     @Override
     public void removeIgnoredPlayer(UUID playerId, UUID ignoredPlayerId) {
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to remove ignore data!");
+                return;
+            }
+
             try (PreparedStatement statement = connection.prepareStatement(removeIgnoredPlayerSql)) {
                 statement.setString(1, playerId.toString());
                 statement.setString(2, ignoredPlayerId.toString());
@@ -283,6 +318,11 @@ public class SqlLiteDatabase implements IDatabase {
 
         data = new HashSet<>();
         try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection to find ignore data!");
+                return false;
+            }
+
             try (PreparedStatement statement = connection.prepareStatement(getIgnoredPlayersSql)) {
                 statement.setString(1, playerId.toString());
                 try (ResultSet result = statement.executeQuery()) {
