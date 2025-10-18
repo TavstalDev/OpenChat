@@ -18,7 +18,6 @@ val paperApiVersion: String by project
 val mineCoreLibVersion: String by project
 val hikariCpVersion: String by project
 val caffeineVersion: String by project
-val xseriesVersion: String by project
 val placeholderApiVersion: String by project
 val sirblobmanApiVersion: String by project
 val sirblobmanCombatLogVersion: String by project
