@@ -1,6 +1,7 @@
 package io.github.tavstaldev.openChat.events;
 
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
+import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.OpenChatConfiguration;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
@@ -8,13 +9,14 @@ import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.util.MentionUtils;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
 import io.github.tavstaldev.openChat.util.VanishUtil;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
 
 import java.time.LocalDateTime;
@@ -52,14 +54,14 @@ public class ChatEventListener implements Listener {
      * @param event The chat event triggered when a player sends a message.
      */
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onChat(AsyncChatEvent event) {
         if (event.isCancelled())
             return;
 
         Player source = event.getPlayer(); // The player who sent the message.
         var sourceId = source.getUniqueId();
         PlayerCache cache = PlayerCacheManager.get(sourceId); // Retrieve the player's cache.
-        String rawMessage = event.getMessage(); // The raw chat message.
+        String rawMessage = PlainTextComponentSerializer.plainText().serialize(event.originalMessage()); // The raw chat message.
         cache.setLastChatMessage(rawMessage); // Store the last chat message in the cache.
         OpenChatConfiguration config = OpenChat.config(); // Retrieve the plugin configuration.
 
@@ -152,7 +154,7 @@ public class ChatEventListener implements Listener {
         if (!config.customChatEnabled)
         {
             rawMessage = handleMentions(source, rawMessage, config);
-            event.setMessage(rawMessage);
+            event.message(ChatUtils.translateColors(rawMessage, true));
             return;
         }
         String chatFormat = config.customChatFormat;
@@ -170,15 +172,19 @@ public class ChatEventListener implements Listener {
         // Remove recipient players who have ignored the sender or disabled public chat
         if (!(forceGlobal || source.hasPermission(config.customChatLocalChatExemptPermission))) {
             if (config.customChatLocalChatDistance > 0) {
-                event.getRecipients().removeIf(recipient -> {
-                    UUID recipientId = recipient.getUniqueId();
+                event.viewers().removeIf(recipient -> {
+                    if (!(recipient instanceof Player recipientPlayer)) {
+                        return false;
+                    }
+
+                    UUID recipientId = recipientPlayer.getUniqueId();
                     // 0. Never remove the sender themselves
                     if (recipientId.equals(sourceId)) {
                         return false;
                     }
 
                     // 1. Never remove if the recipient has social spy enabled
-                    if (OpenChat.database().isSocialSpyEnabled(recipient)) {
+                    if (OpenChat.database().isSocialSpyEnabled(recipientPlayer)) {
                         return false;
                     }
 
@@ -188,7 +194,7 @@ public class ChatEventListener implements Listener {
                     }
 
                     // 3, Remove if not in the same world
-                    if (!recipient.getWorld().getUID().equals(source.getWorld().getUID())) {
+                    if (!recipientPlayer.getWorld().getUID().equals(source.getWorld().getUID())) {
                         return true;
                     }
 
@@ -198,19 +204,23 @@ public class ChatEventListener implements Listener {
                     }
 
                     // 4. Remove if public chat is disabled AND the recipient is outside the local chat distance
-                    var distance = Math.abs(recipient.getLocation().distance(source.getLocation()));
+                    var distance = Math.abs(recipientPlayer.getLocation().distance(source.getLocation()));
                     return distance > config.customChatLocalChatDistance;
                 });
             } else {
-                event.getRecipients().removeIf(recipient -> {
-                    UUID recipientId = recipient.getUniqueId();
+                event.viewers().removeIf(recipient -> {
+                    if (!(recipient instanceof Player recipientPlayer)) {
+                        return false;
+                    }
+
+                    UUID recipientId = recipientPlayer.getUniqueId();
                     // 0. Never remove the sender themselves
                     if (recipientId.equals(sourceId)) {
                         return false;
                     }
 
                     // 1. Never remove if the recipient has social spy enabled
-                    if (OpenChat.database().isSocialSpyEnabled(recipient)) {
+                    if (OpenChat.database().isSocialSpyEnabled(recipientPlayer)) {
                         return false;
                     }
 
@@ -220,7 +230,7 @@ public class ChatEventListener implements Listener {
                     }
 
                     // 3. Remove if the recipient has ignored the sender
-                    return OpenChat.database().isPlayerIgnored(recipient.getUniqueId(), sourceId);
+                    return OpenChat.database().isPlayerIgnored(recipientPlayer.getUniqueId(), sourceId);
                 });
             }
         }
@@ -232,7 +242,6 @@ public class ChatEventListener implements Listener {
         if (!source.hasPermission(config.customChatLegacyRichTextPermission)) {
             rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
         }
-        rawMessage = rawMessage.replaceAll("(?i)&([0-9a-fk-or])", "§$1");
 
         // Mentions
         rawMessage = handleMentions(source, rawMessage, config);
@@ -244,7 +253,9 @@ public class ChatEventListener implements Listener {
 
         // Escape any other literal '%' signs
         chatFormat = chatFormat.replace("%", "%%");
-        event.setFormat(chatFormat);
+        String finalChatFormat = chatFormat;
+        event.renderer((renderSource, sourceDisplayName, message, viewer) -> ChatUtils.translateColors(finalChatFormat, true));
+        //event.message(ChatUtils.translateColors(rawMessage, true));
     }
 
     /**
@@ -286,7 +297,7 @@ public class ChatEventListener implements Listener {
                 continue;
 
             newMessage.append(rawMessage, lastAppendPosition, matcher.start());
-            String replacement = "§e@" + mentionName + "§r";
+            String replacement = "<yellow>@" + mentionName + "</yellow>";
             newMessage.append(replacement);
 
             lastAppendPosition = matcher.end();
