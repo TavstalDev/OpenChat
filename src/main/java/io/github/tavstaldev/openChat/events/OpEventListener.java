@@ -133,6 +133,9 @@ public class OpEventListener implements Listener {
      */
     public void updateAllowedOperators() {
         var config = OpenChat.config();
+        if (!config.opProtectionEnabled)
+            return;
+
         this.allowedOperators.clear();
         for (String username : config.opProtectionOperators) {
             OfflinePlayer player = Bukkit.getOfflinePlayer(username);
