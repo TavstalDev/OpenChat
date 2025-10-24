@@ -110,8 +110,8 @@ public class SqlLiteDatabase implements IDatabase {
                             "Sound VARCHAR(200) NOT NULL, " +
                             "Display VARCHAR(32) NOT NULL, " +
                             "Preference VARCHAR(32) NOT NULL, " +
-                            "CustomJoinMessage VARCHAR(64), " +
-                            "CustomQuitMessage VARCHAR(64));",
+                            "CustomJoinMessage VARCHAR(128), " +
+                            "CustomQuitMessage VARCHAR(128));",
                     _config.storageTablePrefix);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.executeUpdate();
@@ -176,9 +176,9 @@ public class SqlLiteDatabase implements IDatabase {
                 statement.setString(4, newData.getMentionSound());
                 statement.setString(5, newData.getMentionDisplay().name());
                 statement.setString(6, newData.getMentionPreference().name());
-                statement.setString(7, newData.getUuid().toString());
-                statement.setString(8, newData.getCustomJoinMessage());
-                statement.setString(9, newData.getCustomLeaveMessage());
+                statement.setString(7, newData.getCustomJoinMessage());
+                statement.setString(8,  newData.getCustomLeaveMessage());
+                statement.setString(9, newData.getUuid().toString());
                 statement.executeUpdate();
             }
 
