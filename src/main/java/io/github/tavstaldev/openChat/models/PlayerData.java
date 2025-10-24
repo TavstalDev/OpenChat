@@ -1,5 +1,7 @@
 package io.github.tavstaldev.openChat.models;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.UUID;
 
 /**
@@ -20,6 +22,10 @@ public class PlayerData {
 
     private EMentionPreference mentionPreference; // The player's preference for handling mentions.
 
+    private @Nullable String customJoinMessage; // The player's custom join message.
+
+    private @Nullable String customLeaveMessage; // The player's custom leave message.
+
     /**
      * Constructs a new PlayerData instance.
      *
@@ -30,8 +36,11 @@ public class PlayerData {
      * @param mentionSound       The sound to play when the player is mentioned.
      * @param mentionDisplay     The display style for mentions.
      * @param mentionPreference  The player's preference for handling mentions.
+     * @param customJoinMessage  The player's custom join message, or null if none.
+     * @param customLeaveMessage The player's custom leave message, or null if none.
      */
-    public PlayerData(UUID uuid, boolean publicChatDisabled, boolean whisperEnabled, boolean socialSpyEnabled, String mentionSound, EMentionDisplay mentionDisplay, EMentionPreference mentionPreference) {
+    public PlayerData(UUID uuid, boolean publicChatDisabled, boolean whisperEnabled, boolean socialSpyEnabled, String mentionSound, EMentionDisplay mentionDisplay, EMentionPreference mentionPreference,
+                      @Nullable String customJoinMessage, @Nullable String customLeaveMessage) {
         this.uuid = uuid;
         this.publicChatDisabled = publicChatDisabled;
         this.whisperEnabled = whisperEnabled;
@@ -39,6 +48,8 @@ public class PlayerData {
         this.mentionSound = mentionSound;
         this.mentionDisplay = mentionDisplay;
         this.mentionPreference = mentionPreference;
+        this.customJoinMessage = customJoinMessage;
+        this.customLeaveMessage = customLeaveMessage;
     }
 
     /**
@@ -156,5 +167,41 @@ public class PlayerData {
      */
     public void setMentionPreference(EMentionPreference mentionPreference) {
         this.mentionPreference = mentionPreference;
+    }
+
+    /**
+     * Gets the player's custom join message.
+     *
+     * @return The custom join message, or null if none.
+     */
+    public @Nullable String getCustomJoinMessage() {
+        return customJoinMessage;
+    }
+
+    /**
+     * Sets the player's custom join message.
+     *
+     * @param customJoinMessage The custom join message, or null to remove it.
+     */
+    public void setCustomJoinMessage(@Nullable String customJoinMessage) {
+        this.customJoinMessage = customJoinMessage;
+    }
+
+    /**
+     * Gets the player's custom leave message.
+     *
+     * @return The custom leave message, or null if none.
+     */
+    public @Nullable String getCustomLeaveMessage() {
+        return customLeaveMessage;
+    }
+
+    /**
+     * Sets the player's custom leave message.
+     *
+     * @param customLeaveMessage The custom leave message, or null to remove it.
+     */
+    public void setCustomLeaveMessage(@Nullable String customLeaveMessage) {
+        this.customLeaveMessage = customLeaveMessage;
     }
 }

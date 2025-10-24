@@ -54,14 +54,15 @@ public class MySqlDatabase implements IDatabase {
 
     @Override
     public void update() {
-        addPlayerDataSql = String.format("INSERT INTO %s_players (PlayerId, PublicChatDisabled, WhisperEnabled, SocialSpyEnabled, Sound, Display, Preference) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?);",
+        addPlayerDataSql = String.format("INSERT INTO %s_players (PlayerId, PublicChatDisabled, WhisperEnabled, SocialSpyEnabled, Sound, Display, Preference, CustomJoinMessage, CustomQuitMessage) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
                 _config.storageTablePrefix);
 
         removePlayerDataSql = String.format("DELETE FROM %s_players WHERE PlayerId=? LIMIT 1;",
                 _config.storageTablePrefix);
 
-        updatePlayerDataSql = String.format("UPDATE %s_players SET PublicChatDisabled=?, WhisperEnabled=?, SocialSpyEnabled=?, Sound=?, Display=?, Preference=? " +
+        updatePlayerDataSql = String.format("UPDATE %s_players SET PublicChatDisabled=?, WhisperEnabled=?, SocialSpyEnabled=?, Sound=?, Display=?, Preference=?, " +
+                        "CustomJoinMessage=?, CustomQuitMessage=? " +
                         "WHERE PlayerId=? LIMIT 1;",
                 _config.storageTablePrefix);
 
@@ -117,7 +118,9 @@ public class MySqlDatabase implements IDatabase {
                             "SocialSpyEnabled BOOLEAN NOT NULL," +
                             "Sound VARCHAR(200) NOT NULL, " +
                             "Display VARCHAR(32) NOT NULL, " +
-                            "Preference VARCHAR(32) NOT NULL);",
+                            "Preference VARCHAR(32) NOT NULL, " +
+                            "CustomJoinMessage VARCHAR(64), " +
+                            "CustomQuitMessage VARCHAR(64));",
                     _config.storageTablePrefix);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.executeUpdate();
@@ -147,13 +150,16 @@ public class MySqlDatabase implements IDatabase {
                 statement.setString(5, _config.mentionsDefaultSound);
                 statement.setString(6, _config.mentionsDefaultDisplay);
                 statement.setString(7, _config.mentionsDefaultPreference);
+                statement.setString(8, null);
+                statement.setString(9, null);
                 statement.executeUpdate();
             }
 
             _playerCache.put(playerId, new PlayerData(playerId, false, true, false,
                     _config.mentionsDefaultSound,
                     EMentionDisplay.valueOf(_config.mentionsDefaultDisplay),
-                    EMentionPreference.valueOf(_config.mentionsDefaultPreference)));
+                    EMentionPreference.valueOf(_config.mentionsDefaultPreference),
+                    null, null));
         } catch (Exception ex) {
             _logger.error(String.format("Unknown error happened while adding player data...\n%s", ex.getMessage()));
         }
@@ -170,6 +176,8 @@ public class MySqlDatabase implements IDatabase {
                 statement.setString(5, newData.getMentionDisplay().name());
                 statement.setString(6, newData.getMentionPreference().name());
                 statement.setString(7, newData.getUuid().toString());
+                statement.setString(8, null);
+                statement.setString(9, null);
                 statement.executeUpdate();
             }
 
@@ -212,7 +220,9 @@ public class MySqlDatabase implements IDatabase {
                                 result.getBoolean("SocialSpyEnabled"),
                                 result.getString("Sound"),
                                 EMentionDisplay.valueOf(result.getString("Display")),
-                                EMentionPreference.valueOf(result.getString("Preference"))
+                                EMentionPreference.valueOf(result.getString("Preference")),
+                                result.getString("CustomJoinMessage"),
+                                result.getString("CustomQuitMessage")
                         );
                     }
                 }
