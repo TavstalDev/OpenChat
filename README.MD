@@ -31,7 +31,7 @@ It offers customizable settings for chat moderation.
 Features planned for future releases:
 
 - [ ] **Add Separate Logging for Violations**: Create a dedicated log file to record all chat violations for easier monitoring and detection of false positives.
-- [ ] **Custom Join/Quit Messages**: Allow global and per-player customization of join and quit messages.
+- [x] **Custom Join/Quit Messages**: Allow global and per-player customization of join and quit messages.
 - [ ] **Custom Welcome Messages**: Send personalized welcome messages to players upon joining the server.
 - [ ] **Player Name Hover Info**: Show additional player information when hovering over their name in chat.
 - [ ] **Violation Counter and Punishments**: Implement a system to track player violations and apply punishments based on configurable thresholds.
