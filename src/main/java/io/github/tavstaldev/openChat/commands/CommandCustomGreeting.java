@@ -83,7 +83,7 @@ public class CommandCustomGreeting implements CommandExecutor {
                         try {
                             page = Integer.parseInt(args[1]);
                         } catch (Exception ex) {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.Common.InvalidPage");
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidPage");
                             return true;
                         }
                     }
@@ -119,6 +119,25 @@ public class CommandCustomGreeting implements CommandExecutor {
                                 return true;
                             }
 
+                            if (message.length() > 128) {
+                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.MessageTooLong",
+                                        Map.of("length", "128")
+                                );
+                                return true;
+                            }
+
+                            // Check for swear words in the message
+                            if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
+                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
+                                return true;
+                            }
+
+                            // Check for advertising in the message
+                            if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
+                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
+                                return true;
+                            }
+
                             var playerData = playerDataOpt.get();
                             playerData.setCustomJoinMessage(message);
                             OpenChat.database().updatePlayerData(playerData);
@@ -138,6 +157,25 @@ public class CommandCustomGreeting implements CommandExecutor {
                             String message = String.join(" ", args).substring(args[0].length() + args[1].length() + 2);
                             if (!message.contains("{player}")) {
                                 OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.NoPlayerPlaceholder");
+                                return true;
+                            }
+
+                            if (message.length() > 128) {
+                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.MessageTooLong",
+                                        Map.of("length", "128")
+                                );
+                                return true;
+                            }
+
+                            // Check for swear words in the message
+                            if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
+                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
+                                return true;
+                            }
+
+                            // Check for advertising in the message
+                            if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
+                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
                                 return true;
                             }
 

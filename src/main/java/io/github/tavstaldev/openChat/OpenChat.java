@@ -193,6 +193,9 @@ public final class OpenChat extends PluginBase {
         new CommandMentions();
         new CommandChatToggle();
         new CommandSocialSpy(); // social spy is used outside private messaging as well
+        if (config().customGreetingEnabled) {
+            new CommandCustomGreeting();
+        }
         if (config().privateMessagingEnabled) {
             new CommandReply();
             new CommandWhisper();
