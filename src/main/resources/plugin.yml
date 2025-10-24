@@ -22,6 +22,27 @@ Permissions:
   openchat.commands.clear:
     description: Allows the player to use the /openchat clear command.
     default: op
+  openchat.commands.mentions:
+    description: Allows the player to use the /mentions command.
+    default: true
+  openchat.commands.whisper:
+    description: Allows the player to use the /whisper command.
+    default: true
+  openchat.commands.whispertoggle:
+    description: Allows the player to use the /whispertoggle command.
+    default: true
+  openchat.commands.reply:
+    description: Allows the player to use the /reply command.
+    default: true
+  openchat.commands.ignore:
+    description: Allows the player to use the /ignore command.
+    default: true
+  openchat.commands.unignore:
+    description: Allows the player to use the /unignore command.
+    default: true
+  openchat.commands.socialspy:
+    description: Allows the player to use the /socialspy command.
+    default: op
   openchat.bypass.clear:
     description: Bypass the chat clear
     default: op
@@ -55,6 +76,7 @@ Permissions:
       openchat.commands.version: true
       openchat.commands.help: true
       openchat.commands.clear: true
+      openchat.commands.socialspy: true
 
 commands:
     openchat:
@@ -116,3 +138,8 @@ commands:
       usage: /chattoggle
       aliases: [ togglechat, pubicchat ]
       permission: openchat.commands.chat
+    customgreeting:
+      description: Set a custom greeting message.
+      usage: /customgreeting help | set | get | clear
+      aliases: [ greeting ]
+      permission: openchat.commands.customgreeting

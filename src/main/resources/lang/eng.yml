@@ -89,6 +89,24 @@ Commands:
       Usage: "%prefix% &aUsage: &e/mentions preference [value]"
       Invalid: "%prefix% &cThe preference setting &e%value%&c is invalid."
       Set: "%prefix% &aYour mention preference has been set to &e%value%&a."
+  CustomGreeting:
+    Set:
+      Desc: "Set a custom join or quit message."
+      Syntax: " [join|quit] [message] - must include {player} placeholder"
+      Usage: "%prefix% &aUsage: &e/customgreeting set [join|quit] [message]"
+      NoPlayerPlaceholder: "%prefix% &cYour message must include the {player} placeholder."
+      Success: "%prefix% &aYour custom greeting has been set."
+    Get:
+      Desc: "Get your current custom join or quit message."
+      Syntax: " [join|quit]"
+      Usage: "%prefix% &aUsage: &e/customgreeting get [join|quit]"
+      Current: "%prefix% &aYour current message is: &e%message%"
+      None: "%prefix% &cYou don't have a custom message set."
+    Clear:
+      Desc: "Clear your custom join or quit message."
+      Syntax: " [join|quit]"
+      Usage: "%prefix% &aUsage: &e/customgreeting clear [join|quit]"
+      Success: "%prefix% &aYour custom greeting has been cleared."
 
 AntiSpam:
   ChatCooldown: "%prefix% &cPlease wait %time% seconds before chatting again."
@@ -123,5 +141,5 @@ Whisper:
   Spy: "&8(&c<hover:show_text:'&cSocial Spy'>👁</hover>&8) &8[&b%sender% &3➡ &b%receiver%&8] &7» &f%message%"
   Disabled: "%prefix% &e%player% &cis not accepting private messages."
 
-
-FileVersion: 1
+# 2025. 10. 24.
+FileVersion: 2

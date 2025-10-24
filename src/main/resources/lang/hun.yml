@@ -89,6 +89,24 @@ Commands:
       Usage: "%prefix% &aHasználat: &e/mentions preference [érték]"
       Invalid: "%prefix% &cA(z) &e%value%&c preferenciabeállítás érvénytelen."
       Set: "%prefix% &aAz említés preferenciáját beállítottad erre: &e%value%&a."
+  CustomGreeting:
+    Set:
+      Desc: "Beállítja a saját egyedi csatlakozási vagy kilépési üzenetedet."
+      Syntax: " [join|quit] [üzenet] - tartalmaznia kell a {player} helyőrzőt."
+      Usage: "%prefix% &aHasználat: &e/customgreeting set [join|quit] [üzenet]"
+      NoPlayerPlaceholder: "%prefix% &cAz üzenetednek tartalmaznia kell a {player} helyőrzőt."
+      Success: "%prefix% &aAz egyedi köszöntésed beállítva."
+    Get:
+      Desc: "Lekéri a saját egyedi csatlakozási vagy kilépési üzenetedet."
+      Syntax: " [join|quit]"
+      Usage: "%prefix% &aHasználat: &e/customgreeting get [join|quit]"
+      Current: "%prefix% &aA jelenlegi üzeneted: &e%message%"
+      None: "%prefix% &cNincs beállítva egyedi üzeneted."
+    Clear:
+      Desc: "Törli a saját egyedi csatlakozási vagy kilépési üzenetedet."
+      Syntax: " [join|quit]"
+      Usage: "%prefix% &aHasználat: &e/customgreeting clear [join|quit]"
+      Success: "%prefix% &aAz egyedi köszöntésed törölve."
 
 AntiSpam:
   ChatCooldown: "%prefix% &cKérlek várj %time% másodpercet mielőtt újra írsz a chatre."
@@ -123,5 +141,5 @@ Whisper:
   Spy: "&8(&c<hover:show_text:'&cSocial Spy'>👁</hover>&8) &8[&b%sender% &3➡ &b%receiver%&8] &7» &f%message%"
   Disabled: "%prefix% &e%player% &cnem fogad privát üzeneteket."
 
-
-FileVersion: 1
+# 2025. 10. 24.
+FileVersion: 2
