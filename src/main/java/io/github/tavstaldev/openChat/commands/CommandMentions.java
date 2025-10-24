@@ -93,7 +93,7 @@ public class CommandMentions implements CommandExecutor {
                         try {
                             page = Integer.parseInt(args[1]);
                         } catch (Exception ex) {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.Common.InvalidPage");
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidPage");
                             return true;
                         }
                     }
