@@ -9,8 +9,8 @@ Commands:
   ConsoleCaller: "%prefix% &cA parancsot csak játékosok használhatják."
   UnknownError: "%prefix% &cIsmeretlen hiba történt. Kérlek, jelentsd!"
   InGame: "%prefix% &cEzt a parancsot nem használhatod aktív játék közben."
-  Common:
-    InvalidPage: "%prefix% &cÉrvénytelen oldalszám."
+  InvalidPage: "%prefix% &cÉrvénytelen oldalszám."
+  InvalidArguments: "%prefix% &cÉrvénytelen argumentumok."
   Help:
     Desc: "Információkat mutat a parancsokról."
     Title: "&8&m        &r &bOpen&3Chat &7Súgó &8&m    &r &7Oldal &3%current_page%&7/&3%max_page% &8&m        &r"
@@ -91,10 +91,13 @@ Commands:
       Set: "%prefix% &aAz említés preferenciáját beállítottad erre: &e%value%&a."
   CustomGreeting:
     Set:
-      Desc: "Beállítja a saját egyedi csatlakozási vagy kilépési üzenetedet."
-      Syntax: " [join|quit] [üzenet] - tartalmaznia kell a {player} helyőrzőt."
+      Desc: "Beállítja a saját egyedi csatlakozási vagy kilépési üzenetedet. Tartalmaznia kell a {player} helyőrzőt."
+      Syntax: " [join|quit] [üzenet]"
       Usage: "%prefix% &aHasználat: &e/customgreeting set [join|quit] [üzenet]"
       NoPlayerPlaceholder: "%prefix% &cAz üzenetednek tartalmaznia kell a {player} helyőrzőt."
+      MessageTooLong: "%prefix% &cAz üzeneted túl hosszú. A maximális hossz %length% karakter."
+      SwearWordDetected: "%prefix% &cAz üzeneted nem megfelelő nyelvezetet tartalmaz."
+      AdvertisingDetected: "%prefix% &cAz üzeneted hirdetést tartalmaz."
       Success: "%prefix% &aAz egyedi köszöntésed beállítva."
     Get:
       Desc: "Lekéri a saját egyedi csatlakozási vagy kilépési üzenetedet."

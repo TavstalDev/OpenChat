@@ -9,8 +9,8 @@ Commands:
   ConsoleCaller: "%prefix% &cOnly players can use this command."
   UnknownError: "%prefix% &cAn unknown error occurred. Please report it!"
   InGame: "%prefix% &cYou can't use this command while in an active game."
-  Common:
-    InvalidPage: "%prefix% &cInvalid page number."
+  InvalidPage: "%prefix% &cInvalid page number."
+  InvalidArguments: "%prefix% &cInvalid arguments."
   Help:
     Desc: "Shows info about the commands."
     Title: "&8&m        &r &bOpen&3Chat &7Help &8&m    &r &7Page &3%current_page%&7/&3%max_page% &8&m        &r"
@@ -91,10 +91,13 @@ Commands:
       Set: "%prefix% &aYour mention preference has been set to &e%value%&a."
   CustomGreeting:
     Set:
-      Desc: "Set a custom join or quit message."
-      Syntax: " [join|quit] [message] - must include {player} placeholder"
+      Desc: "Set a custom join or quit message. Must include the {player} placeholder."
+      Syntax: " [join|quit] [message]"
       Usage: "%prefix% &aUsage: &e/customgreeting set [join|quit] [message]"
       NoPlayerPlaceholder: "%prefix% &cYour message must include the {player} placeholder."
+      MessageTooLong: "%prefix% &cYour message is too long. Maximum length is %length% characters."
+      SwearWordDetected: "%prefix% &cYour message contains inappropriate language."
+      AdvertisingDetected: "%prefix% &cYour message contains advertising."
       Success: "%prefix% &aYour custom greeting has been set."
     Get:
       Desc: "Get your current custom join or quit message."
