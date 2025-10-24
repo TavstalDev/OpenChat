@@ -81,6 +81,13 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public String customChatLegacyRichTextPermission;
     public String customChatHexRichTextPermission;
 
+    // Custom Greeting
+    public boolean customGreetingEnabled;
+    public boolean customGreetingOverrideJoinMessage;
+    public String customGreetingJoinMessage;
+    public boolean customGreetingOverrideLeaveMessage;
+    public String customGreetingLeaveMessage;
+
     // Mentions
     public boolean mentionsEnabled;
     public String mentionsDefaultDisplay, mentionsDefaultPreference, mentionsDefaultSound;
@@ -181,6 +188,13 @@ public class OpenChatConfiguration extends ConfigurationBase {
         customChatQuestionPrefix = resolveGet("customChat.questionPrefix", "?");
         customChatLegacyRichTextPermission = resolveGet("customChat.legacyRichTextPermission", "openchat.chat.color");
         customChatHexRichTextPermission = resolveGet("customChat.hexRichTextPermission", "openchat.chat.hexcolor");
+
+        // Custom Greeting
+        customGreetingEnabled = resolveGet("customGreeting.enabled", false);
+        customGreetingOverrideJoinMessage = resolveGet("customGreeting.overrideJoinMessage", false);
+        customGreetingJoinMessage = resolveGet("customGreeting.joinMessage", "&8(&a+&8) &a{player}");
+        customGreetingOverrideLeaveMessage = resolveGet("customGreeting.overrideLeaveMessage", false);
+        customGreetingLeaveMessage = resolveGet("customGreeting.leaveMessage", "&8(&c-&8) &c{player}");
 
         // Mentions
         mentionsEnabled = resolveGet("mentions.enabled", true);
