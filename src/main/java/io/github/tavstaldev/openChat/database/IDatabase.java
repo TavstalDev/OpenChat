@@ -1,9 +1,12 @@
 package io.github.tavstaldev.openChat.database;
 
-import io.github.tavstaldev.openChat.models.PlayerData;
+import io.github.tavstaldev.openChat.models.database.EViolationType;
+import io.github.tavstaldev.openChat.models.database.PlayerData;
+import io.github.tavstaldev.openChat.models.database.ViolationData;
 import org.bukkit.entity.Player;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface IDatabase {
@@ -34,4 +37,10 @@ public interface IDatabase {
     void removeIgnoredPlayer(UUID playerId, UUID ignoredPlayerId);
 
     boolean isPlayerIgnored(UUID playerId, UUID ignoredPlayerId);
+
+    void addViolation(UUID playerId, EViolationType type, String details);
+    void removeViolation(UUID violationId, UUID playerId);
+    Optional<Set<ViolationData>> getViolations(UUID playerId);
+    Optional<Set<ViolationData>> getActiveViolations(UUID playerId);
+    Optional<Set<ViolationData>> getActiveViolationsByType(UUID playerId, EViolationType type);
 }

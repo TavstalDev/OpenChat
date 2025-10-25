@@ -5,9 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.OpenChatConfiguration;
-import io.github.tavstaldev.openChat.models.EMentionDisplay;
-import io.github.tavstaldev.openChat.models.EMentionPreference;
-import io.github.tavstaldev.openChat.models.PlayerData;
+import io.github.tavstaldev.openChat.models.database.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class SqlLiteDatabase implements IDatabase {
     private final PluginLogger _logger = OpenChat.logger().withModule(SqlLiteDatabase.class);
@@ -32,14 +31,28 @@ public class SqlLiteDatabase implements IDatabase {
             .maximumSize(1000)
             .expireAfterWrite(2, TimeUnit.MINUTES)
             .build();
+    private final Cache<@NotNull UUID, Set<ViolationData>> _violationCache = Caffeine.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(3, TimeUnit.MINUTES)
+            .build();
+    private final Cache<@NotNull UUID, Set<ViolationData>> _violationActiveCache = Caffeine.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(3, TimeUnit.MINUTES)
+            .build();
     //#region SQL Statements
     private String addPlayerDataSql;
     private String updatePlayerDataSql;
     private String removePlayerDataSql;
     private String getPlayerDataSql;
+    // Ignored players
     private String addIgnoredPlayerSql;
     private String removeIgnoredPlayerSql;
     private String getIgnoredPlayersSql;
+    // Violations
+    private String addViolationSql;
+    private String removeViolationSql;
+    private String getViolationsSql;
+    private String getActiveViolationsSql;
     //#endregion
 
 
@@ -75,6 +88,20 @@ public class SqlLiteDatabase implements IDatabase {
                 _config.storageTablePrefix);
 
         getIgnoredPlayersSql = String.format("SELECT * FROM %s_ignores WHERE PlayerId=?;",
+                _config.storageTablePrefix);
+
+        addViolationSql = String.format("INSERT INTO %s_violations (Id, PlayerId, Type, Details, Timestamp) " +
+                        "VALUES (?, ?, ?, ?, ?);",
+                _config.storageTablePrefix);
+
+        removeViolationSql = String.format("DELETE FROM %s_violations WHERE Id=? LIMIT 1;",
+                _config.storageTablePrefix);
+
+        getViolationsSql = String.format("SELECT * FROM %s_violations WHERE PlayerId=?;",
+                _config.storageTablePrefix);
+
+        // second ? is current time in millis, minus the duration threshold until it is considered active
+        getActiveViolationsSql = String.format("SELECT * FROM %s_violations WHERE PlayerId=? AND (?-Timestamp)<?;",
                 _config.storageTablePrefix);
     }
 
@@ -120,6 +147,18 @@ public class SqlLiteDatabase implements IDatabase {
                             "PlayerId VARCHAR(36) NOT NULL, " +
                             "IgnoredId VARCHAR(36) NOT NULL, " +
                             "PRIMARY KEY (PlayerId, IgnoredId));",
+                    _config.storageTablePrefix
+            );
+            statement = connection.prepareStatement(sql);
+            statement.executeUpdate();
+
+            // Violations table
+            sql = String.format("CREATE TABLE IF NOT EXISTS %s_violations (" +
+                            "Id VARCHAR(36) NOT NULL PRIMARY KEY, " +
+                            "PlayerId VARCHAR(36) NOT NULL, " +
+                            "Type VARCHAR(32) NOT NULL, " +
+                            "Details VARCHAR(255) NOT NULL, " +
+                            "Timestamp INTEGER NOT NULL);",
                     _config.storageTablePrefix
             );
             statement = connection.prepareStatement(sql);
@@ -289,7 +328,9 @@ public class SqlLiteDatabase implements IDatabase {
             if (ignoredSet != null) {
                 ignoredSet.add(ignoredPlayerId);
             } else {
-                _ignoredPlayerCache.put(playerId, Set.of(ignoredPlayerId));
+                var tempSet = new HashSet<UUID>();
+                tempSet.add(ignoredPlayerId);
+                _ignoredPlayerCache.put(playerId, tempSet);
             }
         } catch (Exception ex) {
             _logger.error(String.format("Unknown error happened while adding ignore data...\n%s", ex.getMessage()));
@@ -349,5 +390,172 @@ public class SqlLiteDatabase implements IDatabase {
         _ignoredPlayerCache.put(playerId, data);
         return data.contains(ignoredPlayerId);
     }
+    //#endregion
+
+    //#region Violations
+
+    @Override
+    public void addViolation(UUID playerId, EViolationType type, String details) {
+        try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection!");
+                return;
+            }
+            var violationId = UUID.randomUUID();
+            long timestamp = System.currentTimeMillis();
+            try (PreparedStatement statement = connection.prepareStatement(addViolationSql)) {
+                statement.setString(1, violationId.toString());
+                statement.setString(2, playerId.toString());
+                statement.setString(3, type.name());
+                statement.setString(4, details);
+                statement.setLong(5, timestamp);
+                statement.executeUpdate();
+            }
+
+            var newViolation = new ViolationData(violationId, playerId, type, details, timestamp);
+
+            // Add to whole cache
+            var violationSet = _violationCache.getIfPresent(playerId);
+            if (violationSet != null) {
+                violationSet.add(newViolation);
+            }
+            else {
+                var tempSet = new HashSet<ViolationData>();
+                tempSet.add(newViolation);
+                _violationCache.put(playerId, tempSet);
+            }
+
+            // Add to active cache
+            var activeViolationSet = _violationActiveCache.getIfPresent(playerId);
+            if (activeViolationSet != null) {
+                activeViolationSet.add(newViolation);
+            }
+            else {
+                var tempSet = new HashSet<ViolationData>();
+                tempSet.add(newViolation);
+                _violationActiveCache.put(playerId, tempSet);
+            }
+        } catch (Exception ex) {
+            _logger.error(String.format("Unknown error happened while adding violation...\n%s", ex));
+        }
+    }
+
+    @Override
+    public void removeViolation(UUID violationId, UUID playerId) {
+        try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection!");
+                return;
+            }
+            try (PreparedStatement statement = connection.prepareStatement(removeViolationSql)) {
+                statement.setString(1, violationId.toString());
+                statement.executeUpdate();
+            }
+
+            var violationSet = _violationCache.getIfPresent(playerId);
+            if (violationSet != null) {
+                violationSet.removeIf(v -> v.getId().equals(violationId));
+            }
+
+            var activeViolationSet = _violationActiveCache.getIfPresent(playerId);
+            if (activeViolationSet != null) {
+                activeViolationSet.removeIf(v -> v.getId().equals(violationId));
+            }
+        } catch (Exception ex) {
+            _logger.error(String.format("Unknown error happened while removing violation...\n%s", ex));
+        }
+    }
+
+    @Override
+    public Optional<Set<ViolationData>> getViolations(UUID playerId) {
+        var data = _violationCache.getIfPresent(playerId);
+        if (data != null) {
+            return Optional.of(data);
+        }
+
+        data = new HashSet<>();
+        try (Connection connection =createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection!");
+                return Optional.empty();
+            }
+            try (PreparedStatement statement = connection.prepareStatement(getViolationsSql)) {
+                statement.setString(1, playerId.toString());
+                try (ResultSet result = statement.executeQuery()) {
+                    while (result.next()) {
+                        data.add(new ViolationData(
+                                UUID.fromString(result.getString("Id")),
+                                UUID.fromString(result.getString("PlayerId")),
+                                EViolationType.valueOf(result.getString("Type")),
+                                result.getString("Details"),
+                                result.getLong("Timestamp")
+                        ));
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            _logger.error(String.format("Unknown error happened while finding violations...\n%s", ex));
+            return Optional.empty();
+        }
+
+        _violationCache.put(playerId, data);
+        return Optional.of(data);
+    }
+
+    @Override
+    public Optional<Set<ViolationData>> getActiveViolations(UUID playerId) {
+        var data = _violationActiveCache.getIfPresent(playerId);
+        if (data != null) {
+            return Optional.of(data);
+        }
+
+        data = new HashSet<>();
+        try (Connection connection = createConnection()) {
+            if (connection == null) {
+                _logger.error("Could not create database connection!");
+                return Optional.empty();
+            }
+            try (PreparedStatement statement = connection.prepareStatement(getActiveViolationsSql)) {
+                statement.setString(1, playerId.toString());
+                statement.setLong(2, System.currentTimeMillis());
+                statement.setLong(3, _config.violationDurationMilliseconds);
+                try (ResultSet result = statement.executeQuery()) {
+                    while (result.next()) {
+                        data.add(new ViolationData(
+                                UUID.fromString(result.getString("Id")),
+                                UUID.fromString(result.getString("PlayerId")),
+                                EViolationType.valueOf(result.getString("Type")),
+                                result.getString("Details"),
+                                result.getLong("Timestamp")
+                        ));
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            _logger.error(String.format("Unknown error happened while finding active violations...\n%s", ex));
+            return Optional.empty();
+        }
+
+        _violationActiveCache.put(playerId, data);
+        return Optional.of(data);
+    }
+
+    @Override
+    public Optional<Set<ViolationData>> getActiveViolationsByType(UUID playerId, EViolationType type) {
+        var data = _violationActiveCache.getIfPresent(playerId);
+        if (data != null) {
+            return Optional.of(data.stream()
+                    .filter(x -> x.getType() == type)
+                    .collect(Collectors.toSet())
+            );
+        }
+
+        return getActiveViolations(playerId).map(violations ->
+                violations.stream()
+                        .filter(x -> x.getType() == type)
+                        .collect(Collectors.toSet())
+        );
+    }
+
     //#endregion
 }
