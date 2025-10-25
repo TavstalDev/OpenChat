@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 /**
  * Configures the Gradle build script for the OpenChat project.
  * This script sets up plugins, repositories, dependencies, and tasks required for building the project.
@@ -21,6 +23,7 @@ val caffeineVersion: String by project
 val placeholderApiVersion: String by project
 val sirblobmanApiVersion: String by project
 val sirblobmanCombatLogVersion: String by project
+val apacheCommonsTextVersion: String by project
 val projectPackageName = "${project.group}.openChat"
 
 // Configure Java toolchain and compatibility settings
@@ -65,6 +68,8 @@ dependencies {
     implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
     // SQL caching
     implementation("com.github.ben-manes.caffeine:caffeine:${caffeineVersion}")
+    // String similarity algorithm
+    implementation("org.apache.commons:commons-text:${apacheCommonsTextVersion}")
 }
 
 // Disable the default JAR task
@@ -86,6 +91,7 @@ tasks.shadowJar {
     // Relocate packages to avoid conflicts
     relocate("com.zaxxer.hikari", "${projectPackageName}.shadow.hikari")
     relocate("com.github.benmanes.caffeine", "${projectPackageName}.shadow.caffeine")
+    relocate("org.apache.commons.text", "${projectPackageName}.shadow.commonstext")
 }
 
 // Ensure the Shadow JAR task runs during the build process
