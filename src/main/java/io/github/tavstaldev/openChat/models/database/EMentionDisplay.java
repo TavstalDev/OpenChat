@@ -1,4 +1,4 @@
-package io.github.tavstaldev.openChat.models;
+package io.github.tavstaldev.openChat.models.database;
 
 /**
  * Enum representing different mention options for notifications.
