@@ -1,4 +1,4 @@
-package io.github.tavstaldev.openChat.models;
+package io.github.tavstaldev.openChat.models.systems;
 
 import io.github.tavstaldev.openChat.OpenChat;
 import org.bukkit.configuration.ConfigurationSection;

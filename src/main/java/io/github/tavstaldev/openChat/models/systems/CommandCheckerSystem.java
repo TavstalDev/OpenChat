@@ -1,6 +1,7 @@
-package io.github.tavstaldev.openChat.models;
+package io.github.tavstaldev.openChat.models.systems;
 
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.models.TabGroup;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
