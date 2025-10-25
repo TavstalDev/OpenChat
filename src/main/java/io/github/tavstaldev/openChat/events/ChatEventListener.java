@@ -6,9 +6,11 @@ import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.OpenChatConfiguration;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
+import io.github.tavstaldev.openChat.models.database.EViolationType;
 import io.github.tavstaldev.openChat.util.MentionUtils;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
 import io.github.tavstaldev.openChat.util.VanishUtil;
+import io.github.tavstaldev.openChat.util.ViolationUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -76,24 +78,17 @@ public class ChatEventListener implements Listener {
                 event.setCancelled(true);
                 // The +1 ensures that it doesn't display 0 seconds remaining when the cooldown is about to expire
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.ChatCooldown", Map.of("time", String.valueOf(chatCooldown.getSecond() - LocalDateTime.now().getSecond() + 1)));
-                for (String cmd : config.antiSpamExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
-                    );
-                }
+
+                ViolationUtil.handleViolationAsync(source, EViolationType.SPAM_DELAY, rawMessage, config.antiSpamDelayViolationActions);
                 return;
             }
 
             // Feature: Repeated messages
-            // TODO: Improve repeated message detection to ignore minor differences (e.g., punctuation, spacing)
             if (config.antiSpamMaxDuplicates >= 1 && cache.getChatSpamCount() >= config.antiSpamMaxDuplicates) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.RepeatedMessages");
-                for (String cmd : config.antiSpamExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
-                    );
-                }
+
+                ViolationUtil.handleViolationAsync(source, EViolationType.SPAM_REPETITION, rawMessage, config.antiSpamSimilarityViolationActions);
                 return;
             }
         }
@@ -103,11 +98,8 @@ public class ChatEventListener implements Listener {
             if (OpenChat.advertisementSystem().containsAdvertisement(rawMessage)) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiAd.AdvertisementDetected");
-                for (String cmd : config.antiAdvertisementExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
-                    );
-                }
+
+                ViolationUtil.handleViolationAsync(source, EViolationType.ADVERTISEMENT, rawMessage, config.antiAdvertisementViolationActions);
                 return;
             }
         }
@@ -122,11 +114,8 @@ public class ChatEventListener implements Listener {
                 if (capsPercentage > maxCapsPercentage) {
                     event.setCancelled(true);
                     OpenChat.Instance.sendLocalizedMsg(source, "AntiCaps.TooManyCaps");
-                    for (String cmd : config.antiCapsExecuteCommand) {
-                        Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
-                        );
-                    }
+
+                    ViolationUtil.handleViolationAsync(source, EViolationType.CAPS_LOCK, rawMessage, config.antiCapsViolationActions);
                     return;
                 }
             }
@@ -137,11 +126,8 @@ public class ChatEventListener implements Listener {
             if (OpenChat.antiSwearSystem().containsSwearWord(rawMessage)) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSwear.WordDetected");
-                for (String cmd : config.antiSwearExecuteCommand) {
-                    Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", source.getName()))
-                    );
-                }
+
+                ViolationUtil.handleViolationAsync(source, EViolationType.CURSE_WORDS, rawMessage, config.antiSwearViolationActions);
                 return;
             }
         }
@@ -154,6 +140,24 @@ public class ChatEventListener implements Listener {
         if (!config.customChatEnabled)
         {
             rawMessage = handleMentions(source, rawMessage, config);
+            boolean coloredHexChat = source.hasPermission(config.customChatHexRichTextPermission);
+            boolean coloredLegacyChat = source.hasPermission(config.customChatLegacyRichTextPermission);
+            if (!coloredHexChat && !coloredLegacyChat) {
+                rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = rawMessage.replace("<", "\\<");
+            }
+            else {
+                if (!coloredHexChat) {
+                    rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
+                    rawMessage = rawMessage.replace("<#", "\\<#");
+                }
+                if (!coloredLegacyChat) {
+                    rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+                    rawMessage = rawMessage.replaceAll("<(?!#)", "\\\\<");
+                }
+            }
+
             event.message(ChatUtils.translateColors(rawMessage, true));
             return;
         }
@@ -236,11 +240,22 @@ public class ChatEventListener implements Listener {
         }
 
         chatFormat = PlaceholderAPI.setPlaceholders(source, chatFormat);
-        if (!source.hasPermission(config.customChatHexRichTextPermission)) {
+        boolean hasHex = source.hasPermission(config.customChatHexRichTextPermission);
+        boolean hasLegacy = source.hasPermission(config.customChatLegacyRichTextPermission);
+        if (!hasHex && !hasLegacy) {
             rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
-        }
-        if (!source.hasPermission(config.customChatLegacyRichTextPermission)) {
             rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+            rawMessage = rawMessage.replace("<", "\\<");
+        }
+        else {
+            if (!hasHex) {
+                rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = rawMessage.replace("<#", "\\<#");
+            }
+            if (!hasLegacy) {
+                rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = rawMessage.replaceAll("<(?!#)", "\\\\<");
+            }
         }
 
         // Mentions
