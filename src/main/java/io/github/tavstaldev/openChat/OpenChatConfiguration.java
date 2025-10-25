@@ -1,6 +1,7 @@
 package io.github.tavstaldev.openChat;
 
 import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
+import io.github.tavstaldev.openChat.models.ViolationAction;
 
 import java.util.*;
 
@@ -18,31 +19,35 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public String storageType, storageFilename, storageHost, storageDatabase, storageUsername, storagePassword, storageTablePrefix;
     public int storagePort;
 
+    // Violations
+    public long violationDurationMilliseconds;
+
     // Anti-Spam
     public boolean antiSpamEnabled;
+    public double antiSpamMessageSimilarityThreshold, antiSpamCommandSimilarityThreshold;
     public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates, antiSpamMaxCommandDuplicates;
     public Set<String> antiSpamCommandWhitelist;
-    public Set<String> antiSpamExecuteCommand;
+    public Set<ViolationAction> antiSpamDelayViolationActions, antiSpamSimilarityViolationActions;
     public String antiSpamExemptPermission;
 
     // Anti-Advertisement
     public boolean antiAdvertisementEnabled;
     public String antiAdvertisementRegex;
     public Set<String> antiAdvertisementWhitelist;
-    public Set<String> antiAdvertisementExecuteCommand;
+    public Set<ViolationAction> antiAdvertisementViolationActions;
     public String antiAdvertisementExemptPermission;
 
     // Anti-Caps
     public boolean antiCapsEnabled;
     public int antiCapsMinLength, antiCapsPercentage;
-    public Set<String> antiCapsExecuteCommand;
+    public Set<ViolationAction> antiCapsViolationActions;
     public String antiCapsExemptPermission;
 
     // Anti-Swear
     public boolean antiSwearEnabled;
     // Character mapping and bad words are not stored here, since they are only called
     // when initializing the AntiSwearSystem class, so storing them here would be redundant.
-    public Set<String> antiSwearExecuteCommand;
+    public Set<ViolationAction> antiSwearViolationActions;
     public String antiSwearExemptPermission;
 
     // Command Blocker
@@ -97,14 +102,17 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
     @Override
     protected void loadDefaults() {
-        // General
+        Set<ViolationAction> violationActions = new LinkedHashSet<>();
+
+        //#region General
         locale = resolveGet("locale", "eng");
         usePlayerLocale = resolveGet("usePlayerLocale", true);
         checkForUpdates = resolveGet("checkForUpdates", true);
         debug = resolveGet("debug", false);
         prefix = resolveGet("prefix", "&bOpen&3Chat &8»");
+        //#endregion
 
-        // Storage
+        //#region Storage
         storageType = resolveGet("storage.type", "sqlite");
         storageFilename = resolveGet("storage.filename", "database");
         storageHost = resolveGet("storage.host", "localhost");
@@ -113,13 +121,26 @@ public class OpenChatConfiguration extends ConfigurationBase {
         storageUsername = resolveGet("storage.username", "root");
         storagePassword = resolveGet("storage.password", "ascent");
         storageTablePrefix = resolveGet("storage.tablePrefix", "openchat");
+        //#endregion
 
-        // Anti-Spam
+        //#region Violations
+        violationDurationMilliseconds = resolveGet("violations.ResetTime", 60) * 60 * 1000L;
+        resolveComment("violations.ResetTime", List.of(
+                "Time in minutes after which a player's violation count is reset.",
+                "Logs are stored indefinitely, but violations older than this time will not be counted towards further actions.")
+        );
+        //#endregion
+
+        //#region Anti-Spam
         antiSpamEnabled = resolveGet("antiSpam.enabled", true);
         antiSpamChatDelay = resolveGet("antiSpam.chatDelay", 2);
         antiSpamMaxDuplicates= resolveGet("antiSpam.maxDuplicates", 3);
         antiSpamCommandDelay = resolveGet("antiSpam.commandDelay", 2);
         antiSpamMaxCommandDuplicates= resolveGet("antiSpam.maxCommandDuplicates", 3);
+        antiSpamMessageSimilarityThreshold = resolveGet("antiSpam.messageSimilarityThreshold", 0.8);
+        resolveComment("antiSpam.messageSimilarityThreshold", List.of("Value between 0.0 and 1.0, where 1.0 is 100% identical messages."));
+        antiSpamCommandSimilarityThreshold = resolveGet("antiSpam.commandSimilarityThreshold", 0.8);
+        resolveComment("antiSpam.commandSimilarityThreshold", List.of("Value between 0.0 and 1.0, where 1.0 is 100% identical commands."));
         antiSpamCommandWhitelist = new LinkedHashSet<>(resolveGet("antiSpam.commandWhitelist", List.of(
                 "/msg",
                 "/tell",
@@ -140,10 +161,51 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "/party"
         )));
         antiSpamExemptPermission = resolveGet("antiSpam.exemptPermission", "openchat.bypass.antispam");
-        antiSpamExecuteCommand =  new LinkedHashSet<>(resolveGet("antiSpam.executeCommand", List.of("kick {player} Please do not spam")));
+        //#region Delay violation actions
+        // Fill with default values if not present
+        if (get("antiSpam.delayViolationActions") == null) {
+            List<Map<String, Object>> defaultActions = new ArrayList<>();
+            defaultActions.add(Map.of("operator", "==", "amount", 1, "command", "warn {player} Please do not send messages too quickly."));
+            defaultActions.add(Map.of("operator", "==", "amount", 2, "command", "mute {player} 5m Please do not send messages too quickly."));
+            defaultActions.add(Map.of("operator", ">=", "amount", 3, "command", "mute {player} 15m Please do not send messages too quickly."));
+            resolve("antiSpam.delayViolationActions", defaultActions);
+        }
+        // Reset violation set
+        violationActions = new LinkedHashSet<>();
+        // Load from config
+        for (Map<?, ?> actionMap : getMapList("antiSpam.delayViolationActions")) {
+            ViolationAction action = ViolationAction.fromMap(actionMap);
+            if (action != null) {
+                violationActions.add(action);
+            }
+        }
+        antiSpamDelayViolationActions = violationActions;
+        resolveComment("antiSpam.delayViolationActions", List.of("Commands to execute when a player violates the chat or command delay. Use {player} to insert the player's name."));
+        //#endregion
+        //#region Similarity violation actions
+        // Fill with default values if not present
+        if (get("antiSpam.similarityViolationActions") == null) {
+            List<Map<String, Object>> defaultActions = new ArrayList<>();
+            defaultActions.add(Map.of("operator", "==", "amount", 1, "command", "warn {player} Please do not repeat yourself too much."));
+            defaultActions.add(Map.of("operator", "==", "amount", 2, "command", "mute {player} 5m Please do not repeat yourself too much."));
+            defaultActions.add(Map.of("operator", ">=", "amount", 3, "command", "mute {player} 15m Please do not repeat yourself too much."));
+            resolve("antiSpam.similarityViolationActions", defaultActions);
+        }
+        // Reset violation set
+        violationActions = new LinkedHashSet<>();
+        // Load from config
+        for (Map<?, ?> actionMap : getMapList("antiSpam.similarityViolationActions")) {
+            ViolationAction action = ViolationAction.fromMap(actionMap);
+            if (action != null) {
+                violationActions.add(action);
+            }
+        }
+        antiSpamSimilarityViolationActions = violationActions;
+        resolveComment("antiSpam.similarityViolationActions", List.of("Commands to execute when a player exceeds the allowed duplicate messages or commands. Use {player} to insert the player's name."));
+        //#endregion
+        //#endregion
 
-
-        // Anti-Advertisement
+        //#region Anti-Advertisement
         antiAdvertisementEnabled = resolveGet("antiAdvertisement.enabled", true);
         antiAdvertisementRegex = resolveGet("antiAdvertisement.regex", "(?i)\\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:[a-z]{2,}))\\b");
         antiAdvertisementWhitelist = new LinkedHashSet<>(resolveGet("antiAdvertisement.whitelist", List.of(
@@ -151,29 +213,71 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "discord.gg/minecraft"
         )));
         antiAdvertisementExemptPermission = resolveGet("antiAdvertisement.exemptPermission", "openchat.bypass.antiadvertisement");
-        antiAdvertisementExecuteCommand = new LinkedHashSet<>(resolveGet("antiAdvertisement.executeCommand", List.of("kick {player} Please do not advertise")));
+        //#region Violation actions
+        // Fill with default values if not present
+        if (get("antiAdvertisement.violationActions") == null) {
+            List<Map<String, Object>> defaultActions = new ArrayList<>();
+            defaultActions.add(Map.of("operator", "==", "amount", 1, "command", "warn {player} Please do not advertise."));
+            defaultActions.add(Map.of("operator", "==", "amount", 2, "command", "mute {player} 5m Please do not advertise."));
+            defaultActions.add(Map.of("operator", ">=", "amount", 3, "command", "mute {player} 15m Please do not advertise."));
+            resolve("antiAdvertisement.violationActions", defaultActions);
+        }
+        // Reset violation set
+        violationActions = new LinkedHashSet<>();
+        // Load from config
+        for (Map<?, ?> actionMap : getMapList("antiAdvertisement.violationActions")) {
+            ViolationAction action = ViolationAction.fromMap(actionMap);
+            if (action != null) {
+                violationActions.add(action);
+            }
+        }
+        antiAdvertisementViolationActions = violationActions;
+        //#endregion
+        //#endregion
 
-        // Anti-Caps
+        //#region Anti-Caps
         antiCapsEnabled = resolveGet("antiCaps.enabled", true);
         antiCapsMinLength = resolveGet("antiCaps.minLength", 10);
         antiCapsPercentage = resolveGet("antiCaps.percentage", 70);
         antiCapsExemptPermission = resolveGet("antiCaps.exemptPermission", "openchat.bypass.anticaps");
-        antiCapsExecuteCommand = new LinkedHashSet<>(resolveGet("antiCaps.executeCommand", List.of("kick {player} Please do not spam")));
+        //#region Violation actions
+        // Fill with default values if not present
+        if (get("antiCaps.violationActions") == null) {
+            List<Map<String, Object>> defaultActions = new ArrayList<>();
+            defaultActions.add(Map.of("operator", "==", "amount", 1, "command", "warn {player} Please do not use excessive capital letters."));
+            defaultActions.add(Map.of("operator", "==", "amount", 2, "command", "mute {player} 5m Please do not use excessive capital letters."));
+            defaultActions.add(Map.of("operator", ">=", "amount", 3, "command", "mute {player} 15m Please do not use excessive capital letters."));
+            resolve("antiCaps.violationActions", defaultActions);
+        }
+        // Reset violation set
+        violationActions = new LinkedHashSet<>();
+        // Load from config
+        for (Map<?, ?> actionMap : getMapList("antiCaps.violationActions")) {
+            ViolationAction action = ViolationAction.fromMap(actionMap);
+            if (action != null) {
+                violationActions.add(action);
+            }
+        }
+        antiCapsViolationActions = violationActions;
+        //#endregion
+        //#endregion
 
-        // OP-Protection
+        //#region OP-Protection
         opProtectionEnabled = resolveGet("opProtection.enabled", false);
         opProtectionOperators = new LinkedHashSet<>(resolveGet("opProtection.operators", List.of(
                 "Steve",
                 "Alex"
         )));
+        //#endregion
 
-        // Private Messaging
+        //#region Private Messaging
         privateMessagingEnabled = resolveGet("privateMessaging.enabled", true);
         privateMessagingSocialSpyEnabled = resolveGet("privateMessaging.socialSpyEnabled", true);
         privateMessagingSocialSpyPermission = resolveGet("privateMessaging.socialSpyPermission", "openchat.socialspy");
         privateMessagingVanishBypassPermission = resolveGet("privateMessaging.vanishBypassPermission", "openchat.bypass.vanish");
+        //#endregion
 
-        // Custom Chat
+        //#region Custom Chat
         customChatEnabled = resolveGet("customChat.enabled", false);
         customChatLocalChatDistance = resolveGet("customChat.localChatDistance", 200);
         customChatLocalChatExemptPermission = resolveGet("customChat.localChatExemptPermission", "openchat.bypass.localchat");
@@ -188,15 +292,17 @@ public class OpenChatConfiguration extends ConfigurationBase {
         customChatQuestionPrefix = resolveGet("customChat.questionPrefix", "?");
         customChatLegacyRichTextPermission = resolveGet("customChat.legacyRichTextPermission", "openchat.chat.color");
         customChatHexRichTextPermission = resolveGet("customChat.hexRichTextPermission", "openchat.chat.hexcolor");
+        //#endregion
 
-        // Custom Greeting
+        //#region Custom Greeting
         customGreetingEnabled = resolveGet("customGreeting.enabled", false);
         customGreetingOverrideJoinMessage = resolveGet("customGreeting.overrideJoinMessage", false);
         customGreetingJoinMessage = resolveGet("customGreeting.joinMessage", "&8(&a+&8) &a{player}");
         customGreetingOverrideLeaveMessage = resolveGet("customGreeting.overrideLeaveMessage", false);
         customGreetingLeaveMessage = resolveGet("customGreeting.leaveMessage", "&8(&c-&8) &c{player}");
+        //#endregion
 
-        // Mentions
+        //#region Mentions
         mentionsEnabled = resolveGet("mentions.enabled", true);
         mentionsDefaultDisplay = resolveGet("mentions.defaultDisplay", "ALL");
         mentionsDefaultPreference = resolveGet("mentions.defaultPreference", "ALWAYS");
@@ -205,9 +311,10 @@ public class OpenChatConfiguration extends ConfigurationBase {
         mentionsPitch = resolveGet("mentions.pitch", 1.0);
         mentionsCooldown = resolveGet("mentions.mentionCooldown", 3);
         mentionsLimitPerMessage = resolveGet("mentions.maxMentionsPerMessage", 3);
-        mentionsAllowSelfMention = resolveGet("mentions.allowSelfMention", true);
+        mentionsAllowSelfMention = resolveGet("mentions.allowSelfMention", false);
+        //#endregion
 
-        // Command Blocker
+        //#region Command Blocker
         commandBlockerEnabled = resolveGet("commandBlocker.enabled", true);
         commandBlockerEnableBypass = resolveGet("commandBlocker.enableBypass", true);
         commandBlockerBypassPermission = resolveGet("commandBlocker.bypassPermission", "openchat.bypass.commandblocker");
@@ -250,9 +357,9 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "/pt bc",
                 "/bc"
         )));
+        //#endregion
 
-
-        // Tab completion
+        //#region Tab completion
         tabCompletionEnabled = resolveGet("tabCompletion.enabled", true);
         tabCompletionExemptPermission = resolveGet("tabCompletion.exemptPermission", "openchat.bypass.tabcompletion");
         if (get("tabCompletion.entries") == null) {
@@ -349,9 +456,15 @@ public class OpenChatConfiguration extends ConfigurationBase {
             tabEntriesDefault.put("default", defaultEntries);
             tabEntriesDefault.put("staff", staffEntries);
             resolve("tabCompletion.entries", tabEntriesDefault);
-        }
 
-        // Anti-swear
+            // Helping garbage collection
+            defaultEntries = null;
+            staffEntries = null;
+            tabEntriesDefault = null;
+        }
+        //#endregion
+
+        //#region Anti-swear
         antiSwearEnabled = resolveGet("antiSwear.enabled", true);
         //noinspection ExtractMethodRecommender
         Map<Character, String> characterMappings = new LinkedHashMap<>();
@@ -412,6 +525,31 @@ public class OpenChatConfiguration extends ConfigurationBase {
         });
         //#endregion
         antiSwearExemptPermission = resolveGet("antiSwear.exemptPermission", "openchat.bypass.antiswear");
-        antiSwearExecuteCommand = new LinkedHashSet<>(resolveGet("antiSwear.executeCommand", List.of("kick {player} Please do not swear")));
+        //#region Violation actions
+        // Fill with default values if not present
+        if (get("antiSwear.violationActions") == null) {
+            List<Map<String, Object>> defaultActions = new ArrayList<>();
+            defaultActions.add(Map.of("operator", "==", "amount", 1, "command", "warn {player} Please watch your language."));
+            defaultActions.add(Map.of("operator", "==", "amount", 2, "command", "mute {player} 5m Please watch your language."));
+            defaultActions.add(Map.of("operator", ">=", "amount", 3, "command", "mute {player} 15m Please watch your language."));
+            resolve("antiSwear.violationActions", defaultActions);
+        }
+        // Reset violation set
+        violationActions = new LinkedHashSet<>();
+        // Load from config
+        for (Map<?, ?> actionMap : getMapList("antiSwear.violationActions")) {
+            ViolationAction action = ViolationAction.fromMap(actionMap);
+            if (action != null) {
+                violationActions.add(action);
+            }
+        }
+        antiSwearViolationActions = violationActions;
+        //#endregion
+        //#endregion
+
+        //#region Garbage Collection helper
+        violationActions = null;
+        characterMappings = null;
+        //#endregion
     }
 }
