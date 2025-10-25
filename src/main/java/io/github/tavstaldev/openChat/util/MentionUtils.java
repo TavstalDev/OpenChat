@@ -4,7 +4,7 @@ import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
-import io.github.tavstaldev.openChat.models.EMentionDisplay;
+import io.github.tavstaldev.openChat.models.database.EMentionDisplay;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.entity.Player;

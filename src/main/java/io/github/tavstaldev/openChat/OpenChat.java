@@ -1,6 +1,5 @@
 package io.github.tavstaldev.openChat;
 
-import com.github.sirblobman.combatlogx.api.manager.IPlaceholderManager;
 import io.github.tavstaldev.minecorelib.PluginBase;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
@@ -13,9 +12,9 @@ import io.github.tavstaldev.openChat.events.*;
 import io.github.tavstaldev.openChat.managers.CombatLogManager;
 import io.github.tavstaldev.openChat.managers.CombatManager;
 import io.github.tavstaldev.openChat.managers.ICombatManager;
-import io.github.tavstaldev.openChat.models.AntiAdvertisementSystem;
-import io.github.tavstaldev.openChat.models.AntiSwearSystem;
-import io.github.tavstaldev.openChat.models.CommandCheckerSystem;
+import io.github.tavstaldev.openChat.models.systems.AntiAdvertisementSystem;
+import io.github.tavstaldev.openChat.models.systems.AntiSwearSystem;
+import io.github.tavstaldev.openChat.models.systems.CommandCheckerSystem;
 import io.github.tavstaldev.openChat.tasks.CacheCleanTask;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -29,7 +28,6 @@ public final class OpenChat extends PluginBase {
     public static OpenChat Instance; // Singleton instance of the plugin.
     private IDatabase database; // Database manager for handling player data storage.
     private ICombatManager CombatManager; // Combat manager for handling combat-related features.
-    private IPlaceholderManager placeholderManager; // Placeholder manager
     private AntiAdvertisementSystem advertisementSystem; // System for detecting advertisements in chat.
     private AntiSwearSystem antiSwearSystem; // System for detecting swear words in chat.
     private CommandCheckerSystem commandCheckerSystem; // System for checking commands.
@@ -38,10 +36,6 @@ public final class OpenChat extends PluginBase {
 
     public static IDatabase database() {
         return Instance.database;
-    }
-
-    public static IPlaceholderManager placeholderManager() {
-        return Instance.placeholderManager;
     }
 
     public static ICombatManager combatManager() {
@@ -113,6 +107,7 @@ public final class OpenChat extends PluginBase {
     public void onEnable() {
         Instance = this;
         _config = new OpenChatConfiguration();
+        _config.load(); // Fix load bug
         _translator = new PluginTranslator(this, new String[]{"eng", "hun"});
         _logger.info(String.format("Loading %s...", getProjectName()));
 
