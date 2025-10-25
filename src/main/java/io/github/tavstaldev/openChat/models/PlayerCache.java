@@ -1,6 +1,7 @@
 package io.github.tavstaldev.openChat.models;
 
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.util.StringUtil;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,12 +61,16 @@ public class PlayerCache {
      * @param message The new chat message.
      */
     public void setLastChatMessage(String message) {
-        if (message.equalsIgnoreCase(lastChatMessage)) {
+        var config = OpenChat.config();
+        if (!config.antiSpamEnabled)
+            return;
+
+        if (StringUtil.similarity(message, this.lastChatMessage) >= config.antiSpamMessageSimilarityThreshold) {
             chatSpamCount++;
         } else {
-            this.lastChatMessage = message;
             chatSpamCount = 0;
         }
+        this.lastChatMessage = message;
     }
 
     /**
@@ -93,14 +98,23 @@ public class PlayerCache {
      * @param command The new command.
      */
     public void setLastCommand(String command) {
-        if (command.equalsIgnoreCase(lastCommand)) {
-            if (OpenChat.commandCheckerSystem().isSpamWhitelisted(command))
-                return;
+        var config = OpenChat.config();
+        if (!config.antiSpamEnabled)
+            return;
+
+        if (OpenChat.commandCheckerSystem().isSpamWhitelisted(command))
+        {
+            commandSpamCount = 0;
+            this.lastCommand = command;
+            return;
+        }
+
+        if (StringUtil.similarity(command, this.lastCommand) >= config.antiSpamCommandSimilarityThreshold) {
             commandSpamCount++;
         } else {
-            this.lastCommand = command;
             commandSpamCount = 0;
         }
+        this.lastCommand = command;
     }
 
     public LocalDateTime getChatMessageDelay() {
