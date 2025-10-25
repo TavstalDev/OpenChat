@@ -4,6 +4,8 @@ import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
+import io.github.tavstaldev.openChat.models.database.EViolationType;
+import io.github.tavstaldev.openChat.util.ViolationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -65,11 +67,9 @@ public class CommandEventListener implements Listener {
                     Map.of("time", String.valueOf(cache.getCommandDelay().getSecond() - LocalDateTime.now().getSecond() + 1)));
 
             // Execute configured commands for cooldown violations.
-            for (String cmd : config.antiSpamExecuteCommand) {
-                Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", player.getName()));
-                });
-            }
+            ViolationUtil.handleViolationAsync(player, EViolationType.SPAM_DELAY,
+                    "<red>[COMMAND]:</red> " + command,
+                    config.antiSpamDelayViolationActions);
             return;
         }
 
@@ -92,11 +92,9 @@ public class CommandEventListener implements Listener {
             OpenChat.Instance.sendLocalizedMsg(player, "AntiSpam.RepeatedCommands");
 
             // Execute configured commands for spam violations.
-            for (String cmd : config.antiSpamExecuteCommand) {
-                Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", player.getName()));
-                });
-            }
+            ViolationUtil.handleViolationAsync(player, EViolationType.SPAM_REPETITION,
+                    "<red>[COMMAND]:</red> " + command,
+                    config.antiSpamSimilarityViolationActions);
             return;
         }
 
