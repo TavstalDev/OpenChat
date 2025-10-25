@@ -93,6 +93,10 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public boolean customGreetingOverrideLeaveMessage;
     public String customGreetingLeaveMessage;
 
+    // Custom Motds
+    public boolean customMotdsEnabled;
+    public List<String> customMotds;
+
     // Mentions
     public boolean mentionsEnabled;
     public String mentionsDefaultDisplay, mentionsDefaultPreference, mentionsDefaultSound;
@@ -102,7 +106,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
     @Override
     protected void loadDefaults() {
-        Set<ViolationAction> violationActions = new LinkedHashSet<>();
+        Set<ViolationAction> violationActions;
 
         //#region General
         locale = resolveGet("locale", "eng");
@@ -300,6 +304,18 @@ public class OpenChatConfiguration extends ConfigurationBase {
         customGreetingJoinMessage = resolveGet("customGreeting.joinMessage", "&8(&a+&8) &a{player}");
         customGreetingOverrideLeaveMessage = resolveGet("customGreeting.overrideLeaveMessage", false);
         customGreetingLeaveMessage = resolveGet("customGreeting.leaveMessage", "&8(&c-&8) &c{player}");
+        //#endregion
+
+        //#region Custom Motds
+        customMotdsEnabled = resolveGet("customMotds.enabled", true);
+        customMotds = resolveGet("customMotds.motds", List.of(
+                // Default MOTD 1
+                "&bWelcome to the server, {player}!\n&aEnjoy your stay and have fun!",
+                // Default MOTD 2
+                "&aRemember to check out our website at &n<hover:show_text:'<aqua>Click on me to visit the website.'><click:open_url:'www.example.com'>www.example.com</click></hover>&r&a!\n&aWe have tons of resources and information there.",
+                // Default MOTD 3
+                "&eJoin our Discord server for the latest news: &ndiscord.gg/example&r&e!\n&eConnect with the community and make new friends!"
+        ));
         //#endregion
 
         //#region Mentions

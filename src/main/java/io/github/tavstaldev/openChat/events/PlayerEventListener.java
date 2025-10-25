@@ -6,11 +6,14 @@ import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Listener for handling player-related events in the OpenChat plugin.
@@ -63,6 +66,24 @@ public class PlayerEventListener implements Listener {
             String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
             message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
             player.getServer().broadcast(ChatUtils.translateColors(message, true));
+        }
+
+        var motds = config.customMotds;
+        if (config.customMotdsEnabled && !motds.isEmpty()) {
+            Bukkit.getScheduler().runTaskLater(OpenChat.Instance, () -> {
+                if (motds.size() == 1) {
+                    String motd = PlaceholderAPI.setPlaceholders(player, motds.getFirst());
+                    motd = motd.replace("{player}", player.getName())
+                            .replace("{displayname}", PlainTextComponentSerializer.plainText().serialize(player.displayName()));
+                    player.sendMessage(ChatUtils.translateColors(motd, true));
+                } else {
+                    int index = ThreadLocalRandom.current().nextInt(motds.size());
+                    String motd = PlaceholderAPI.setPlaceholders(player, motds.get(index));
+                    motd = motd.replace("{player}", player.getName())
+                            .replace("{displayname}", PlainTextComponentSerializer.plainText().serialize(player.displayName()));
+                    player.sendMessage(ChatUtils.translateColors(motd, true));
+                }
+            }, 10L);
         }
     }
 
