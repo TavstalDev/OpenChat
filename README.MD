@@ -30,14 +30,15 @@ It offers customizable settings for chat moderation.
 ## TODO
 Features planned for future releases:
 
-- [ ] **Add Separate Logging for Violations**: Create a dedicated log file to record all chat violations for easier monitoring and detection of false positives.
+- [x] **Add Separate Logging for Violations**: Create a dedicated log file to record all chat violations for easier monitoring and detection of false positives.
 - [x] **Custom Join/Quit Messages**: Allow global and per-player customization of join and quit messages.
 - [ ] **Custom Welcome Messages**: Send personalized welcome messages to players upon joining the server.
 - [ ] **Player Name Hover Info**: Show additional player information when hovering over their name in chat.
-- [ ] **Violation Counter and Punishments**: Implement a system to track player violations and apply punishments based on configurable thresholds.
-- [ ] **Improve Anti-Spam Detection**: Enhance spam detection algorithms to reduce false positives and improve accuracy.
+- [x] **Violation Counter and Punishments**: Implement a system to track player violations and apply punishments based on configurable thresholds.
+- [x] **Improve Anti-Spam Detection**: Enhance spam detection algorithms to reduce false positives and improve accuracy.
 - [ ] **Velocity Support**: Add compatibility with Velocity proxy servers and cross-server chat messaging.
 - [ ] **GUI Configuration**: Implement a graphical user interface for easier configuration of plugin settings.
+- [ ] **Clean Up Shaded Code**: Decrease the size of the plugin jar if possible by removing unnecessary shaded dependencies.
 
 Please note that this plugins' focus is on chat, player input and its moderation, so I do not plan to add such features that are related to tabs, scoreboards, or bossbars.
 If you search a plugin for those features, consider using [TAB](https://www.spigotmc.org/resources/tab-1-8-x-1-21-x.57806/).
@@ -46,24 +47,29 @@ Also, I do not plan to add custom punishment features, like mute, kick or ban co
 
 ## Commands and Permissions
 
-| Command                             | Permission                     | Description                                                                                    |
-|-------------------------------------|--------------------------------|------------------------------------------------------------------------------------------------|
-| `/openchat`                         | `openchat.commands.openchat`   | Displays plugin information and available commands.                                            |
-| `/openchat help`                    | `openchat.commands.help`       | Shows help information for OpenChat commands.                                                  |
-| `/openchat version`                 | `openchat.commands.version`    | Displays the current version of the OpenChat plugin.                                           |
-| `/openchat reload`                  | `openchat.commands.reload`     | Reloads the plugin configuration.                                                              |
-| `/openchat clear`                   | `openchat.commands.clear`      | Clears the chat for all players.                                                               |
-| `/chattoggle`                       | `openchat.commands.chattoggle` | Toggles public chat visibility for the player. (requires chat radious to be set)               |
-| `/msg <player> <message>`           | `openchat.commands.whisper`    | Sends a private message to another player.                                                     |
-| `/msgtoggle`                        | `openchat.commands.whisper`    | Toggles receiving private messages for the player.                                             |
-| `/reply <message>`                  | `openchat.commands.reply`      | Replies to the last private message received.                                                  |
-| `/ignore <player>`                  | `openchat.commands.ignore`     | Ignores messages, mentions, and private messages from the specified player.                    |
-| `/unignore <player>`                | `openchat.commands.unignore`   | Unignores messages, mentions, and private messages from the specified player.                  |
-| `/socialspy`                        | `openchat.commands.socialspy`  | Toggles social spy mode to see private messages between other players.                         |
-| `/mentions help `                   | `openchat.commands.mentions`   | Shows help information for player mentions.                                                    |
-| `/mentions sound <sound>`           | `openchat.commands.mentions`   | Sets the sound played when the player is mentioned.                                            |
-| `/mentions display <display>`       | `openchat.commands.mentions`   | Sets how mentions are displayed (e.g., chat, actionbar, sound).                                |
-| `/mentions preference <preference>` | `openchat.commands.mentions`   | Sets the player's mention preference (e.g., always, silent in combat, never in combat, never). |
+| Command                                      | Permission                         | Description                                                                                    |
+|----------------------------------------------|------------------------------------|------------------------------------------------------------------------------------------------|
+| `/openchat`                                  | `openchat.commands.openchat`       | Displays plugin information and available commands.                                            |
+| `/openchat help`                             | `openchat.commands.help`           | Shows help information for OpenChat commands.                                                  |
+| `/openchat version`                          | `openchat.commands.version`        | Displays the current version of the OpenChat plugin.                                           |
+| `/openchat reload`                           | `openchat.commands.reload`         | Reloads the plugin configuration.                                                              |
+| `/openchat clear`                            | `openchat.commands.clear`          | Clears the chat for all players.                                                               |
+| `/chattoggle`                                | `openchat.commands.chattoggle`     | Toggles public chat visibility for the player. (requires chat radious to be set)               |
+| `/msg <player> <message>`                    | `openchat.commands.whisper`        | Sends a private message to another player.                                                     |
+| `/msgtoggle`                                 | `openchat.commands.whisper`        | Toggles receiving private messages for the player.                                             |
+| `/reply <message>`                           | `openchat.commands.reply`          | Replies to the last private message received.                                                  |
+| `/ignore <player>`                           | `openchat.commands.ignore`         | Ignores messages, mentions, and private messages from the specified player.                    |
+| `/unignore <player>`                         | `openchat.commands.unignore`       | Unignores messages, mentions, and private messages from the specified player.                  |
+| `/socialspy`                                 | `openchat.commands.socialspy`      | Toggles social spy mode to see private messages between other players.                         |
+| `/mentions help `                            | `openchat.commands.mentions`       | Shows help information for player mentions.                                                    |
+| `/mentions sound <sound>`                    | `openchat.commands.mentions`       | Sets the sound played when the player is mentioned.                                            |
+| `/mentions display <display>`                | `openchat.commands.mentions`       | Sets how mentions are displayed (e.g., chat, actionbar, sound).                                |
+| `/mentions preference <preference>`          | `openchat.commands.mentions`       | Sets the player's mention preference (e.g., always, silent in combat, never in combat, never). |
+| `/customgreeting`                            | `openchat.commands.greeting`       | Displays information about custom greetings.                                                   |
+| `/customgreeting help`                       | `openchat.commands.greeting.help`  | Shows help information for custom greetings.                                                   |
+| `/customgreeting set [join\|quit] [message]` | `openchat.commands.greeting.set`   | Sets a custom join or quit message for the player.                                             |
+| `/customgreeting clear [join\|quit]`         | `openchat.commands.greeting.clear` | Clears the custom join or quit message for the player.                                         |
+| `/customgreeting get [join\|quit]`           | `openchat.commands.greeting.get`   | Gets the custom join or quit message for the player.                                           |
 
 ## Dependencies
 
