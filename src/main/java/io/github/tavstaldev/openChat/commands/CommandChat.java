@@ -9,7 +9,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +22,11 @@ import java.util.Map;
  * Handles various subcommands such as help, version, reload, and clear.
  */
 public class CommandChat implements CommandExecutor {
+
+    // TODO: Move Reload to the admin command set
+    // Clear can stay here since staff may need it
+    // Also add subcommands for other standalone commands, so players can see them in one place
+
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandChat.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "openchat";
@@ -30,7 +34,7 @@ public class CommandChat implements CommandExecutor {
         {
             // HELP
             add(new SubCommandData("help", "openchat.commands.help", Map.of(
-                    "syntax", "",
+                    "syntax", "Commands.Help.Syntax",
                     "description", "Commands.Help.Desc"
             )));
             // VERSION
@@ -71,118 +75,109 @@ public class CommandChat implements CommandExecutor {
      */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
-        // Handle commands sent from the console
-        if (sender instanceof ConsoleCommandSender) {
-            _logger.info(ChatUtils.translateColors("Commands.ConsoleCaller", true).toString());
-            return true;
-        }
-
-        Player player = (Player) sender;
-
-        // Handle subcommands based on the first argument
-        if (args.length > 0) {
-            switch (args[0].toLowerCase()) {
-                case "help":
-                case "?": {
-                    // Check if the player has permission to use the help command
-                    if (!player.hasPermission("openchat.commands.help")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    // Parse the page number for the help command
-                    int page = 1;
-                    if (args.length > 1) {
-                        try {
-                            page = Integer.parseInt(args[1]);
-                        } catch (Exception ex) {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidPage");
-                            return true;
-                        }
-                    }
-
-                    help(player, page);
-                    return true;
-                }
-                case "version": {
-                    // Check if the player has permission to use the version command
-                    if (!player.hasPermission("openchat.commands.version")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    // Send the current plugin version to the player
-                    Map<String, Object> parameters = new HashMap<>();
-                    parameters.put("version", OpenChat.Instance.getVersion());
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Version.Current", parameters);
-
-                    // Check if the plugin is up-to-date
-                    OpenChat.Instance.isUpToDate().thenAccept(upToDate -> {
-                        if (upToDate) {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.Version.UpToDate");
-                        } else {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.Version.Outdated", Map.of("link", OpenChat.Instance.getDownloadUrl()));
-                        }
-                    }).exceptionally(e -> {
-                        _logger.error("Failed to determine update status: " + e.getMessage());
-                        return null;
-                    });
-                    return true;
-                }
-                case "reload": {
-                    // Check if the player has permission to use the reload command
-                    if (!player.hasPermission("openchat.commands.reload")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    // Reload the plugin configuration
-                    OpenChat.Instance.reload();
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Reload.Done");
-                    return true;
-                }
-                case "clear": {
-                    // Check if the player has permission to use the clear command
-                    if (!player.hasPermission("openchat.commands.clear")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    // Clear the chat for all online players except those with bypass permission
-                    for (var onlinePlayer : OpenChat.Instance.getServer().getOnlinePlayers()) {
-                        if (onlinePlayer.hasPermission("openchat.bypass.clear")) continue;
-                        for (int i = 0; i < 300; i++) {
-                            onlinePlayer.sendMessage(Component.text("\n\n\n"));
-                        }
-                        OpenChat.Instance.sendLocalizedMsg(onlinePlayer, "Commands.Clear.Done", Map.of("player", player.getName()));
-                    }
-
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Clear.Done", Map.of("player", player.getName()));
-                    return true;
-                }
+        if (args.length == 0) {
+            // Default to the help command if no arguments are provided
+            if (!sender.hasPermission("openchat.commands.help")) {
+                OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                return true;
             }
-
-            // Send an error message if the subcommand is invalid
-            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+            help(sender, 1);
             return true;
         }
 
-        // Default to the help command if no arguments are provided
-        if (!player.hasPermission("openchat.commands.help")) {
-            OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-            return true;
+        switch (args[0].toLowerCase()) {
+            case "help":
+            case "?": {
+                // Check if the player has permission to use the help command
+                if (!sender.hasPermission("openchat.commands.help")) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                    return true;
+                }
+
+                // Parse the page number for the help command
+                int page = 1;
+                if (args.length > 1) {
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch (Exception ex) {
+                        OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidPage");
+                        return true;
+                    }
+                }
+
+                help(sender, page);
+                return true;
+            }
+            case "version": {
+                // Check if the player has permission to use the version command
+                if (!sender.hasPermission("openchat.commands.version")) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                    return true;
+                }
+
+                // Send the current plugin version to the player
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("version", OpenChat.Instance.getVersion());
+                OpenChat.Instance.sendCommandReply(sender, "Commands.Version.Current", parameters);
+
+                // Check if the plugin is up-to-date
+                OpenChat.Instance.isUpToDate().thenAccept(upToDate -> {
+                    if (upToDate) {
+                        OpenChat.Instance.sendCommandReply(sender, "Commands.Version.UpToDate");
+                    } else {
+                        OpenChat.Instance.sendCommandReply(sender, "Commands.Version.Outdated", Map.of("link", OpenChat.Instance.getDownloadUrl()));
+                    }
+                }).exceptionally(e -> {
+                    _logger.error("Failed to determine update status: " + e.getMessage());
+                    return null;
+                });
+                return true;
+            }
+            case "reload": {
+                // Check if the player has permission to use the reload command
+                if (!sender.hasPermission("openchat.commands.reload")) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                    return true;
+                }
+
+                // Reload the plugin configuration
+                OpenChat.Instance.reload();
+                OpenChat.Instance.sendCommandReply(sender, "Commands.Reload.Done");
+                return true;
+            }
+            case "clear": {
+                // Check if the player has permission to use the clear command
+                if (!sender.hasPermission("openchat.commands.clear")) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                    return true;
+                }
+
+                // Clear the chat for all online players except those with bypass permission
+                for (var onlinePlayer : OpenChat.Instance.getServer().getOnlinePlayers()) {
+                    if (onlinePlayer.hasPermission("openchat.bypass.clear")) continue;
+                    for (int i = 0; i < 300; i++) {
+                        onlinePlayer.sendMessage(Component.text("\n\n\n"));
+                    }
+                    OpenChat.Instance.sendLocalizedMsg(onlinePlayer, "Commands.Clear.Done", Map.of("player", sender.getName()));
+                }
+
+                OpenChat.Instance.sendCommandReply(sender, "Commands.Clear.Done", Map.of("player", sender.getName()));
+                return true;
+            }
         }
-        help(player, 1);
+
+        // Send an error message if the subcommand is invalid
+        OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
         return true;
     }
 
     /**
-     * Displays the help menu to the player.
+     * Displays the help menu to the sender.
      *
-     * @param player The player requesting the help menu.
+     * @param sender The sender requesting the help menu.
      * @param page   The page number of the help menu to display.
      */
-    private void help(Player player, int page) {
+    private void help(CommandSender sender, int page) {
         int maxPage = 1 + (_subCommands.size() / 15);
 
         // Ensure the page number is within valid bounds
@@ -193,12 +188,12 @@ public class CommandChat implements CommandExecutor {
         int finalPage = page;
 
         // Send the help menu title and info
-        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Help.Title", Map.of(
+        OpenChat.Instance.sendCommandReply(sender, "Commands.Help.Title", Map.of(
                         "current_page", finalPage,
                         "max_page", maxPage
                 )
         );
-        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Help.Info");
+        OpenChat.Instance.sendCommandReply(sender, "Commands.Help.Info");
 
         boolean reachedEnd = false;
         int itemIndex = 0;
@@ -213,20 +208,33 @@ public class CommandChat implements CommandExecutor {
             itemIndex++;
 
             SubCommandData subCommand = _subCommands.get(index);
-            if (!subCommand.hasPermission(player)) {
+            if (!subCommand.hasPermission(sender)) {
                 i--;
                 continue;
             }
 
-            subCommand.send(OpenChat.Instance, player, baseCommand);
+            subCommand.send(OpenChat.Instance, sender, baseCommand);
         }
 
         // Display navigation buttons for the help menu
-        String previousBtn = OpenChat.Instance.localize(player, "Commands.Help.PrevBtn");
-        String nextBtn = OpenChat.Instance.localize(player, "Commands.Help.NextBtn");
-        String bottomMsg = OpenChat.Instance.localize(player, "Commands.Help.Bottom")
-                .replace("%current_page%", String.valueOf(page))
-                .replace("%max_page%", String.valueOf(maxPage));
+        String previousBtn, nextBtn, bottomMsg;
+        if (sender instanceof Player player)
+        {
+            previousBtn = OpenChat.Instance.localize(player, "Commands.Help.PrevBtn");
+            nextBtn = OpenChat.Instance.localize(player, "Commands.Help.NextBtn");
+            bottomMsg = OpenChat.Instance.localize(player, "Commands.Help.Bottom", Map.of(
+                            "current_page", page,
+                            "max_page", maxPage
+                    ));
+        }
+        else {
+            previousBtn = OpenChat.Instance.localize("Commands.Help.PrevBtn");
+            nextBtn = OpenChat.Instance.localize("Commands.Help.NextBtn");
+            bottomMsg = OpenChat.Instance.localize("Commands.Help.Bottom", Map.of(
+                    "current_page", page,
+                    "max_page", maxPage
+            ));
+        }
 
         Map<String, Component> bottomParams = new HashMap<>();
         if (page > 1)
@@ -242,6 +250,6 @@ public class CommandChat implements CommandExecutor {
             bottomParams.put("next_btn", ChatUtils.translateColors(nextBtn, true));
 
         Component bottomComp = ChatUtils.buildWithButtons(bottomMsg, bottomParams);
-        player.sendMessage(bottomComp);
+        sender.sendMessage(bottomComp);
     }
 }
