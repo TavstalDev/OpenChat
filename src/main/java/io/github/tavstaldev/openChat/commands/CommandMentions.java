@@ -84,176 +84,173 @@ public class CommandMentions implements CommandExecutor {
             return true;
         }
 
-        if (args.length > 0) {
-            switch (args[0].toLowerCase()) {
-                case "help":
-                case "?": {
-                    int page = 1;
-                    if (args.length > 1) {
-                        try {
-                            page = Integer.parseInt(args[1]);
-                        } catch (Exception ex) {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidPage");
-                            return true;
-                        }
-                    }
-
-                    help(player, page);
-                    return true;
-                }
-                case "sound": {
-                    if (args.length < 2) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Sound.Usage");
-                        return true;
-                    }
-
-                    Optional<Sound> sound = SoundUtils.getSound(args[1]);
-                    if (sound.isEmpty()) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Sound.Invalid", Map.of("value", args[1]));
-                        return true;
-                    }
-
-                    var playerId = player.getUniqueId();
-                    String soundName = sound.get().name().asString();
-                    var dataOpt = OpenChat.database().getPlayerData(playerId);
-                    if (dataOpt.isEmpty()) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                        _logger.error("Player data not found for " + player.getName());
-                        return true;
-                    }
-                    var data = dataOpt.get();
-                    data.setMentionSound(soundName);
-                    OpenChat.database().updatePlayerData(data);
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Sound.Set", Map.of(
-                            "value", soundName
-                    ));
-                    return true;
-                }
-                case "display": {
-                    if (args.length < 2) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Display.Usage");
-                        return true;
-                    }
-
-                    EMentionDisplay display;
-                    try {
-                        display = EMentionDisplay.valueOf(args[1]);
-                    } catch (Exception ignored) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Display.Invalid", Map.of("value", args[1]));
-                        return true;
-                    }
-
-                    var playerId = player.getUniqueId();
-                    var dataOpt = OpenChat.database().getPlayerData(playerId);
-                    if (dataOpt.isEmpty()) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                        _logger.error("Player data not found for " + player.getName());
-                        return true;
-                    }
-                    var data = dataOpt.get();
-                    data.setMentionDisplay(display);
-                    OpenChat.database().updatePlayerData(data);
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Display.Set", Map.of(
-                            "value", display.toString()
-                    ));
-                    return true;
-                }
-                case "preference": {
-                    if (args.length < 2) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Preference.Usage");
-                        return true;
-                    }
-
-                    EMentionPreference preference;
-                    try {
-                        preference = EMentionPreference.valueOf(args[1]);
-                    } catch (Exception ignored) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Preference.Invalid", Map.of("value", args[1]));
-                        return true;
-                    }
-
-                    var playerId = player.getUniqueId();
-                    var dataOpt = OpenChat.database().getPlayerData(playerId);
-                    if (dataOpt.isEmpty()) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                        _logger.error("Player data not found for " + player.getName());
-                        return true;
-                    }
-                    var data = dataOpt.get();
-                    data.setMentionPreference(preference);
-                    OpenChat.database().updatePlayerData(data);
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Preference.Set", Map.of(
-                            "value", preference.toString()
-                    ));
-                    return true;
-                }
-                case "ignore": {
-                    if (args.length < 2) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Usage");
-                        return true;
-                    }
-
-                    OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
-                    if (target == null || !target.hasPlayedBefore()) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.PlayerNotFound", Map.of("player", args[1]));
-                        return true;
-                    }
-
-                    var playerId = player.getUniqueId();
-                    var targetId = target.getUniqueId();
-
-                    if (playerId == targetId)
-                    {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Self");
-                        return true;
-                    }
-
-                    if (OpenChat.database().isPlayerIgnored(playerId, targetId))
-                    {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.AlreadyEnabled", Map.of("player", args[1]));
-                        return true;
-                    }
-
-                    OpenChat.database().addIgnoredPlayer(playerId, targetId);
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Enabled", Map.of("player", args[1]));
-                    return true;
-                }
-                case "unignore": {
-                    if (args.length < 2) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.Usage");
-                        return true;
-                    }
-
-                    OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
-                    if (target == null || !target.hasPlayedBefore()) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.PlayerNotFound", Map.of("player", args[1]));
-                        return true;
-                    }
-
-                    var playerId = player.getUniqueId();
-                    var targetId = target.getUniqueId();
-
-                    if (playerId == targetId)
-                    {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.Self");
-                        return true;
-                    }
-
-                    if (!OpenChat.database().isPlayerIgnored(playerId, targetId))
-                    {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.AlreadyDisabled", Map.of("player", args[1]));
-                        return true;
-                    }
-
-                    OpenChat.database().removeIgnoredPlayer(playerId, targetId);
-                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.Disabled", Map.of("player", args[1]));
-                    return true;
-                }
-            }
-
+        if (args.length == 0) {
             help(player, 1);
             return true;
         }
+
+        switch (args[0].toLowerCase()) {
+            case "help":
+            case "?": {
+                int page = 1;
+                if (args.length > 1) {
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch (Exception ex) {
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidPage");
+                        return true;
+                    }
+                }
+
+                help(player, page);
+                return true;
+            }
+            case "sound": {
+                if (args.length < 2) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Sound.Usage");
+                    return true;
+                }
+
+                Optional<Sound> sound = SoundUtils.getSound(args[1]);
+                if (sound.isEmpty()) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Sound.Invalid", Map.of("value", args[1]));
+                    return true;
+                }
+
+                var playerId = player.getUniqueId();
+                String soundName = sound.get().name().asString();
+                var dataOpt = OpenChat.database().getPlayerData(playerId);
+                if (dataOpt.isEmpty()) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                    _logger.error("Player data not found for " + player.getName());
+                    return true;
+                }
+                var data = dataOpt.get();
+                data.setMentionSound(soundName);
+                OpenChat.database().updatePlayerData(data);
+                OpenChat.Instance.sendLocalizedMsg(player, "Commands.Sound.Set", Map.of(
+                        "value", soundName
+                ));
+                return true;
+            }
+            case "display": {
+                if (args.length < 2) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Display.Usage");
+                    return true;
+                }
+
+                EMentionDisplay display;
+                try {
+                    display = EMentionDisplay.valueOf(args[1]);
+                } catch (Exception ignored) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Display.Invalid", Map.of("value", args[1]));
+                    return true;
+                }
+
+                var playerId = player.getUniqueId();
+                var dataOpt = OpenChat.database().getPlayerData(playerId);
+                if (dataOpt.isEmpty()) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                    _logger.error("Player data not found for " + player.getName());
+                    return true;
+                }
+                var data = dataOpt.get();
+                data.setMentionDisplay(display);
+                OpenChat.database().updatePlayerData(data);
+                OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Display.Set", Map.of(
+                        "value", display.toString()
+                ));
+                return true;
+            }
+            case "preference": {
+                if (args.length < 2) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Preference.Usage");
+                    return true;
+                }
+
+                EMentionPreference preference;
+                try {
+                    preference = EMentionPreference.valueOf(args[1]);
+                } catch (Exception ignored) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Preference.Invalid", Map.of("value", args[1]));
+                    return true;
+                }
+
+                var playerId = player.getUniqueId();
+                var dataOpt = OpenChat.database().getPlayerData(playerId);
+                if (dataOpt.isEmpty()) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                    _logger.error("Player data not found for " + player.getName());
+                    return true;
+                }
+                var data = dataOpt.get();
+                data.setMentionPreference(preference);
+                OpenChat.database().updatePlayerData(data);
+                OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Preference.Set", Map.of(
+                        "value", preference.toString()
+                ));
+                return true;
+            }
+            case "ignore": {
+                if (args.length < 2) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Usage");
+                    return true;
+                }
+
+                OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+                if (!target.hasPlayedBefore()) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.PlayerNotFound", Map.of("player", args[1]));
+                    return true;
+                }
+
+                var playerId = player.getUniqueId();
+                var targetId = target.getUniqueId();
+
+                if (playerId == targetId) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Self");
+                    return true;
+                }
+
+                if (OpenChat.database().isPlayerIgnored(playerId, targetId)) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.AlreadyEnabled", Map.of("player", args[1]));
+                    return true;
+                }
+
+                OpenChat.database().addIgnoredPlayer(playerId, targetId);
+                OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Enabled", Map.of("player", args[1]));
+                return true;
+            }
+            case "unignore": {
+                if (args.length < 2) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.Usage");
+                    return true;
+                }
+
+                OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+                if (!target.hasPlayedBefore()) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.PlayerNotFound", Map.of("player", args[1]));
+                    return true;
+                }
+
+                var playerId = player.getUniqueId();
+                var targetId = target.getUniqueId();
+
+                if (playerId == targetId) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.Self");
+                    return true;
+                }
+
+                if (!OpenChat.database().isPlayerIgnored(playerId, targetId)) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.AlreadyDisabled", Map.of("player", args[1]));
+                    return true;
+                }
+
+                OpenChat.database().removeIgnoredPlayer(playerId, targetId);
+                OpenChat.Instance.sendLocalizedMsg(player, "Commands.Unignore.Disabled", Map.of("player", args[1]));
+                return true;
+            }
+        }
+
         help(player, 1);
         return true;
     }

@@ -67,256 +67,254 @@ public class CommandCustomGreeting implements CommandExecutor {
         Player player = (Player) sender;
 
         // Handle subcommands based on the first argument
-        if (args.length > 0) {
-            switch (args[0].toLowerCase()) {
-                case "help":
-                case "?": {
-                    // Check if the player has permission to use the help command
-                    if (!player.hasPermission("openchat.commands.customgreeting.help")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    // Parse the page number for the help command
-                    int page = 1;
-                    if (args.length > 1) {
-                        try {
-                            page = Integer.parseInt(args[1]);
-                        } catch (Exception ex) {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidPage");
-                            return true;
-                        }
-                    }
-
-                    help(player, page);
-                    return true;
-                }
-                case "set": {
-                    // Check if the player has permission to use the set command
-                    if (!player.hasPermission("openchat.commands.customgreeting.set")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    if (args.length < 3) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
-                        return true;
-                    }
-
-                    String type = args[1].toLowerCase();
-                    switch (type) {
-                        case "join":
-                        case "connect": {
-                            var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
-                            if (playerDataOpt.isEmpty()) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                                return true;
-                            }
-
-                            String message = String.join(" ", args).substring(args[0].length() + args[1].length() + 2);
-                            if (!message.contains("{player}")) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.NoPlayerPlaceholder");
-                                return true;
-                            }
-
-                            if (message.length() > 128) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.MessageTooLong",
-                                        Map.of("length", "128")
-                                );
-                                return true;
-                            }
-
-                            // Check for swear words in the message
-                            if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
-                                return true;
-                            }
-
-                            // Check for advertising in the message
-                            if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
-                                return true;
-                            }
-
-                            var playerData = playerDataOpt.get();
-                            playerData.setCustomJoinMessage(message);
-                            OpenChat.database().updatePlayerData(playerData);
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.Success");
-                            break;
-                        }
-                        case "leave":
-                        case "left":
-                        case "disconnect":
-                        case "quit": {
-                            var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
-                            if (playerDataOpt.isEmpty()) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                                return true;
-                            }
-
-                            String message = String.join(" ", args).substring(args[0].length() + args[1].length() + 2);
-                            if (!message.contains("{player}")) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.NoPlayerPlaceholder");
-                                return true;
-                            }
-
-                            if (message.length() > 128) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.MessageTooLong",
-                                        Map.of("length", "128")
-                                );
-                                return true;
-                            }
-
-                            // Check for swear words in the message
-                            if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
-                                return true;
-                            }
-
-                            // Check for advertising in the message
-                            if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
-                                return true;
-                            }
-
-                            var playerData = playerDataOpt.get();
-                            playerData.setCustomLeaveMessage(message);
-                            OpenChat.database().updatePlayerData(playerData);
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.Success");
-                            break;
-                        }
-                        default: {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
-                            return true;
-                        }
-                    }
-
-                    return true;
-                }
-                case "get": {
-                    // Check if the player has permission to use the get command
-                    if (!player.hasPermission("openchat.commands.customgreeting.get")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    if (args.length != 2) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
-                        return true;
-                    }
-
-                    String type = args[1].toLowerCase();
-                    switch (type) {
-                        case "join":
-                        case "connect": {
-                            var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
-                            if (playerDataOpt.isEmpty()) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                                return true;
-                            }
-
-                            if (playerDataOpt.get().getCustomJoinMessage() == null) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.None");
-                            }
-                            else {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.Current", Map.of(
-                                        "message", playerDataOpt.get().getCustomJoinMessage()
-                                ));
-                            }
-                            break;
-                        }
-                        case "leave":
-                        case "left":
-                        case "disconnect":
-                        case "quit": {
-                            var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
-                            if (playerDataOpt.isEmpty()) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                                return true;
-                            }
-
-                            if (playerDataOpt.get().getCustomLeaveMessage() == null) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.None");
-                            }
-                            else {
-                                OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.Current", Map.of(
-                                        "message", playerDataOpt.get().getCustomLeaveMessage()
-                                ));
-                            }
-                            break;
-                        }
-                        default: {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
-                            return true;
-                        }
-                    }
-
-                    return true;
-                }
-                case "clear": {
-                    // Check if the player has permission to use the clear command
-                    if (!player.hasPermission("openchat.commands.customgreeting.clear")) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-                        return true;
-                    }
-
-                    if (args.length != 2) {
-                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
-                        return true;
-                    }
-
-                    String type = args[1].toLowerCase();
-                    switch (type) {
-                        case "join":
-                        case "connect": {
-                            var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
-                            if (playerDataOpt.isEmpty()) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                                return true;
-                            }
-
-                            var playerData = playerDataOpt.get();
-                            playerData.setCustomJoinMessage(null);
-                            OpenChat.database().updatePlayerData(playerData);
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Clear.Success");
-                            break;
-                        }
-                        case "leave":
-                        case "left":
-                        case "disconnect":
-                        case "quit": {
-                            var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
-                            if (playerDataOpt.isEmpty()) {
-                                OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
-                                return true;
-                            }
-
-                            var playerData = playerDataOpt.get();
-                            playerData.setCustomLeaveMessage(null);
-                            OpenChat.database().updatePlayerData(playerData);
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Clear.Success");
-                            break;
-                        }
-                        default: {
-                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
-                            return true;
-                        }
-                    }
-                    return true;
-                }
+        if (args.length == 0) {
+            // Default to the help command if no arguments are provided
+            if (!player.hasPermission("openchat.commands.customgreeting")) {
+                OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
+                return true;
             }
-
-            // Send an error message if the subcommand is invalid
-            OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+            help(player, 1);
             return true;
         }
 
-        // Default to the help command if no arguments are provided
-        if (!player.hasPermission("openchat.commands.customgreeting")) {
-            OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
-            return true;
+        switch (args[0].toLowerCase()) {
+            case "help":
+            case "?": {
+                // Check if the player has permission to use the help command
+                if (!player.hasPermission("openchat.commands.customgreeting.help")) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
+                    return true;
+                }
+
+                // Parse the page number for the help command
+                int page = 1;
+                if (args.length > 1) {
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch (Exception ex) {
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidPage");
+                        return true;
+                    }
+                }
+
+                help(player, page);
+                return true;
+            }
+            case "set": {
+                // Check if the player has permission to use the set command
+                if (!player.hasPermission("openchat.commands.customgreeting.set")) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
+                    return true;
+                }
+
+                if (args.length < 3) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+                    return true;
+                }
+
+                String type = args[1].toLowerCase();
+                switch (type) {
+                    case "join":
+                    case "connect": {
+                        var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerDataOpt.isEmpty()) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                            return true;
+                        }
+
+                        String message = String.join(" ", args).substring(args[0].length() + args[1].length() + 2);
+                        if (!message.contains("{player}")) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.NoPlayerPlaceholder");
+                            return true;
+                        }
+
+                        if (message.length() > 128) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.MessageTooLong",
+                                    Map.of("length", "128")
+                            );
+                            return true;
+                        }
+
+                        // Check for swear words in the message
+                        if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
+                            return true;
+                        }
+
+                        // Check for advertising in the message
+                        if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
+                            return true;
+                        }
+
+                        var playerData = playerDataOpt.get();
+                        playerData.setCustomJoinMessage(message);
+                        OpenChat.database().updatePlayerData(playerData);
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.Success");
+                        break;
+                    }
+                    case "leave":
+                    case "left":
+                    case "disconnect":
+                    case "quit": {
+                        var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerDataOpt.isEmpty()) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                            return true;
+                        }
+
+                        String message = String.join(" ", args).substring(args[0].length() + args[1].length() + 2);
+                        if (!message.contains("{player}")) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.NoPlayerPlaceholder");
+                            return true;
+                        }
+
+                        if (message.length() > 128) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.MessageTooLong",
+                                    Map.of("length", "128")
+                            );
+                            return true;
+                        }
+
+                        // Check for swear words in the message
+                        if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
+                            return true;
+                        }
+
+                        // Check for advertising in the message
+                        if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
+                            return true;
+                        }
+
+                        var playerData = playerDataOpt.get();
+                        playerData.setCustomLeaveMessage(message);
+                        OpenChat.database().updatePlayerData(playerData);
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.Success");
+                        break;
+                    }
+                    default: {
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+                        return true;
+                    }
+                }
+
+                return true;
+            }
+            case "get": {
+                // Check if the player has permission to use the get command
+                if (!player.hasPermission("openchat.commands.customgreeting.get")) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
+                    return true;
+                }
+
+                if (args.length != 2) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+                    return true;
+                }
+
+                String type = args[1].toLowerCase();
+                switch (type) {
+                    case "join":
+                    case "connect": {
+                        var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerDataOpt.isEmpty()) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                            return true;
+                        }
+
+                        if (playerDataOpt.get().getCustomJoinMessage() == null) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.None");
+                        } else {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.Current", Map.of(
+                                    "message", playerDataOpt.get().getCustomJoinMessage()
+                            ));
+                        }
+                        break;
+                    }
+                    case "leave":
+                    case "left":
+                    case "disconnect":
+                    case "quit": {
+                        var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerDataOpt.isEmpty()) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                            return true;
+                        }
+
+                        if (playerDataOpt.get().getCustomLeaveMessage() == null) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.None");
+                        } else {
+                            OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Get.Current", Map.of(
+                                    "message", playerDataOpt.get().getCustomLeaveMessage()
+                            ));
+                        }
+                        break;
+                    }
+                    default: {
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+                        return true;
+                    }
+                }
+
+                return true;
+            }
+            case "clear": {
+                // Check if the player has permission to use the clear command
+                if (!player.hasPermission("openchat.commands.customgreeting.clear")) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
+                    return true;
+                }
+
+                if (args.length != 2) {
+                    OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+                    return true;
+                }
+
+                String type = args[1].toLowerCase();
+                switch (type) {
+                    case "join":
+                    case "connect": {
+                        var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerDataOpt.isEmpty()) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                            return true;
+                        }
+
+                        var playerData = playerDataOpt.get();
+                        playerData.setCustomJoinMessage(null);
+                        OpenChat.database().updatePlayerData(playerData);
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Clear.Success");
+                        break;
+                    }
+                    case "leave":
+                    case "left":
+                    case "disconnect":
+                    case "quit": {
+                        var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerDataOpt.isEmpty()) {
+                            OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
+                            return true;
+                        }
+
+                        var playerData = playerDataOpt.get();
+                        playerData.setCustomLeaveMessage(null);
+                        OpenChat.database().updatePlayerData(playerData);
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Clear.Success");
+                        break;
+                    }
+                    default: {
+                        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
+                        return true;
+                    }
+                }
+                return true;
+            }
         }
-        help(player, 1);
+
+        // Send an error message if the subcommand is invalid
+        OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
         return true;
     }
 
