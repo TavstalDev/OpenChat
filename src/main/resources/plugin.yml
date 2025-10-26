@@ -43,6 +43,9 @@ Permissions:
   openchat.commands.socialspy:
     description: Allows the player to use the /socialspy command.
     default: op
+  openchat.commands.chatadmin:
+    description: Allows the player to use the /chatadmin command.
+    default: op
   openchat.bypass.clear:
     description: Bypass the chat clear
     default: op
@@ -101,6 +104,11 @@ commands:
                 description: "Clear the chat for all players"
                 usage: "/openchat clear"
                 permission: openchat.commands.clear
+    openchatadmin:
+      description: Admin command for OpenChat plugin.
+      usage: /chatadmin help
+      aliases: [ chatadmin, ca ]
+      permission: openchat.commands.chatadmin
     mentions:
       description: Main command for OpenMentions plugin.
       usage: /mentions help

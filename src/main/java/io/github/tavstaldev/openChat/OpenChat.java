@@ -183,6 +183,7 @@ public final class OpenChat extends PluginBase {
         // Register commands.
         _logger.debug("Registering commands...");
         new CommandChat();
+        new CommandChatAdmin();
         new CommandIgnore();
         new CommandUnignore();
         new CommandMentions();

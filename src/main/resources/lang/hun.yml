@@ -12,6 +12,7 @@ Commands:
   InvalidPage: "%prefix% &cÉrvénytelen oldalszám."
   InvalidArguments: "%prefix% &cÉrvénytelen argumentumok."
   Help:
+    Syntax: " [oldal]"
     Desc: "Információkat mutat a parancsokról."
     Title: "&8&m        &r &bOpen&3Chat &7Súgó &8&m    &r &7Oldal &3%current_page%&7/&3%max_page% &8&m        &r"
     Info: |-
@@ -110,6 +111,18 @@ Commands:
       Syntax: " [join|quit]"
       Usage: "%prefix% &aHasználat: &e/customgreeting clear [join|quit]"
       Success: "%prefix% &aAz egyedi köszöntésed törölve."
+  Admin:
+    Help:
+      Desc: "Admin parancsok megjelenítése."
+      Syntax: " [oldal]"
+    Greeting:
+      Desc: "Szerkeszti a játékosok csatlakozási és kilépési üzeneteit."
+      Syntax: " [set|get|clear] [játékos] [join|quit] [üzenet]"
+      SetUsage: "%prefix% &aHasználat: &e/admin greeting set [játékos] [join|quit] [üzenet]"
+      Success: "%prefix% &e%player%&a egyedi köszöntése beállítva."
+      SuccessOther: "%prefix% &aAz egyedi köszöntésedet egy admin módosította."
+      Get: "%prefix% &e%player%&a egyedi köszöntése: &e%message%"
+      None: "%prefix% &e%player%&c-nak/nek nincs egyedi köszöntése beállítva."
 
 AntiSpam:
   ChatCooldown: "%prefix% &cKérlek várj %time% másodpercet mielőtt újra írsz a chatre."

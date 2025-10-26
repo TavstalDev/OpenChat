@@ -33,7 +33,6 @@ Features planned for future releases:
 - [x] **Add Separate Logging for Violations**: Create a dedicated log file to record all chat violations for easier monitoring and detection of false positives.
 - [x] **Custom Join/Quit Messages**: Allow global and per-player customization of join and quit messages.
 - [x] **Custom Welcome Messages**: Send personalized welcome messages to players upon joining the server.
-- [ ] **Player Name Hover Info**: Show additional player information when hovering over their name in chat.
 - [x] **Violation Counter and Punishments**: Implement a system to track player violations and apply punishments based on configurable thresholds.
 - [x] **Improve Anti-Spam Detection**: Enhance spam detection algorithms to reduce false positives and improve accuracy.
 - [ ] **Velocity Support**: Add compatibility with Velocity proxy servers and cross-server chat messaging.
