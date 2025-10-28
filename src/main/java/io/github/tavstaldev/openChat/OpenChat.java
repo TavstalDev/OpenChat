@@ -12,6 +12,7 @@ import io.github.tavstaldev.openChat.events.*;
 import io.github.tavstaldev.openChat.managers.CombatLogManager;
 import io.github.tavstaldev.openChat.managers.CombatManager;
 import io.github.tavstaldev.openChat.managers.ICombatManager;
+import io.github.tavstaldev.openChat.metrics.Metrics;
 import io.github.tavstaldev.openChat.models.systems.AntiAdvertisementSystem;
 import io.github.tavstaldev.openChat.models.systems.AntiSwearSystem;
 import io.github.tavstaldev.openChat.models.systems.CommandCheckerSystem;
