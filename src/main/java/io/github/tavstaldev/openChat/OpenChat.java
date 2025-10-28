@@ -204,6 +204,15 @@ public final class OpenChat extends PluginBase {
         cacheCleanTask = new CacheCleanTask(); // Runs every 5 minutes
         cacheCleanTask.runTaskTimerAsynchronously(this, 0, 5 * 60 * 20);
 
+        // Metrics
+        try {
+            @SuppressWarnings("unused") Metrics metrics = new Metrics(this, 27756);
+        }
+        catch (Exception ex)
+        {
+            _logger.error("Failed to start Metrics: " + ex.getMessage());
+        }
+
         _logger.ok(String.format("%s has been successfully loaded.", getProjectName()));
 
         // Check for plugin updates if enabled in the configuration.
