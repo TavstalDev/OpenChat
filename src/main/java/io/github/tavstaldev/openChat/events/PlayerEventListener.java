@@ -40,11 +40,14 @@ public class PlayerEventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         var playerId = player.getUniqueId();
-        PlayerCache playerCache = new PlayerCache(player); // Create a new cache for the player.
-        PlayerCacheManager.add(playerId, playerCache); // Add the player's cache to the manager.
 
         if (PlayerCacheManager.isMarkedForRemoval(playerId))
             PlayerCacheManager.unmarkForRemoval(playerId);
+
+        if (PlayerCacheManager.get(playerId) == null) {
+            PlayerCache playerCache = new PlayerCache(player);
+            PlayerCacheManager.add(playerId, playerCache);
+        }
 
         // TODO: Consider making this asynchronous
         var playerData = OpenChat.database().getPlayerData(playerId);
