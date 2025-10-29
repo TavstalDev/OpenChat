@@ -113,7 +113,6 @@ public class PlayerEventListener implements Listener {
             player.getServer().broadcast(ChatUtils.translateColors(message, true));
         }
 
-        PlayerCacheManager.remove(player.getUniqueId()); // Remove the player's cache from the manager.
         PlayerCacheManager.markForRemoval(player.getUniqueId());
     }
 }
