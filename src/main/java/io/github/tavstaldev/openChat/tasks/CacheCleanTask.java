@@ -28,6 +28,7 @@ public class CacheCleanTask extends BukkitRunnable {
             return;
 
         // Iterate through the set of players marked for removal
+        var date = LocalDateTime.now();
         for (var playerId : PlayerCacheManager.getMarkedForRemovalSet()) {
             var playerCache = PlayerCacheManager.get(playerId);
 
@@ -37,16 +38,14 @@ public class CacheCleanTask extends BukkitRunnable {
                 continue;
             }
 
-            var date = LocalDateTime.now();
-
             // Skip removal if any of the player's delays or cooldowns are still active
-            if (playerCache.getChatMessageDelay().isAfter(date))
+            if (playerCache.getChatMessageDelay() != null && playerCache.getChatMessageDelay().isAfter(date))
                 continue;
 
-            if (playerCache.getCommandDelay().isAfter(date))
+            if (playerCache.getCommandDelay() != null && playerCache.getCommandDelay().isAfter(date))
                 continue;
 
-            if (playerCache.getMentionCooldown().isAfter(date))
+            if (playerCache.getMentionCooldown() != null && playerCache.getMentionCooldown().isAfter(date))
                 continue;
 
             // Remove the player's cache and unmark them for removal
