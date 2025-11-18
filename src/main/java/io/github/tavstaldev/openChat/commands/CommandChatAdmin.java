@@ -110,7 +110,8 @@ public class CommandChatAdmin implements CommandExecutor {
                         isJoin = true;
                         break;
                     }
-                    case "leave": {
+                    case "leave":
+                    case "quit": {
                         isJoin = false;
                         break;
                     }
