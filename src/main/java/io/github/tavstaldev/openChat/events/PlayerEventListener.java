@@ -4,6 +4,7 @@ import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
+import io.github.tavstaldev.openChat.util.VanishUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -60,15 +61,17 @@ public class PlayerEventListener implements Listener {
         var config = OpenChat.config();
         if (config.customGreetingEnabled && config.customGreetingOverrideJoinMessage) {
             event.joinMessage(null);
-            String message;
-            if (playerData.isPresent() && playerData.get().getCustomJoinMessage() != null)
-                message = playerData.get().getCustomJoinMessage();
-            else
-                message = config.customGreetingJoinMessage;
+            if (!config.customGreetingIgnoreVanished || !VanishUtil.isVanished(player)) {
+                String message;
+                if (playerData.isPresent() && playerData.get().getCustomJoinMessage() != null)
+                    message = playerData.get().getCustomJoinMessage();
+                else
+                    message = config.customGreetingJoinMessage;
 
-            String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-            message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
-            player.getServer().broadcast(ChatUtils.translateColors(message, true));
+                String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
+                message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
+                player.getServer().broadcast(ChatUtils.translateColors(message, true));
+            }
         }
 
         var motds = config.customMotds;
@@ -104,16 +107,18 @@ public class PlayerEventListener implements Listener {
         // TODO: Consider making this asynchronous
         if (config.customGreetingEnabled && config.customGreetingOverrideLeaveMessage) {
             event.quitMessage(null);
-            String message;
-            var playerData = OpenChat.database().getPlayerData(playerId);
-            if (playerData.isPresent() && playerData.get().getCustomLeaveMessage() != null)
-                message = playerData.get().getCustomLeaveMessage();
-            else
-                message = config.customGreetingLeaveMessage;
+            if (!config.customGreetingIgnoreVanished || !VanishUtil.isVanished(player)) {
+                String message;
+                var playerData = OpenChat.database().getPlayerData(playerId);
+                if (playerData.isPresent() && playerData.get().getCustomLeaveMessage() != null)
+                    message = playerData.get().getCustomLeaveMessage();
+                else
+                    message = config.customGreetingLeaveMessage;
 
-            String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-            message = PlaceholderAPI.setPlaceholders(player,  message.replace("{player}", playerName));
-            player.getServer().broadcast(ChatUtils.translateColors(message, true));
+                String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
+                message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
+                player.getServer().broadcast(ChatUtils.translateColors(message, true));
+            }
         }
 
         PlayerCacheManager.markForRemoval(player.getUniqueId());

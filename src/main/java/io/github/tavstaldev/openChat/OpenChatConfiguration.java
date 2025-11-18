@@ -88,6 +88,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
     // Custom Greeting
     public boolean customGreetingEnabled;
+    public boolean customGreetingIgnoreVanished;
     public boolean customGreetingOverrideJoinMessage;
     public String customGreetingJoinMessage;
     public boolean customGreetingOverrideLeaveMessage;
@@ -300,6 +301,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
         //#region Custom Greeting
         customGreetingEnabled = resolveGet("customGreeting.enabled", false);
+        customGreetingIgnoreVanished = resolveGet("customGreeting.ignoreVanished", true);
         customGreetingOverrideJoinMessage = resolveGet("customGreeting.overrideJoinMessage", false);
         customGreetingJoinMessage = resolveGet("customGreeting.joinMessage", "&8(&a+&8) &a{player}");
         customGreetingOverrideLeaveMessage = resolveGet("customGreeting.overrideLeaveMessage", false);
