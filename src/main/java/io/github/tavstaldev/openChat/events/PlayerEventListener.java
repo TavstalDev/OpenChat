@@ -10,6 +10,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
@@ -37,7 +38,7 @@ public class PlayerEventListener implements Listener {
      *
      * @param event The event triggered when a player joins the server.
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         var playerId = player.getUniqueId();
@@ -61,16 +62,19 @@ public class PlayerEventListener implements Listener {
         var config = OpenChat.config();
         if (config.customGreetingEnabled && config.customGreetingOverrideJoinMessage) {
             event.joinMessage(null);
+            var finalPlayerData = playerData;
             if (!config.customGreetingIgnoreVanished || !VanishUtil.isVanished(player)) {
-                String message;
-                if (playerData.isPresent() && playerData.get().getCustomJoinMessage() != null)
-                    message = playerData.get().getCustomJoinMessage();
-                else
-                    message = config.customGreetingJoinMessage;
+                Bukkit.getScheduler().runTaskLater(OpenChat.Instance, () -> {
+                    String message;
+                    if (finalPlayerData.isPresent() && finalPlayerData.get().getCustomJoinMessage() != null)
+                        message = finalPlayerData.get().getCustomJoinMessage();
+                    else
+                        message = config.customGreetingJoinMessage;
 
-                String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-                message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
-                player.getServer().broadcast(ChatUtils.translateColors(message, true));
+                    String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
+                    message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
+                    player.getServer().broadcast(ChatUtils.translateColors(message, true));
+                }, 40L);
             }
         }
 
@@ -98,7 +102,7 @@ public class PlayerEventListener implements Listener {
      *
      * @param event The event triggered when a player quits the server.
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
         Player player = event.getPlayer();
         var playerId = player.getUniqueId();
