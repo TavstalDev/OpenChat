@@ -91,6 +91,20 @@ public class ChatEventListener implements Listener {
                 ViolationUtil.handleViolationAsync(source, EViolationType.SPAM_REPETITION, rawMessage, config.antiSpamSimilarityViolationActions);
                 return;
             }
+
+            // Feature: Replace unauthorized characters
+            if (config.antiSpamRegexEnabled) {
+                String editedMessage = rawMessage.replaceAll(config.antiSpamRegex, "");
+                if (config.antiSpamRegexCancel) {
+                    double ratio = (double) editedMessage.length() / rawMessage.length();
+                    if (ratio < config.antiSpamRegexCancelThreshold) {
+                        event.setCancelled(true);
+                        OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.UnacceptableCharacters");
+                        return;
+                    }
+                }
+                rawMessage = editedMessage;
+            }
         }
 
         // Anti-advertisement

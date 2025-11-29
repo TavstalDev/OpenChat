@@ -129,6 +129,7 @@ AntiSpam:
   CommandCooldown: "%prefix% &cPlease wait %time% seconds before using that command again."
   RepeatedMessages: "%prefix% &cDon't repeat the same message."
   RepeatedCommands: "%prefix% &cDon't repeat the same command."
+  UnacceptableCharacters: "%prefix% &cYour message contains too many of unacceptable characters."
 
 AntiCaps:
   TooManyCaps: "%prefix% &cYou are using too many capital letters in your message."
@@ -157,5 +158,5 @@ Whisper:
   Spy: "&8(&c<hover:show_text:'&cSocial Spy'>👁</hover>&8) &8[&b%sender% &3➡ &b%receiver%&8] &7» &f%message%"
   Disabled: "%prefix% &e%player% &cis not accepting private messages."
 
-# 2025. 10. 24.
+# 2025. 11. 30.
 FileVersion: 2

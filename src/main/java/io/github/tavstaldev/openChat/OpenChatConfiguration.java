@@ -23,12 +23,12 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public long violationDurationMilliseconds;
 
     // Anti-Spam
-    public boolean antiSpamEnabled;
-    public double antiSpamMessageSimilarityThreshold, antiSpamCommandSimilarityThreshold;
+    public boolean antiSpamEnabled, antiSpamRegexEnabled, antiSpamRegexCancel;
+    public double antiSpamMessageSimilarityThreshold, antiSpamCommandSimilarityThreshold, antiSpamRegexCancelThreshold;
     public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates, antiSpamMaxCommandDuplicates;
     public Set<String> antiSpamCommandWhitelist;
     public Set<ViolationAction> antiSpamDelayViolationActions, antiSpamSimilarityViolationActions;
-    public String antiSpamExemptPermission;
+    public String antiSpamExemptPermission, antiSpamRegex;
 
     // Anti-Advertisement
     public boolean antiAdvertisementEnabled;
@@ -138,6 +138,14 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
         //#region Anti-Spam
         antiSpamEnabled = resolveGet("antiSpam.enabled", true);
+        antiSpamRegexEnabled = resolveGet("antiSpam.regexEnabled", false);
+        antiSpamRegex = resolveGet("antiSpam.regex", "(?i)[^aáÁbcdeéÉfghiíÍjklmnoóÓöÖőŐpqrstuúÚüŰűÜvwxyz0-9:)(<>;.*+?'\"+!%/=¸÷×$€|\\\\ ,-]");
+        resolveComment("antiSpam.regex", List.of("Regex pattern to remove unwanted characters from messages before similarity checks.",
+                "Prevents users from bypassing filters by converting letters to similar-looking characters."));
+        antiSpamRegexCancel = true;
+        antiSpamRegexCancelThreshold = resolveGet("antiSpam.regexCancelThreshold", 0.5);
+        resolveComment("antiSpam.regexCancelThreshold", List.of("Threshold (0.0 - 1.0) for cancelling messages based on regex filtering.",
+                "If the ratio of removed characters to total characters exceeds this value, the message will be cancelled."));
         antiSpamChatDelay = resolveGet("antiSpam.chatDelay", 2);
         antiSpamMaxDuplicates= resolveGet("antiSpam.maxDuplicates", 3);
         antiSpamCommandDelay = resolveGet("antiSpam.commandDelay", 2);

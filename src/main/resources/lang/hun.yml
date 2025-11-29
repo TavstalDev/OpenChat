@@ -129,6 +129,7 @@ AntiSpam:
   CommandCooldown: "%prefix% &cKérlek várj %time% másodpercet mielőtt újra használnád a parancsot."
   RepeatedMessages: "%prefix% &cNe ismételd meg ugyanazt az üzenetet."
   RepeatedCommands: "%prefix% &cNe ismételd meg ugyanazt a parancsot."
+  UnacceptableCharacters: "%prefix% &cAz üzeneted túl sok elfogadhatatlan karaktert tartalmaz."
 
 AntiCaps:
   TooManyCaps: "%prefix% &cTúl sok nagybetűt használsz az üzenetedben."
@@ -157,5 +158,5 @@ Whisper:
   Spy: "&8(&c<hover:show_text:'&cSocial Spy'>👁</hover>&8) &8[&b%sender% &3➡ &b%receiver%&8] &7» &f%message%"
   Disabled: "%prefix% &e%player% &cnem fogad privát üzeneteket."
 
-# 2025. 10. 24.
-FileVersion: 2
+# 2025. 11. 30.
+FileVersion: 3
