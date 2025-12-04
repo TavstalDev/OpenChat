@@ -74,7 +74,7 @@ public class PlayerEventListener implements Listener {
                     String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
                     message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
                     player.getServer().broadcast(ChatUtils.translateColors(message, true));
-                }, 40L);
+                }, 10L);
             }
         }
 
