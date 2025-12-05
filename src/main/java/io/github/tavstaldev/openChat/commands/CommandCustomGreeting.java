@@ -16,28 +16,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Handles the `/customgreeting` command, allowing players to manage custom join and leave messages.
+ * Implements both `CommandExecutor` and `TabCompleter` interfaces.
+ */
 public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandCustomGreeting.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "customgreeting";
+
+    // List of subcommands with their metadata
     private final List<SubCommandData> _subCommands = new ArrayList<>() {
         {
-            // HELP
+            // HELP subcommand
             add(new SubCommandData("help", "openchat.commands.customgreeting.help", Map.of(
                     "syntax", "",
                     "description", "Commands.Help.Desc"
             )));
-            // SET
+            // SET subcommand
             add(new SubCommandData("version", "openchat.commands.customgreeting.set", Map.of(
                     "syntax", "Commands.CustomGreeting.Set.Syntax",
                     "description", "Commands.CustomGreeting.Set.Desc"
             )));
-            // GET
+            // GET subcommand
             add(new SubCommandData("reload", "openchat.commands.customgreeting.get", Map.of(
                     "syntax", "Commands.CustomGreeting.Get.Syntax",
                     "description", "Commands.CustomGreeting.Get.Desc"
             )));
-            // CLEAR
+            // CLEAR subcommand
             add(new SubCommandData("clear", "openchat.commands.customgreeting.clear", Map.of(
                     "syntax", "",
                     "description", "Commands.CustomGreeting.Clear.Desc"
@@ -45,6 +51,10 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
         }
     };
 
+    /**
+     * Constructor for the CommandCustomGreeting class.
+     * Initializes the command executor and tab completer for the `/customgreeting` command.
+     */
     public CommandCustomGreeting() {
         var command = OpenChat.Instance.getCommand(baseCommand);
         if (command == null) {
@@ -55,6 +65,15 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
         command.setTabCompleter(this);
     }
 
+    /**
+     * Handles the execution of the `/customgreeting` command.
+     *
+     * @param sender  The sender of the command (player or console).
+     * @param command The command being executed.
+     * @param label   The alias of the command used.
+     * @param args    The arguments provided with the command.
+     * @return True if the command was successfully executed, false otherwise.
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         // Handle commands sent from the console
@@ -79,13 +98,12 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
         switch (args[0].toLowerCase()) {
             case "help":
             case "?": {
-                // Check if the player has permission to use the help command
+                // Handle the help subcommand
                 if (!player.hasPermission("openchat.commands.customgreeting.help")) {
                     OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
                     return true;
                 }
 
-                // Parse the page number for the help command
                 int page = 1;
                 if (args.length > 1) {
                     try {
@@ -100,7 +118,7 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                 return true;
             }
             case "set": {
-                // Check if the player has permission to use the set command
+                // Handle the set subcommand
                 if (!player.hasPermission("openchat.commands.customgreeting.set")) {
                     OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
                     return true;
@@ -115,6 +133,7 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                 switch (type) {
                     case "join":
                     case "connect": {
+                        // Set a custom join message
                         var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
                         if (playerDataOpt.isEmpty()) {
                             OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
@@ -134,13 +153,11 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                             return true;
                         }
 
-                        // Check for swear words in the message
                         if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
                             OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
                             return true;
                         }
 
-                        // Check for advertising in the message
                         if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
                             OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
                             return true;
@@ -153,9 +170,8 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                         break;
                     }
                     case "leave":
-                    case "left":
-                    case "disconnect":
-                    case "quit": {
+                    case "disconnect": {
+                        // Set a custom leave message
                         var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
                         if (playerDataOpt.isEmpty()) {
                             OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
@@ -175,13 +191,11 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                             return true;
                         }
 
-                        // Check for swear words in the message
                         if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
                             OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.SwearWordDetected");
                             return true;
                         }
 
-                        // Check for advertising in the message
                         if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
                             OpenChat.Instance.sendLocalizedMsg(player, "Commands.CustomGreeting.Set.AdvertisingDetected");
                             return true;
@@ -202,7 +216,7 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                 return true;
             }
             case "get": {
-                // Check if the player has permission to use the get command
+                // Handle the get subcommand
                 if (!player.hasPermission("openchat.commands.customgreeting.get")) {
                     OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
                     return true;
@@ -233,9 +247,7 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                         break;
                     }
                     case "leave":
-                    case "left":
-                    case "disconnect":
-                    case "quit": {
+                    case "disconnect": {
                         var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
                         if (playerDataOpt.isEmpty()) {
                             OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
@@ -260,7 +272,7 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                 return true;
             }
             case "clear": {
-                // Check if the player has permission to use the clear command
+                // Handle the clear subcommand
                 if (!player.hasPermission("openchat.commands.customgreeting.clear")) {
                     OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
                     return true;
@@ -288,9 +300,7 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
                         break;
                     }
                     case "leave":
-                    case "left":
-                    case "disconnect":
-                    case "quit": {
+                    case "disconnect": {
                         var playerDataOpt = OpenChat.database().getPlayerData(player.getUniqueId());
                         if (playerDataOpt.isEmpty()) {
                             OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
@@ -317,46 +327,61 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    /**
+     * Provides tab completion suggestions for the `/customgreeting` command.
+     *
+     * @param commandSender The sender of the command.
+     * @param command       The command being executed.
+     * @param label         The alias of the command used.
+     * @param args          The arguments provided with the command.
+     * @return A list of possible completions for the last argument, or null if no completions are available.
+     */
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-       switch (args.length) {
-           case 0:
-           case 1: {
-               return List.of("help", "set", "get", "clear");
-           }
-           case 2: {
-               String subCommand = args[0].toLowerCase();
-               switch (subCommand) {
-                   case "help":
-                   case "?": {
-                       return List.of("1", "5", "10");
-                   }
-                   case "set":
-                   case "get":
-                   case "clear": {
-                       return List.of("join", "quit");
-                   }
-                   default:
-                       return List.of();
-               }
+        switch (args.length) {
+            case 0:
+            case 1: {
+                return List.of("help", "set", "get", "clear");
+            }
+            case 2: {
+                String subCommand = args[0].toLowerCase();
+                switch (subCommand) {
+                    case "help":
+                    case "?": {
+                        return List.of("1", "5", "10");
+                    }
+                    case "set":
+                    case "get":
+                    case "clear": {
+                        return List.of("join", "quit");
+                    }
+                    default:
+                        return List.of();
+                }
 
-           }
-           case 3: {
-               String subCommand = args[0].toLowerCase();
-               if (subCommand.equals("set")) {
-                   String type = args[1].toLowerCase();
-                   if (type.equals("join") || type.equals("quit")) {
-                       return List.of("<message>");
-                   }
-               }
-               return List.of();
-           }
-           default: {
-               return List.of();
-           }
-       }
+            }
+            case 3: {
+                String subCommand = args[0].toLowerCase();
+                if (subCommand.equals("set")) {
+                    String type = args[1].toLowerCase();
+                    if (type.equals("join") || type.equals("quit")) {
+                        return List.of("<message>");
+                    }
+                }
+                return List.of();
+            }
+            default: {
+                return List.of();
+            }
+        }
     }
 
+    /**
+     * Displays the help menu for the `/customgreeting` command.
+     *
+     * @param player The player requesting the help menu.
+     * @param page   The page number to display.
+     */
     private void help(Player player, int page) {
         int maxPage = 1 + (_subCommands.size() / 15);
 

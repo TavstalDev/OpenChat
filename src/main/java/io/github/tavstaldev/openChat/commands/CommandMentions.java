@@ -19,45 +19,47 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+/**
+ * Handles the `/mentions` command, allowing players to manage their mention settings.
+ * Implements both `CommandExecutor` and `TabCompleter` interfaces.
+ */
 public class CommandMentions implements CommandExecutor, TabCompleter {
-    /** Logger instance for logging messages related to CommandMentions. */
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandMentions.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "mentions";
 
+    /** List of subcommands available for the `/mentions` command. */
     public static final List<SubCommandData> subCommands = List.of(
-            // HELP
             new SubCommandData("help", "", Map.of(
                     "syntax", "",
                     "description", "Commands.Help.Desc"
             )),
-            // SET SOUND
             new SubCommandData("sound", "", Map.of(
-                    "syntax", "Commands.Sound.Syntax",
-                    "description", "Commands.Sound.Desc"
+                    "syntax", "Commands.Mentions.Sound.Syntax",
+                    "description", "Commands.Mentions.Sound.Desc"
             )),
-            // SET DISPLAY
             new SubCommandData("display", "", Map.of(
-                    "syntax", "Commands.Display.Syntax",
-                    "description", "Commands.Display.Desc"
+                    "syntax", "Commands.Mentions.Display.Syntax",
+                    "description", "Commands.Mentions.Display.Desc"
             )),
-            // SET PREFERENCE
             new SubCommandData("preference", "", Map.of(
-                    "syntax", "Commands.Preference.Syntax",
-                    "description", "Commands.Preference.Desc"
+                    "syntax", "Commands.Mentions.Preference.Syntax",
+                    "description", "Commands.Mentions.Preference.Desc"
             )),
-            // IGNORE
             new SubCommandData("ignore", "", Map.of(
                     "syntax", "Commands.Ignore.Syntax",
                     "description", "Commands.Ignore.Desc"
             )),
-            // UNIGNORE
             new SubCommandData("unignore", "", Map.of(
                     "syntax", "Commands.Unignore.Syntax",
                     "description", "Commands.Unignore.Desc"
             ))
     );
 
+    /**
+     * Constructor for the CommandMentions class.
+     * Initializes the command executor and tab completer for the `/mentions` command.
+     */
     public CommandMentions() {
         var command = OpenChat.Instance.getCommand(baseCommand);
         if (command == null) {
@@ -68,6 +70,15 @@ public class CommandMentions implements CommandExecutor, TabCompleter {
         command.setTabCompleter(this);
     }
 
+    /**
+     * Handles the execution of the `/mentions` command.
+     *
+     * @param sender  The sender of the command (player or console).
+     * @param command The command being executed.
+     * @param label   The alias of the command used.
+     * @param args    The arguments provided with the command.
+     * @return True if the command was successfully executed, false otherwise.
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (sender instanceof ConsoleCommandSender) {
@@ -251,6 +262,15 @@ public class CommandMentions implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    /**
+     * Provides tab completion suggestions for the `/mentions` command.
+     *
+     * @param commandSender The sender of the command.
+     * @param command       The command being executed.
+     * @param label         The alias of the command used.
+     * @param args          The arguments provided with the command.
+     * @return A list of possible completions for the last argument, or null if no completions are available.
+     */
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         switch (args.length) {
@@ -287,6 +307,12 @@ public class CommandMentions implements CommandExecutor, TabCompleter {
         }
     }
 
+    /**
+     * Displays the help menu for the `/mentions` command.
+     *
+     * @param sender The sender requesting the help menu.
+     * @param page   The page number to display.
+     */
     private void help(CommandSender sender, int page) {
         int maxPage = 1 + (subCommands.size() / 15);
 
@@ -353,5 +379,4 @@ public class CommandMentions implements CommandExecutor, TabCompleter {
         Component bottomComp = ChatUtils.buildWithButtons(bottomMsg, bottomParams);
         sender.sendMessage(bottomComp);
     }
-
 }

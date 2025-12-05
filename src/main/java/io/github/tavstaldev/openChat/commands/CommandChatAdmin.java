@@ -20,23 +20,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Handles the `/openchatadmin` command and its subcommands.
+ * Implements both `CommandExecutor` and `TabCompleter` interfaces.
+ */
 public class CommandChatAdmin implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandChatAdmin.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "openchatadmin";
+
+    // List of subcommands with their metadata
     private final List<SubCommandData> _subCommands = new ArrayList<>() {
         {
-            // HELP
+            // HELP subcommand
             add(new SubCommandData("help", "openchat.commands.chatadmin", Map.of(
                     "syntax", "Commands.Admin.Help.Syntax",
                     "description", "Commands.Admin.Help.Desc"
             )));
-            // RELOAD
+            // RELOAD subcommand
             add(new SubCommandData("reload", "openchat.commands.chatadmin", Map.of(
                     "syntax", "",
                     "description", "Commands.Reload.Desc"
             )));
-            // GREETING
+            // GREETING subcommand
             add(new SubCommandData("greeting", "openchat.commands.chatadmin", Map.of(
                     "syntax", "Commands.Admin.Greeting.Syntax",
                     "description", "Commands.Admin.Greeting.Desc"
@@ -44,6 +50,10 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
         }
     };
 
+    /**
+     * Constructor for the CommandChatAdmin class.
+     * Initializes the command executor and tab completer for the `/openchatadmin` command.
+     */
     public CommandChatAdmin() {
         var command = OpenChat.Instance.getCommand(baseCommand);
         if (command == null) {
@@ -54,6 +64,15 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
         command.setExecutor(this);
     }
 
+    /**
+     * Handles the execution of the `/openchatadmin` command.
+     *
+     * @param sender  The sender of the command (player or console).
+     * @param command The command being executed.
+     * @param label   The alias of the command used.
+     * @param args    The arguments provided with the command.
+     * @return True if the command was successfully executed, false otherwise.
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (args.length == 0) {
@@ -64,13 +83,12 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
         switch (args[0].toLowerCase()) {
             case "help":
             case "?": {
-                // Check if the player has permission to use the help command
+                // Handle the help subcommand
                 if (!sender.hasPermission("openchat.commands.help")) {
                     OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
                     return true;
                 }
 
-                // Parse the page number for the help command
                 int page = 1;
                 if (args.length > 1) {
                     try {
@@ -85,18 +103,18 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                 return true;
             }
             case "reload": {
-                // Check if the player has permission to use the reload command
+                // Handle the reload subcommand
                 if (!sender.hasPermission("openchat.commands.reload")) {
                     OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
                     return true;
                 }
 
-                // Reload the plugin configuration
                 OpenChat.Instance.reload();
                 OpenChat.Instance.sendCommandReply(sender, "Commands.Reload.Done");
                 return true;
             }
             case "greeting": {
+                // Handle the greeting subcommand
                 if (!sender.hasPermission("openchat.commands.chatadmin")) {
                     OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
                     return true;
@@ -162,13 +180,11 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                             return true;
                         }
 
-                        // Check for swear words in the message
                         if (OpenChat.antiSwearSystem().containsSwearWord(message)) {
                             OpenChat.Instance.sendCommandReply(sender, "Commands.CustomGreeting.Set.SwearWordDetected");
                             return true;
                         }
 
-                        // Check for advertising in the message
                         if (OpenChat.advertisementSystem().containsAdvertisement(message)) {
                             OpenChat.Instance.sendCommandReply(sender, "Commands.CustomGreeting.Set.AdvertisingDetected");
                             return true;
@@ -218,12 +234,20 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
             }
         }
 
-        // Send an error message if the subcommand is invalid
         OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
         return true;
 
     }
 
+    /**
+     * Provides tab completion suggestions for the `/openchatadmin` command.
+     *
+     * @param commandSender The sender of the command.
+     * @param command       The command being executed.
+     * @param label         The alias of the command used.
+     * @param args          The arguments provided with the command.
+     * @return A list of possible completions for the last argument, or null if no completions are available.
+     */
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         switch (args.length) {
@@ -273,17 +297,21 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
         }
     }
 
+    /**
+     * Displays the help menu for the `/openchatadmin` command.
+     *
+     * @param sender The sender of the command.
+     * @param page   The page number to display.
+     */
     private void help(CommandSender sender, int page) {
         int maxPage = 1 + (_subCommands.size() / 15);
 
-        // Ensure the page number is within valid bounds
         if (page > maxPage)
             page = maxPage;
         if (page < 1)
             page = 1;
         int finalPage = page;
 
-        // Send the help menu title and info
         OpenChat.Instance.sendCommandReply(sender, "Commands.Help.Title", Map.of(
                         "current_page", finalPage,
                         "max_page", maxPage
@@ -294,7 +322,6 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
         boolean reachedEnd = false;
         int itemIndex = 0;
 
-        // Display up to 15 subcommands per page
         for (int i = 0; i < 15; i++) {
             int index = itemIndex + (page - 1) * 15;
             if (index >= _subCommands.size()) {
@@ -312,7 +339,6 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
             subCommand.send(OpenChat.Instance, sender, baseCommand);
         }
 
-        // Display navigation buttons for the help menu
         String previousBtn, nextBtn, bottomMsg;
         if (sender instanceof Player player)
         {

@@ -24,12 +24,6 @@ import java.util.Map;
  * Handles various subcommands such as help, version, reload, and clear.
  */
 public class CommandChat implements CommandExecutor, TabCompleter {
-
-    // TODO: Move Reload to the admin command set
-    // TODO: Add tab completion
-    // Clear can stay here since staff may need it
-    // Also add subcommands for other standalone commands, so players can see them in one place
-
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandChat.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "openchat";
@@ -50,9 +44,19 @@ public class CommandChat implements CommandExecutor, TabCompleter {
                     "syntax", "",
                     "description", "Commands.Clear.Desc"
             )));
+            // TODO: Add subcommands for other standalone commands, so players can see them in one place
+            // CHAT-TOGGLE
+            // MENTIONS
+            // IGNORE
+            // UNIGNORE
+            // GREETING
         }
     };
 
+    /**
+     * Constructor for the CommandChat class.
+     * Initializes the command executor and tab completer for the base command.
+     */
     public CommandChat() {
         var command = OpenChat.Instance.getCommand(baseCommand);
         if (command == null) {
@@ -158,25 +162,39 @@ public class CommandChat implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    /**
+     * Provides tab completion suggestions for the OpenChat command.
+     *
+     * @param commandSender The sender of the command (player or console).
+     * @param command       The command being executed.
+     * @param label         The alias of the command used.
+     * @param args          The arguments provided with the command.
+     * @return A list of possible completions for the last argument, or null if no completions are available.
+     */
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         switch (args.length) {
             case 0:
             case 1: {
+                // Suggest top-level subcommands when no arguments or only the first argument is provided
                 return List.of("help", "version", "clear");
             }
             case 2: {
+                // Provide specific suggestions for the second argument based on the first subcommand
                 String subCommand = args[0].toLowerCase();
                 switch (subCommand) {
                     case "help":
                     case "?": {
+                        // Suggest page numbers for the help command
                         return List.of("1", "5", "10");
                     }
                     default:
+                        // No suggestions for other subcommands
                         return List.of();
                 }
             }
             default:
+                // No suggestions for arguments beyond the second
                 return List.of();
         }
     }

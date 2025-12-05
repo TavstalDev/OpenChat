@@ -10,11 +10,19 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Handles the `/chattoggle` command, allowing players to toggle their public chat visibility.
+ * Implements both `CommandExecutor` and `TabCompleter` interfaces.
+ */
 public class CommandChatToggle implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandChatToggle.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "chattoggle";
 
+    /**
+     * Constructor for the CommandChatToggle class.
+     * Initializes the command executor and tab completer for the `/chattoggle` command.
+     */
     public CommandChatToggle() {
         var command = OpenChat.Instance.getCommand(baseCommand);
         if (command == null) {
@@ -25,26 +33,45 @@ public class CommandChatToggle implements CommandExecutor, TabCompleter {
         command.setTabCompleter(this);
     }
 
+    /**
+     * Handles the execution of the `/chattoggle` command.
+     *
+     * @param sender  The sender of the command (player or console).
+     * @param command The command being executed.
+     * @param label   The alias of the command used.
+     * @param args    The arguments provided with the command.
+     * @return True if the command was successfully executed, false otherwise.
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
+        // Prevent console from executing this command
         if (sender instanceof ConsoleCommandSender) {
             _logger.info(ChatUtils.translateColors("Commands.ConsoleCaller", true).toString());
             return true;
         }
+
+        // Cast the sender to a Player
         Player player = (Player) sender;
+
+        // Check if the player has the required permission
         if (!player.hasPermission("openchat.commands.chat")) {
             OpenChat.Instance.sendLocalizedMsg(player, "General.NoPermission");
             return true;
         }
 
+        // Retrieve the player's data from the database
         var rawData = OpenChat.database().getPlayerData(player.getUniqueId());
         if (rawData.isEmpty()) {
             OpenChat.Instance.sendLocalizedMsg(player, "General.Error");
             return true;
         }
+
+        // Toggle the player's public chat visibility
         var data = rawData.get();
         data.setPublicChatDisabled(!data.isPublicChatDisabled());
         OpenChat.database().updatePlayerData(data);
+
+        // Notify the player of the updated chat visibility status
         if (data.isPublicChatDisabled()) {
             OpenChat.Instance.sendLocalizedMsg(player, "Commands.PublicChat.Disabled");
         } else {
@@ -53,6 +80,15 @@ public class CommandChatToggle implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    /**
+     * Provides tab completion suggestions for the `/chattoggle` command.
+     *
+     * @param commandSender The sender of the command.
+     * @param command       The command being executed.
+     * @param label         The alias of the command used.
+     * @param args          The arguments provided with the command.
+     * @return A list of possible completions for the last argument, or null if no completions are available.
+     */
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         return List.of();
