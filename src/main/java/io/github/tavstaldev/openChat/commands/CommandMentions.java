@@ -137,7 +137,7 @@ public class CommandMentions implements CommandExecutor, TabCompleter {
 
                 EMentionDisplay display;
                 try {
-                    display = EMentionDisplay.valueOf(args[1]);
+                    display = EMentionDisplay.valueOf(args[1].toUpperCase(Locale.ROOT));
                 } catch (Exception ignored) {
                     OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Display.Invalid", Map.of("value", args[1]));
                     return true;
@@ -166,7 +166,7 @@ public class CommandMentions implements CommandExecutor, TabCompleter {
 
                 EMentionPreference preference;
                 try {
-                    preference = EMentionPreference.valueOf(args[1]);
+                    preference = EMentionPreference.valueOf(args[1].toUpperCase(Locale.ROOT));
                 } catch (Exception ignored) {
                     OpenChat.Instance.sendLocalizedMsg(player, "Commands.Mentions.Preference.Invalid", Map.of("value", args[1]));
                     return true;
@@ -262,8 +262,16 @@ public class CommandMentions implements CommandExecutor, TabCompleter {
             case 2: {
                 String subCommand = args[0].toLowerCase();
                 switch (subCommand) {
-                    case "sound":
-                        return new ArrayList<>(SoundUtils.getAllSoundNames());
+                    case "help":
+                    case "?": {
+                        return List.of("1", "5", "10");
+                    }
+                    case "sound": {
+                        String partial = args[1].toLowerCase();
+                        return SoundUtils.getAllSoundNames().stream()
+                                .filter(soundName -> soundName.toLowerCase().startsWith(partial))
+                                .toList();
+                    }
                     case "display":
                         return List.of("all", "actionbar_and_sound", "chat_and_actionbar", "chat_and_sound", "only_chat", "only_actionbar", "only_sound");
                     case "preference":

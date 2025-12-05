@@ -72,7 +72,7 @@ public class SoundUtils {
     public static Set<String> getAllSoundNames() {
         if (cachedSoundNames.isEmpty()) {
             for (var key : Registry.SOUNDS.keyStream().toList()) {
-                cachedSoundNames.add(key.examinableName());
+                cachedSoundNames.add(key.value());
             }
         }
         return cachedSoundNames;

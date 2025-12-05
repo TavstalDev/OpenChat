@@ -10,15 +10,17 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CommandChatAdmin implements CommandExecutor {
+public class CommandChatAdmin implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandChatAdmin.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "openchatadmin";
@@ -29,6 +31,11 @@ public class CommandChatAdmin implements CommandExecutor {
                     "syntax", "Commands.Admin.Help.Syntax",
                     "description", "Commands.Admin.Help.Desc"
             )));
+            // RELOAD
+            add(new SubCommandData("reload", "openchat.commands.chatadmin", Map.of(
+                    "syntax", "",
+                    "description", "Commands.Reload.Desc"
+            )));
             // GREETING
             add(new SubCommandData("greeting", "openchat.commands.chatadmin", Map.of(
                     "syntax", "Commands.Admin.Greeting.Syntax",
@@ -37,14 +44,13 @@ public class CommandChatAdmin implements CommandExecutor {
         }
     };
 
-    // TODO: Add tab completion
-
     public CommandChatAdmin() {
         var command = OpenChat.Instance.getCommand(baseCommand);
         if (command == null) {
             _logger.error("Could not get command /" + baseCommand + " from plugin.yml! Disabling command...");
             return;
         }
+        command.setExecutor(this);
         command.setExecutor(this);
     }
 
@@ -76,6 +82,18 @@ public class CommandChatAdmin implements CommandExecutor {
                 }
 
                 help(sender, page);
+                return true;
+            }
+            case "reload": {
+                // Check if the player has permission to use the reload command
+                if (!sender.hasPermission("openchat.commands.reload")) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                    return true;
+                }
+
+                // Reload the plugin configuration
+                OpenChat.Instance.reload();
+                OpenChat.Instance.sendCommandReply(sender, "Commands.Reload.Done");
                 return true;
             }
             case "greeting": {
@@ -204,6 +222,55 @@ public class CommandChatAdmin implements CommandExecutor {
         OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
         return true;
 
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        switch (args.length) {
+            case 0:
+            case 1: {
+                return List.of("help", "reload", "greeting");
+            }
+            case 2: {
+                String subCommand = args[0].toLowerCase();
+                switch (subCommand) {
+                    case "help":
+                    case "?": {
+                        return List.of("1", "5", "10");
+                    }
+                    case "greeting": {
+                        return List.of("set", "get", "clear");
+                    }
+                    default:
+                        return List.of();
+                }
+            }
+            case 3: {
+                String subCommand = args[0].toLowerCase();
+                if (subCommand.equals("greeting")) {
+                    return null; // Allow player names to be tab-completed by the server
+                }
+                return List.of();
+            }
+            case 4: {
+                String subCommand = args[0].toLowerCase();
+                if (subCommand.equals("greeting")) {
+                    return List.of("join", "leave");
+                }
+                return List.of();
+            }
+            case 5: {
+                String subCommand = args[0].toLowerCase();
+                if (subCommand.equals("greeting")) {
+                    String type = args[1].toLowerCase();
+                    if (type.equals("set"))
+                        return List.of("<message>");
+                }
+                return List.of();
+            }
+            default:
+                return List.of();
+        }
     }
 
     private void help(CommandSender sender, int page) {

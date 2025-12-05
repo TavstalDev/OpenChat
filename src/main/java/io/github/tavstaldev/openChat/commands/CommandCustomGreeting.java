@@ -327,6 +327,10 @@ public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
            case 2: {
                String subCommand = args[0].toLowerCase();
                switch (subCommand) {
+                   case "help":
+                   case "?": {
+                       return List.of("1", "5", "10");
+                   }
                    case "set":
                    case "get":
                    case "clear": {

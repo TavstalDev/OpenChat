@@ -9,8 +9,10 @@ import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +23,7 @@ import java.util.Map;
  * Command executor for the OpenChat plugin.
  * Handles various subcommands such as help, version, reload, and clear.
  */
-public class CommandChat implements CommandExecutor {
+public class CommandChat implements CommandExecutor, TabCompleter {
 
     // TODO: Move Reload to the admin command set
     // TODO: Add tab completion
@@ -43,11 +45,6 @@ public class CommandChat implements CommandExecutor {
                     "syntax", "",
                     "description", "Commands.Version.Desc"
             )));
-            // RELOAD
-            add(new SubCommandData("reload", "openchat.commands.reload", Map.of(
-                    "syntax", "",
-                    "description", "Commands.Reload.Desc"
-            )));
             // CLEAR
             add(new SubCommandData("clear", "openchat.commands.clear", Map.of(
                     "syntax", "",
@@ -63,6 +60,7 @@ public class CommandChat implements CommandExecutor {
             return;
         }
         command.setExecutor(this);
+        command.setTabCompleter(this);
     }
 
     /**
@@ -134,18 +132,6 @@ public class CommandChat implements CommandExecutor {
                 });
                 return true;
             }
-            case "reload": {
-                // Check if the player has permission to use the reload command
-                if (!sender.hasPermission("openchat.commands.reload")) {
-                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
-                    return true;
-                }
-
-                // Reload the plugin configuration
-                OpenChat.Instance.reload();
-                OpenChat.Instance.sendCommandReply(sender, "Commands.Reload.Done");
-                return true;
-            }
             case "clear": {
                 // Check if the player has permission to use the clear command
                 if (!sender.hasPermission("openchat.commands.clear")) {
@@ -170,6 +156,29 @@ public class CommandChat implements CommandExecutor {
         // Send an error message if the subcommand is invalid
         OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        switch (args.length) {
+            case 0:
+            case 1: {
+                return List.of("help", "version", "clear");
+            }
+            case 2: {
+                String subCommand = args[0].toLowerCase();
+                switch (subCommand) {
+                    case "help":
+                    case "?": {
+                        return List.of("1", "5", "10");
+                    }
+                    default:
+                        return List.of();
+                }
+            }
+            default:
+                return List.of();
+        }
     }
 
     /**
