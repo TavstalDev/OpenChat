@@ -4,10 +4,13 @@ import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.openChat.OpenChat;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import org.bukkit.Registry;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Utility class for handling sound-related operations.
@@ -16,6 +19,7 @@ import java.util.Optional;
 public class SoundUtils {
     /** Logger instance for logging messages related to SoundUtils. */
     private static final PluginLogger _logger = OpenChat.logger().withModule(SoundUtils.class);
+    private static final Set<String> cachedSoundNames = new LinkedHashSet<>();
 
     /**
      * Retrieves a sound object based on its name with default volume and pitch.
@@ -63,5 +67,14 @@ public class SoundUtils {
             _logger.debug("Exception: " + ex.getMessage());
             return Optional.empty();
         }
+    }
+
+    public static Set<String> getAllSoundNames() {
+        if (cachedSoundNames.isEmpty()) {
+            for (var key : Registry.SOUNDS.keyStream().toList()) {
+                cachedSoundNames.add(key.examinableName());
+            }
+        }
+        return cachedSoundNames;
     }
 }

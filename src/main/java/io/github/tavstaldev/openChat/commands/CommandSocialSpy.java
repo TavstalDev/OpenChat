@@ -3,14 +3,16 @@ package io.github.tavstaldev.openChat.commands;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+import io.github.tavstaldev.openChat.util.SoundUtils;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class CommandSocialSpy implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.List;
+
+public class CommandSocialSpy implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandSocialSpy.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "socialspy";
@@ -22,6 +24,7 @@ public class CommandSocialSpy implements CommandExecutor {
             return;
         }
         command.setExecutor(this);
+        command.setTabCompleter(this);
     }
 
     @Override
@@ -50,5 +53,10 @@ public class CommandSocialSpy implements CommandExecutor {
             OpenChat.Instance.sendLocalizedMsg(player, "Commands.SocialSpy.Disabled");
         }
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        return List.of(); // No tab completions for this command
     }
 }

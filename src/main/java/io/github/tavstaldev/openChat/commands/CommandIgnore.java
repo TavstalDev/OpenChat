@@ -5,16 +5,15 @@ import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 
-public class CommandIgnore implements CommandExecutor {
+public class CommandIgnore implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandIgnore.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "ignore";
@@ -26,6 +25,7 @@ public class CommandIgnore implements CommandExecutor {
             return;
         }
         command.setExecutor(this);
+        command.setTabCompleter(this);
     }
 
     @Override
@@ -65,5 +65,13 @@ public class CommandIgnore implements CommandExecutor {
         OpenChat.database().addIgnoredPlayer(playerId, targetId);
         OpenChat.Instance.sendLocalizedMsg(player, "Commands.Ignore.Enabled", Map.of("player", args[0]));
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        if (args.length > 1) {
+            return List.of();
+        }
+        return null; // Let Bukkit handle player name completions
     }
 }

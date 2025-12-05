@@ -3,14 +3,14 @@ package io.github.tavstaldev.openChat.commands;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class CommandChatToggle implements CommandExecutor {
+import java.util.List;
+
+public class CommandChatToggle implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandChatToggle.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "chattoggle";
@@ -22,6 +22,7 @@ public class CommandChatToggle implements CommandExecutor {
             return;
         }
         command.setExecutor(this);
+        command.setTabCompleter(this);
     }
 
     @Override
@@ -50,5 +51,10 @@ public class CommandChatToggle implements CommandExecutor {
             OpenChat.Instance.sendLocalizedMsg(player, "Commands.PublicChat.Enabled");
         }
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        return List.of();
     }
 }

@@ -6,19 +6,17 @@ import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CommandCustomGreeting implements CommandExecutor {
+public class CommandCustomGreeting implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandCustomGreeting.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "customgreeting";
@@ -54,6 +52,7 @@ public class CommandCustomGreeting implements CommandExecutor {
             return;
         }
         command.setExecutor(this);
+        command.setTabCompleter(this);
     }
 
     @Override
@@ -316,6 +315,42 @@ public class CommandCustomGreeting implements CommandExecutor {
         // Send an error message if the subcommand is invalid
         OpenChat.Instance.sendLocalizedMsg(player, "Commands.InvalidArguments");
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+       switch (args.length) {
+           case 0:
+           case 1: {
+               return List.of("help", "set", "get", "clear");
+           }
+           case 2: {
+               String subCommand = args[0].toLowerCase();
+               switch (subCommand) {
+                   case "set":
+                   case "get":
+                   case "clear": {
+                       return List.of("join", "quit");
+                   }
+                   default:
+                       return List.of();
+               }
+
+           }
+           case 3: {
+               String subCommand = args[0].toLowerCase();
+               if (subCommand.equals("set")) {
+                   String type = args[1].toLowerCase();
+                   if (type.equals("join") || type.equals("quit")) {
+                       return List.of("<message>");
+                   }
+               }
+               return List.of();
+           }
+           default: {
+               return List.of();
+           }
+       }
     }
 
     private void help(Player player, int page) {

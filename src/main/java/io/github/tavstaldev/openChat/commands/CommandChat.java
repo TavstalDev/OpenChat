@@ -24,6 +24,7 @@ import java.util.Map;
 public class CommandChat implements CommandExecutor {
 
     // TODO: Move Reload to the admin command set
+    // TODO: Add tab completion
     // Clear can stay here since staff may need it
     // Also add subcommands for other standalone commands, so players can see them in one place
 

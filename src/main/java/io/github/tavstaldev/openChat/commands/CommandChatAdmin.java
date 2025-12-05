@@ -37,6 +37,8 @@ public class CommandChatAdmin implements CommandExecutor {
         }
     };
 
+    // TODO: Add tab completion
+
     public CommandChatAdmin() {
         var command = OpenChat.Instance.getCommand(baseCommand);
         if (command == null) {

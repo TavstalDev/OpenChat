@@ -12,19 +12,14 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-public class CommandMentions implements CommandExecutor {
+public class CommandMentions implements CommandExecutor, TabCompleter {
     /** Logger instance for logging messages related to CommandMentions. */
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandMentions.class);
     @SuppressWarnings("FieldCanBeLocal")
@@ -70,6 +65,7 @@ public class CommandMentions implements CommandExecutor {
             return;
         }
         command.setExecutor(this);
+        command.setTabCompleter(this);
     }
 
     @Override
@@ -255,6 +251,34 @@ public class CommandMentions implements CommandExecutor {
         return true;
     }
 
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+        switch (args.length) {
+            case 0:
+            case 1:
+                return subCommands.stream()
+                        .map(subCmd -> subCmd.command)
+                        .toList();
+            case 2: {
+                String subCommand = args[0].toLowerCase();
+                switch (subCommand) {
+                    case "sound":
+                        return new ArrayList<>(SoundUtils.getAllSoundNames());
+                    case "display":
+                        return List.of("all", "actionbar_and_sound", "chat_and_actionbar", "chat_and_sound", "only_chat", "only_actionbar", "only_sound");
+                    case "preference":
+                        return List.of("always", "never_in_combat", "silent_in_combat", "never");
+                    case "ignore":
+                    case "unignore":
+                    default:
+                        return null; // Let Bukkit handle player name completions
+                }
+            }
+            default:
+                return List.of();
+        }
+    }
+
     private void help(CommandSender sender, int page) {
         int maxPage = 1 + (subCommands.size() / 15);
 
@@ -321,4 +345,5 @@ public class CommandMentions implements CommandExecutor {
         Component bottomComp = ChatUtils.buildWithButtons(bottomMsg, bottomParams);
         sender.sendMessage(bottomComp);
     }
+
 }
