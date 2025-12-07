@@ -150,6 +150,11 @@ public class ChatEventListener implements Listener {
         if (spamDelay > 0)
             cache.setChatMessageDelay(LocalDateTime.now().plusSeconds(spamDelay));
 
+        if (!source.hasPermission("openchat.emojis.use")) {
+            // Escape : so ItemsAdder will not convert emojis
+            rawMessage = rawMessage.replace(":", "\\:");
+        }
+
         // Custom chat formatting & Mentions
         if (!config.customChatEnabled)
         {
