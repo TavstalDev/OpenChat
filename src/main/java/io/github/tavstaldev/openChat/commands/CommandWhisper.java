@@ -2,6 +2,7 @@ package io.github.tavstaldev.openChat.commands;
 
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.Patterns;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
 import io.github.tavstaldev.openChat.util.VanishUtil;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
 
 /**
  * Handles the `/whisper` command, allowing players to send private messages to other players.
@@ -112,9 +114,29 @@ public class CommandWhisper implements CommandExecutor {
         // Construct the whisper message
         String message = String.join(" ", args).substring(args[0].length()).trim();
 
+        // Escape emojis if necessary
+        var config = OpenChat.config();
+        if (config.antiSpamEmojis && !sender.hasPermission(config.antiSpamEmojiExemptPermission)) {
+            var emojiMatcher = Patterns.emojiPattern.matcher(message);
+            StringBuilder sb = new StringBuilder();
+            while (emojiMatcher.find()) {
+                String emoji = emojiMatcher.group();
+
+                if (!config.antiSpamEmojiWhitelist.contains(emoji)) {
+                    // Escape the colons
+                    String escaped = emoji.replace(":", "\\:");
+                    emojiMatcher.appendReplacement(sb, Matcher.quoteReplacement(escaped));
+                }
+            }
+
+            emojiMatcher.appendTail(sb);
+            message = sb.toString();
+        }
+        String finalMessage = message;
+
         // Send the whisper message to the target and notify the sender
-        OpenChat.Instance.sendCommandReply(sender, "Whisper.Sender", Map.of("receiver", PlayerUtil.getPlayerPlainDisplayName(target), "message", message));
-        OpenChat.Instance.sendLocalizedMsg(target, "Whisper.Receiver", Map.of("sender", senderName, "message", message));
+        OpenChat.Instance.sendCommandReply(sender, "Whisper.Sender", Map.of("receiver", PlayerUtil.getPlayerPlainDisplayName(target), "message", finalMessage));
+        OpenChat.Instance.sendLocalizedMsg(target, "Whisper.Receiver", Map.of("sender", senderName, "message", finalMessage));
 
         // Notify social spies if enabled
         if (OpenChat.config().privateMessagingSocialSpyEnabled) {
@@ -131,7 +153,7 @@ public class CommandWhisper implements CommandExecutor {
                         OpenChat.Instance.sendLocalizedMsg(p, "Whisper.Spy", Map.of(
                                 "sender", senderName,
                                 "receiver", PlayerUtil.getPlayerPlainDisplayName(target),
-                                "message", message
+                                "message", finalMessage
                         ));
                     });
         }

@@ -3,6 +3,7 @@ package io.github.tavstaldev.openChat.commands;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.Patterns;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
@@ -16,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
 
 /**
  * Handles the `/reply` command, allowing players to reply to the last player who messaged them.
@@ -116,9 +118,29 @@ public class CommandReply implements CommandExecutor {
         String targetName = PlayerUtil.getPlayerPlainDisplayName(target);
         String sourceName = PlayerUtil.getPlayerPlainDisplayName(player);
 
+        // Escape emojis if necessary
+        var config = OpenChat.config();
+        if (config.antiSpamEmojis && !sender.hasPermission(config.antiSpamEmojiExemptPermission)) {
+            var emojiMatcher = Patterns.emojiPattern.matcher(message);
+            StringBuilder sb = new StringBuilder();
+            while (emojiMatcher.find()) {
+                String emoji = emojiMatcher.group();
+
+                if (!config.antiSpamEmojiWhitelist.contains(emoji)) {
+                    // Escape the colons
+                    String escaped = emoji.replace(":", "\\:");
+                    emojiMatcher.appendReplacement(sb, Matcher.quoteReplacement(escaped));
+                }
+            }
+
+            emojiMatcher.appendTail(sb);
+            message = sb.toString();
+        }
+        String finalMessage = message;
+
         // Send the reply message to the target and notify the sender
-        OpenChat.Instance.sendCommandReply(sender, "Whisper.Sender", Map.of("receiver", targetName, "message", message));
-        OpenChat.Instance.sendLocalizedMsg(target, "Whisper.Receiver", Map.of("sender", sourceName, "message", message));
+        OpenChat.Instance.sendCommandReply(sender, "Whisper.Sender", Map.of("receiver", targetName, "message", finalMessage));
+        OpenChat.Instance.sendLocalizedMsg(target, "Whisper.Receiver", Map.of("sender", sourceName, "message", finalMessage));
 
         // Notify social spies if enabled
         if (OpenChat.config().privateMessagingSocialSpyEnabled) {
@@ -135,7 +157,7 @@ public class CommandReply implements CommandExecutor {
                         OpenChat.Instance.sendLocalizedMsg(p, "Whisper.Spy", Map.of(
                                 "sender", sourceName,
                                 "receiver", targetName,
-                                "message", message
+                                "message", finalMessage
                         ));
                     });
         }

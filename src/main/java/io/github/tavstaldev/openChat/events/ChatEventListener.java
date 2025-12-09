@@ -4,6 +4,7 @@ import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.OpenChatConfiguration;
+import io.github.tavstaldev.openChat.Patterns;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.models.database.EViolationType;
@@ -34,10 +35,6 @@ import java.util.regex.Pattern;
  */
 public class ChatEventListener implements Listener {
     private final PluginLogger _logger = OpenChat.logger().withModule(ChatEventListener.class);
-    private final Pattern minecraftUsernamePattern = Pattern.compile("([a-zA-Z0-9_]{3,16})(?![a-zA-Z0-9_])");
-    private final Pattern legacyPattern = Pattern.compile("(?i)[&§]([0-9a-fk-or])");
-    private final Pattern hexPattern = Pattern.compile("(?i)[&§]#([A-Fa-f0-9]{6})");
-    private final Pattern emojiPattern = Pattern.compile(":[a-zA-Z0-9_]+:");
 
     /**
      * Constructor for ChatEventListener.
@@ -152,7 +149,7 @@ public class ChatEventListener implements Listener {
             cache.setChatMessageDelay(LocalDateTime.now().plusSeconds(spamDelay));
 
         if (config.antiSpamEmojis && !source.hasPermission(config.antiSpamEmojiExemptPermission)) {
-            var emojiMatcher = emojiPattern.matcher(rawMessage);
+            var emojiMatcher = Patterns.emojiPattern.matcher(rawMessage);
             StringBuilder sb = new StringBuilder();
             while (emojiMatcher.find()) {
                 String emoji = emojiMatcher.group();
@@ -175,17 +172,17 @@ public class ChatEventListener implements Listener {
             boolean coloredHexChat = source.hasPermission(config.customChatHexRichTextPermission);
             boolean coloredLegacyChat = source.hasPermission(config.customChatLegacyRichTextPermission);
             if (!coloredHexChat && !coloredLegacyChat) {
-                rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
-                rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = Patterns.hexPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = Patterns.legacyPattern.matcher(rawMessage).replaceAll("");
                 rawMessage = rawMessage.replace("<", "\\<");
             }
             else {
                 if (!coloredHexChat) {
-                    rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
+                    rawMessage = Patterns.hexPattern.matcher(rawMessage).replaceAll("");
                     rawMessage = rawMessage.replace("<#", "\\<#");
                 }
                 if (!coloredLegacyChat) {
-                    rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+                    rawMessage = Patterns.legacyPattern.matcher(rawMessage).replaceAll("");
                     rawMessage = rawMessage.replaceAll("<(?!#)", "\\\\<");
                 }
             }
@@ -275,17 +272,17 @@ public class ChatEventListener implements Listener {
         boolean hasHex = source.hasPermission(config.customChatHexRichTextPermission);
         boolean hasLegacy = source.hasPermission(config.customChatLegacyRichTextPermission);
         if (!hasHex && !hasLegacy) {
-            rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
-            rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+            rawMessage = Patterns.hexPattern.matcher(rawMessage).replaceAll("");
+            rawMessage = Patterns.legacyPattern.matcher(rawMessage).replaceAll("");
             rawMessage = rawMessage.replace("<", "\\<");
         }
         else {
             if (!hasHex) {
-                rawMessage = hexPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = Patterns.hexPattern.matcher(rawMessage).replaceAll("");
                 rawMessage = rawMessage.replace("<#", "\\<#");
             }
             if (!hasLegacy) {
-                rawMessage = legacyPattern.matcher(rawMessage).replaceAll("");
+                rawMessage = Patterns.legacyPattern.matcher(rawMessage).replaceAll("");
                 rawMessage = rawMessage.replaceAll("<(?!#)", "\\\\<");
             }
         }
@@ -324,7 +321,7 @@ public class ChatEventListener implements Listener {
         int lastAppendPosition = 0;
         final int maxMentionCount = config.mentionsLimitPerMessage;
         final boolean allowSelfMention = config.mentionsAllowSelfMention;
-        Matcher matcher = minecraftUsernamePattern.matcher(rawMessage);
+        Matcher matcher = Patterns.minecraftUsernamePattern.matcher(rawMessage);
         while (matcher.find() && mentionCount < maxMentionCount) {
             String mentionName = matcher.group(0);
             Player mentionedPlayer = Bukkit.getPlayerExact(mentionName);
