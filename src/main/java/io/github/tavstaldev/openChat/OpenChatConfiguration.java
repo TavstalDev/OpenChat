@@ -23,12 +23,12 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public long violationDurationMilliseconds;
 
     // Anti-Spam
-    public boolean antiSpamEnabled, antiSpamRegexEnabled, antiSpamRegexCancel;
+    public boolean antiSpamEnabled, antiSpamRegexEnabled, antiSpamRegexCancel, antiSpamEmojis;
     public double antiSpamMessageSimilarityThreshold, antiSpamCommandSimilarityThreshold, antiSpamRegexCancelThreshold;
     public int antiSpamChatDelay, antiSpamCommandDelay, antiSpamMaxDuplicates, antiSpamMaxCommandDuplicates;
-    public Set<String> antiSpamCommandWhitelist;
+    public Set<String> antiSpamCommandWhitelist, antiSpamEmojiWhitelist;
     public Set<ViolationAction> antiSpamDelayViolationActions, antiSpamSimilarityViolationActions;
-    public String antiSpamExemptPermission, antiSpamRegex;
+    public String antiSpamExemptPermission, antiSpamRegex, antiSpamEmojiExemptPermission;
 
     // Anti-Advertisement
     public boolean antiAdvertisementEnabled;
@@ -215,6 +215,54 @@ public class OpenChatConfiguration extends ConfigurationBase {
         }
         antiSpamSimilarityViolationActions = violationActions;
         resolveComment("antiSpam.similarityViolationActions", List.of("Commands to execute when a player exceeds the allowed duplicate messages or commands. Use {player} to insert the player's name."));
+        //#endregion
+        //#region Emojis
+        antiSpamEmojis = resolveGet("antiSpam.emojis", true);
+        antiSpamEmojiExemptPermission = resolveGet("antiSpam.emojiExemptPermission", "openchat.bypass.antiemoji");
+        antiSpamEmojiWhitelist = new LinkedHashSet<>(resolveGet("antiSpam.emojiWhitelist", List.of(
+                ":amongus:",
+                ":eyes:",
+                ":joy:",
+                ":joy_2:",
+                ":angel:",
+                ":stunned:",
+                ":skull:",
+                ":confused:",
+                ":confused_2:",
+                ":frozen:",
+                ":contagious:",
+                ":dislike:",
+                ":sleeping:",
+                ":elegant:",
+                ":fachero:",
+                ":fascinated:",
+                ":angry:",
+                ":wink:",
+                ":scream:",
+                ":like:",
+                ":cry:",
+                ":nerd:",
+                ":nausea:",
+                ":eyes_hearts:",
+                ":concerned:",
+                ":pull_tongue:",
+                ":without_expresion:",
+                ":smiling:",
+                ":sad:",
+                ":sad_2:",
+                ":vomit:",
+                ":heart:",
+                ":broken_heart:",
+                ":yellow_heart:",
+                ":green_heart:",
+                ":blue_heart:",
+                ":purple_heart:",
+                ":gif:",
+                ":demon:",
+                ":to_sigh:",
+                ":sneeze:",
+                ":gg:"
+        )));
         //#endregion
         //#endregion
 

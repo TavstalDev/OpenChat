@@ -37,6 +37,7 @@ public class ChatEventListener implements Listener {
     private final Pattern minecraftUsernamePattern = Pattern.compile("([a-zA-Z0-9_]{3,16})(?![a-zA-Z0-9_])");
     private final Pattern legacyPattern = Pattern.compile("(?i)[&§]([0-9a-fk-or])");
     private final Pattern hexPattern = Pattern.compile("(?i)[&§]#([A-Fa-f0-9]{6})");
+    private final Pattern emojiPattern = Pattern.compile(":[a-zA-Z0-9_]+:");
 
     /**
      * Constructor for ChatEventListener.
@@ -150,9 +151,21 @@ public class ChatEventListener implements Listener {
         if (spamDelay > 0)
             cache.setChatMessageDelay(LocalDateTime.now().plusSeconds(spamDelay));
 
-        if (!source.hasPermission("openchat.emojis.use")) {
-            // Escape : so ItemsAdder will not convert emojis
-            rawMessage = rawMessage.replace(":", "\\:");
+        if (config.antiSpamEmojis && !source.hasPermission(config.antiSpamEmojiExemptPermission)) {
+            var emojiMatcher = emojiPattern.matcher(rawMessage);
+            StringBuilder sb = new StringBuilder();
+            while (emojiMatcher.find()) {
+                String emoji = emojiMatcher.group();
+
+                if (!config.antiSpamEmojiWhitelist.contains(emoji)) {
+                    // Escape the colons
+                    String escaped = emoji.replace(":", "\\:");
+                    emojiMatcher.appendReplacement(sb, Matcher.quoteReplacement(escaped));
+                }
+            }
+
+            emojiMatcher.appendTail(sb);
+            rawMessage = sb.toString();
         }
 
         // Custom chat formatting & Mentions
