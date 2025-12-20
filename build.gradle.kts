@@ -24,6 +24,7 @@ val placeholderApiVersion: String by project
 val sirblobmanApiVersion: String by project
 val sirblobmanCombatLogVersion: String by project
 val apacheCommonsTextVersion: String by project
+val vaultApiVersion: String by project
 val projectPackageName = "${project.group}.openChat"
 
 // Configure Java toolchain and compatibility settings
@@ -48,6 +49,7 @@ repositories {
         url = uri("https://nexus.sirblobman.xyz/public/")
     }
     maven { url = uri("https://repo.extendedclip.com/releases/") } // PlaceholderAPI
+    maven { url = uri("https://jitpack.io") } // Vault API
 }
 
 // Define project dependencies
@@ -61,6 +63,11 @@ dependencies {
     // CombatLogX API
     compileOnly("com.github.sirblobman.api:core:${sirblobmanApiVersion}")
     compileOnly("com.github.sirblobman.combatlogx:api:${sirblobmanCombatLogVersion}")
+
+    // Vault API
+    compileOnly("com.github.MilkBowl:VaultAPI:${vaultApiVersion}") {
+        exclude(group = "org.bukkit", module = "bukkit")
+    }
 
     // Custom library for core functionality
     implementation(files("libs/MineCoreLib-${mineCoreLibVersion}.jar"))

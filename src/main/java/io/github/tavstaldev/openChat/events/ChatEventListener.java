@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Listener for handling chat-related events in the OpenChat plugin.
@@ -148,6 +147,7 @@ public class ChatEventListener implements Listener {
         if (spamDelay > 0)
             cache.setChatMessageDelay(LocalDateTime.now().plusSeconds(spamDelay));
 
+        // Escape emojis if necessary
         if (config.antiSpamEmojis && !source.hasPermission(config.antiSpamEmojiExemptPermission)) {
             var emojiMatcher = Patterns.emojiPattern.matcher(rawMessage);
             StringBuilder sb = new StringBuilder();
@@ -190,7 +190,7 @@ public class ChatEventListener implements Listener {
             event.message(ChatUtils.translateColors(rawMessage, true));
             return;
         }
-        String chatFormat = config.customChatFormat;
+        String chatFormat = PlayerUtil.getChatFormat(source);
         boolean forceGlobal = false;
         if (config.customChatShoutEnabled && source.hasPermission(config.customChatShoutPermission) && rawMessage.startsWith(config.customChatShoutPrefix)) {
             chatFormat = config.customChatShoutFormat;

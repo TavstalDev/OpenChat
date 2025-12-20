@@ -7,7 +7,7 @@ prefix: OpenChat
 authors: [ Tavstal ]
 description: An open-source chat filter plugin
 website: https://tavstaldev.github.io
-softdepend: [CombatLogX, PlaceholderAPI]
+softdepend: [CombatLogX, PlaceholderAPI, Vault]
 
 Permissions:
   openchat.commands.reload:

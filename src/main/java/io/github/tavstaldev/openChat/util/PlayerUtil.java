@@ -1,5 +1,8 @@
 package io.github.tavstaldev.openChat.util;
 
+import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.OpenChatConfiguration;
+import io.github.tavstaldev.openChat.managers.IPermissionManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
@@ -19,5 +22,23 @@ public class PlayerUtil {
         Component component = player.displayName();
         // Serialize the Component to a plain String
         return PlainTextComponentSerializer.plainText().serialize(component);
+    }
+
+    public static String getChatFormat(Player player) {
+        IPermissionManager permissionManager = OpenChat.permissionManager();
+        OpenChatConfiguration config = OpenChat.config();
+        if (!config.customChatEnableGroupFormats) {
+            return config.customChatFormat;
+        }
+
+        if (permissionManager.hasPermissions()) {
+            String group = permissionManager.getPrimaryGroup(player);
+            String format = config.customChatGroupFormats.get(group);
+            if (format != null) {
+                return format;
+            }
+        }
+
+        return config.customChatFormat;
     }
 }

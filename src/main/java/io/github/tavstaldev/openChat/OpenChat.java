@@ -9,10 +9,9 @@ import io.github.tavstaldev.openChat.database.IDatabase;
 import io.github.tavstaldev.openChat.database.MySqlDatabase;
 import io.github.tavstaldev.openChat.database.SqlLiteDatabase;
 import io.github.tavstaldev.openChat.events.*;
-import io.github.tavstaldev.openChat.managers.CombatLogManager;
-import io.github.tavstaldev.openChat.managers.CombatManager;
-import io.github.tavstaldev.openChat.managers.ICombatManager;
+import io.github.tavstaldev.openChat.managers.*;
 import io.github.tavstaldev.openChat.metrics.Metrics;
+import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.models.systems.AntiAdvertisementSystem;
 import io.github.tavstaldev.openChat.models.systems.AntiSwearSystem;
 import io.github.tavstaldev.openChat.models.systems.CommandCheckerSystem;
@@ -28,7 +27,8 @@ import org.bukkit.plugin.Plugin;
 public final class OpenChat extends PluginBase {
     public static OpenChat Instance; // Singleton instance of the plugin.
     private IDatabase database; // Database manager for handling player data storage.
-    private ICombatManager CombatManager; // Combat manager for handling combat-related features.
+    private ICombatManager combatManager; // Combat manager for handling combat-related features.
+    private IPermissionManager permissionManager; // Permission manager for handling player permissions.
     private AntiAdvertisementSystem advertisementSystem; // System for detecting advertisements in chat.
     private AntiSwearSystem antiSwearSystem; // System for detecting swear words in chat.
     private CommandCheckerSystem commandCheckerSystem; // System for checking commands.
@@ -40,8 +40,9 @@ public final class OpenChat extends PluginBase {
     }
 
     public static ICombatManager combatManager() {
-        return Instance.CombatManager;
+        return Instance.combatManager;
     }
+    public static IPermissionManager permissionManager() { return Instance.permissionManager; }
 
     /**
      * Retrieves the plugin's custom logger.
@@ -128,13 +129,22 @@ public final class OpenChat extends PluginBase {
             _logger.ok("Found PlaceholderAPI and hooked into it...");
         }
 
+        // Hook into Vault
+        if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            permissionManager = new VaultPermissionManager();
+            _logger.ok("Found Vault and hooked into it...");
+        } else {
+            permissionManager = new FallbackPermissionManager();
+            _logger.warn("Vault plugin not found. Permission groups will not be supported.");
+        }
+
         // Initialize Combat Manager
         Plugin combatLogPlugin = Bukkit.getPluginManager().getPlugin("CombatLogX");
         if (combatLogPlugin != null && combatLogPlugin.isEnabled()) {
-            CombatManager = new CombatLogManager();
+            combatManager = new CombatLogManager();
             getLogger().info("Successfully hooked into CombatLogX!");
         } else {
-            CombatManager = new CombatManager();
+            combatManager = new CombatManager();
             _logger.warn("CombatLogX plugin not found or not enabled. Combat management features will be disabled.");
         }
 
@@ -213,6 +223,11 @@ public final class OpenChat extends PluginBase {
         {
             _logger.error("Failed to start Metrics: " + ex.getMessage());
         }
+
+        // Register cache for all online players (in case of reload)
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            PlayerCacheManager.add(player.getUniqueId(), new PlayerCache(player));
+        });
 
         _logger.ok(String.format("%s has been successfully loaded.", getProjectName()));
 

@@ -75,6 +75,8 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public int customChatLocalChatDistance;
     public String customChatLocalChatExemptPermission;
     public String customChatFormat;
+    public boolean customChatEnableGroupFormats;
+    public HashMap<String, String> customChatGroupFormats;
     public String customChatShoutFormat;
     public String customChatQuestionFormat;
     public boolean customChatShoutEnabled;
@@ -343,6 +345,20 @@ public class OpenChatConfiguration extends ConfigurationBase {
         customChatLocalChatDistance = resolveGet("customChat.localChatDistance", 200);
         customChatLocalChatExemptPermission = resolveGet("customChat.localChatExemptPermission", "openchat.bypass.localchat");
         customChatFormat = resolveGet("customChat.format", "<{player}> {message}");
+        customChatEnableGroupFormats = resolveGet("customChat.enableGroupFormats", false);
+        customChatGroupFormats = new LinkedHashMap<>();
+        if (get("customChat.groupFormats") == null) {
+            Map<String, String> defaultGroupFormats = new LinkedHashMap<>();
+            defaultGroupFormats.put("admin", "<&4Admin&r {player}> {message}");
+            defaultGroupFormats.put("moderator", "<&cModerator&r {player}> {message}");
+            resolve("customChat.groupFormats", defaultGroupFormats);
+        }
+        var groupFormatsSection = getConfigurationSection("customChat.groupFormats");
+        if (groupFormatsSection != null) {
+            for (String key : groupFormatsSection.getKeys(false)) {
+                customChatGroupFormats.put(key, groupFormatsSection.getString(key));
+            }
+        }
         customChatShoutEnabled = resolveGet("customChat.shoutEnabled", true);
         customChatShoutFormat = resolveGet("customChat.shoutFormat", "[SHOUT] <{player}> {message}");
         customChatShoutPermission = resolveGet("customChat.shoutPermission", "openchat.chat.shout");
