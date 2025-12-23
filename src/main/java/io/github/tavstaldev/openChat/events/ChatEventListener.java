@@ -3,8 +3,9 @@ package io.github.tavstaldev.openChat.events;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
-import io.github.tavstaldev.openChat.OpenChatConfiguration;
 import io.github.tavstaldev.openChat.Patterns;
+import io.github.tavstaldev.openChat.config.GeneralConfig;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.models.database.EViolationType;
@@ -62,13 +63,14 @@ public class ChatEventListener implements Listener {
         PlayerCache cache = PlayerCacheManager.get(sourceId); // Retrieve the player's cache.
         String rawMessage = PlainTextComponentSerializer.plainText().serialize(event.originalMessage()); // The raw chat message.
         cache.setLastChatMessage(rawMessage); // Store the last chat message in the cache.
-        OpenChatConfiguration config = OpenChat.config(); // Retrieve the plugin configuration.
+        GeneralConfig config = OpenChat.config(); // Retrieve the plugin configuration.
+        ModerationConfig moderationConfig = OpenChat.moderationConfig();
 
         // Debug log the received message to find false positives
         _logger.debug("Player " + source.getName() + " sent message: " + rawMessage);
 
         // Anti-spam
-        if (config.antiSpamEnabled && !source.hasPermission(config.antiSpamExemptPermission)) {
+        if (moderationConfig.antiSpamEnabled && !source.hasPermission(moderationConfig.antiSpamExemptPermission)) {
             // Feature: Chat cooldown
             var chatCooldown = cache.getChatMessageDelay();
             if (LocalDateTime.now().isBefore(chatCooldown)) {
@@ -76,25 +78,25 @@ public class ChatEventListener implements Listener {
                 // The +1 ensures that it doesn't display 0 seconds remaining when the cooldown is about to expire
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.ChatCooldown", Map.of("time", String.valueOf(chatCooldown.getSecond() - LocalDateTime.now().getSecond() + 1)));
 
-                ViolationUtil.handleViolationAsync(source, EViolationType.SPAM_DELAY, rawMessage, config.antiSpamDelayViolationActions);
+                ViolationUtil.handleViolationAsync(source, EViolationType.SPAM_DELAY, rawMessage, moderationConfig.antiSpamDelayViolationActions);
                 return;
             }
 
             // Feature: Repeated messages
-            if (config.antiSpamMaxDuplicates >= 1 && cache.getChatSpamCount() >= config.antiSpamMaxDuplicates) {
+            if (moderationConfig.antiSpamMaxDuplicates >= 1 && cache.getChatSpamCount() >= moderationConfig.antiSpamMaxDuplicates) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.RepeatedMessages");
 
-                ViolationUtil.handleViolationAsync(source, EViolationType.SPAM_REPETITION, rawMessage, config.antiSpamSimilarityViolationActions);
+                ViolationUtil.handleViolationAsync(source, EViolationType.SPAM_REPETITION, rawMessage, moderationConfig.antiSpamSimilarityViolationActions);
                 return;
             }
 
             // Feature: Replace unauthorized characters
-            if (config.antiSpamRegexEnabled) {
-                String editedMessage = rawMessage.replaceAll(config.antiSpamRegex, "");
-                if (config.antiSpamRegexCancel) {
+            if (moderationConfig.antiSpamRegexEnabled) {
+                String editedMessage = rawMessage.replaceAll(moderationConfig.antiSpamRegex, "");
+                if (moderationConfig.antiSpamRegexCancel) {
                     double ratio = (double) editedMessage.length() / rawMessage.length();
-                    if (ratio < config.antiSpamRegexCancelThreshold) {
+                    if (ratio < moderationConfig.antiSpamRegexCancelThreshold) {
                         event.setCancelled(true);
                         OpenChat.Instance.sendLocalizedMsg(source, "AntiSpam.UnacceptableCharacters");
                         return;
@@ -105,56 +107,56 @@ public class ChatEventListener implements Listener {
         }
 
         // Anti-advertisement
-        if (config.antiAdvertisementEnabled && !source.hasPermission(config.antiAdvertisementExemptPermission)) {
+        if (moderationConfig.antiAdvertisementEnabled && !source.hasPermission(moderationConfig.antiAdvertisementExemptPermission)) {
             if (OpenChat.advertisementSystem().containsAdvertisement(rawMessage)) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiAd.AdvertisementDetected");
 
-                ViolationUtil.handleViolationAsync(source, EViolationType.ADVERTISEMENT, rawMessage, config.antiAdvertisementViolationActions);
+                ViolationUtil.handleViolationAsync(source, EViolationType.ADVERTISEMENT, rawMessage, moderationConfig.antiAdvertisementViolationActions);
                 return;
             }
         }
 
 
         // Anti-capitalization
-        if (config.antiCapsEnabled && !source.hasPermission(config.antiCapsExemptPermission)) {
-            double maxCapsPercentage = config.antiCapsPercentage / 100.0; // Maximum allowed percentage of capital letters.
-            if (rawMessage.length() >= config.antiCapsMinLength) { // Check if the message meets the minimum length.
+        if (moderationConfig.antiCapsEnabled && !source.hasPermission(moderationConfig.antiCapsExemptPermission)) {
+            double maxCapsPercentage = moderationConfig.antiCapsPercentage / 100.0; // Maximum allowed percentage of capital letters.
+            if (rawMessage.length() >= moderationConfig.antiCapsMinLength) { // Check if the message meets the minimum length.
                 long capsCount = rawMessage.chars().filter(Character::isUpperCase).count(); // Count uppercase letters.
                 double capsPercentage = (double) capsCount / rawMessage.length(); // Calculate the percentage of uppercase letters.
                 if (capsPercentage > maxCapsPercentage) {
                     event.setCancelled(true);
                     OpenChat.Instance.sendLocalizedMsg(source, "AntiCaps.TooManyCaps");
 
-                    ViolationUtil.handleViolationAsync(source, EViolationType.CAPS_LOCK, rawMessage, config.antiCapsViolationActions);
+                    ViolationUtil.handleViolationAsync(source, EViolationType.CAPS_LOCK, rawMessage, moderationConfig.antiCapsViolationActions);
                     return;
                 }
             }
         }
 
         // Anti-swear
-        if (config.antiSwearEnabled && !source.hasPermission(config.antiSwearExemptPermission) ) {
+        if (moderationConfig.antiSwearEnabled && !source.hasPermission(moderationConfig.antiSwearExemptPermission) ) {
             if (OpenChat.antiSwearSystem().containsSwearWord(rawMessage)) {
                 event.setCancelled(true);
                 OpenChat.Instance.sendLocalizedMsg(source, "AntiSwear.WordDetected");
 
-                ViolationUtil.handleViolationAsync(source, EViolationType.CURSE_WORDS, rawMessage, config.antiSwearViolationActions);
+                ViolationUtil.handleViolationAsync(source, EViolationType.CURSE_WORDS, rawMessage, moderationConfig.antiSwearViolationActions);
                 return;
             }
         }
 
-        int spamDelay = config.antiSpamChatDelay;
+        int spamDelay = moderationConfig.antiSpamChatDelay;
         if (spamDelay > 0)
             cache.setChatMessageDelay(LocalDateTime.now().plusSeconds(spamDelay));
 
         // Escape emojis if necessary
-        if (config.antiSpamEmojis && !source.hasPermission(config.antiSpamEmojiExemptPermission)) {
+        if (moderationConfig.antiSpamEmojis && !source.hasPermission(moderationConfig.antiSpamEmojiExemptPermission)) {
             var emojiMatcher = Patterns.emojiPattern.matcher(rawMessage);
             StringBuilder sb = new StringBuilder();
             while (emojiMatcher.find()) {
                 String emoji = emojiMatcher.group();
 
-                if (!config.antiSpamEmojiWhitelist.contains(emoji)) {
+                if (!moderationConfig.antiSpamEmojiWhitelist.contains(emoji)) {
                     // Escape the colons
                     String escaped = emoji.replace(":", "\\:");
                     emojiMatcher.appendReplacement(sb, Matcher.quoteReplacement(escaped));
@@ -168,7 +170,7 @@ public class ChatEventListener implements Listener {
         // Custom chat formatting & Mentions
         if (!config.customChatEnabled)
         {
-            rawMessage = handleMentions(source, rawMessage, config);
+            rawMessage = handleMentions(source, rawMessage);
             boolean coloredHexChat = source.hasPermission(config.customChatHexRichTextPermission);
             boolean coloredLegacyChat = source.hasPermission(config.customChatLegacyRichTextPermission);
             if (!coloredHexChat && !coloredLegacyChat) {
@@ -288,7 +290,7 @@ public class ChatEventListener implements Listener {
         }
 
         // Mentions
-        rawMessage = handleMentions(source, rawMessage, config);
+        rawMessage = handleMentions(source, rawMessage);
 
         // Other replacements are handled by PlaceholderAPI above
         chatFormat = chatFormat.replace("{player}", source.getName())
@@ -308,10 +310,10 @@ public class ChatEventListener implements Listener {
      *
      * @param source The player who sent the message.
      * @param rawMessage The raw chat message.
-     * @param config The plugin configuration.
      * @return The modified message with mentions handled.
      */
-    private String handleMentions(Player source, String rawMessage, OpenChatConfiguration config) {
+    private String handleMentions(Player source, String rawMessage) {
+        GeneralConfig config = OpenChat.config();
         if (!config.mentionsEnabled) {
             return rawMessage;
         }

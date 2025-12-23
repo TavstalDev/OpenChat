@@ -40,7 +40,7 @@ public class CommandEventListener implements Listener {
         if (event.isCancelled())
             return;
 
-        var config = OpenChat.config(); // Plugin configuration.
+        var config = OpenChat.moderationConfig(); // Plugin configuration.
         if (!config.antiSpamEnabled)
             return; // Exit if anti-spam is disabled.
 
@@ -109,7 +109,7 @@ public class CommandEventListener implements Listener {
      */
     @EventHandler
     public void onTabComplete(PlayerCommandSendEvent event) {
-        if (!OpenChat.config().tabCompletionEnabled)
+        if (!OpenChat.moderationConfig().tabCompletionEnabled)
             return;
         var source = event.getPlayer();
         var commands = event.getCommands();

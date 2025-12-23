@@ -1,6 +1,7 @@
 package io.github.tavstaldev.openChat.models;
 
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.util.StringUtil;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +62,7 @@ public class PlayerCache {
      * @param message The new chat message.
      */
     public void setLastChatMessage(String message) {
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (!config.antiSpamEnabled)
             return;
 
@@ -98,7 +99,7 @@ public class PlayerCache {
      * @param command The new command.
      */
     public void setLastCommand(String command) {
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (!config.antiSpamEnabled)
             return;
 

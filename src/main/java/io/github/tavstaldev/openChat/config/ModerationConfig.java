@@ -1,23 +1,16 @@
-package io.github.tavstaldev.openChat;
+package io.github.tavstaldev.openChat.config;
 
 import io.github.tavstaldev.minecorelib.config.ConfigurationBase;
+import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.models.ViolationAction;
 
 import java.util.*;
 
-public class OpenChatConfiguration extends ConfigurationBase {
+public class ModerationConfig extends ConfigurationBase {
 
-    public OpenChatConfiguration() {
-        super(OpenChat.Instance, "config.yml", null);
+    public ModerationConfig() {
+        super(OpenChat.Instance, "moderation.yml", null);
     }
-
-    // General
-    public String locale, prefix;
-    public boolean usePlayerLocale, checkForUpdates, debug;
-
-    // Storage
-    public String storageType, storageFilename, storageHost, storageDatabase, storageUsername, storagePassword, storageTablePrefix;
-    public int storagePort;
 
     // Violations
     public long violationDurationMilliseconds;
@@ -64,71 +57,9 @@ public class OpenChatConfiguration extends ConfigurationBase {
     public boolean opProtectionEnabled;
     public Set<String> opProtectionOperators;
 
-    // Private Messaging
-    public boolean privateMessagingEnabled;
-    public boolean privateMessagingSocialSpyEnabled;
-    public String privateMessagingSocialSpyPermission;
-    public String privateMessagingVanishBypassPermission;
-
-    // Custom Chat
-    public boolean customChatEnabled;
-    public int customChatLocalChatDistance;
-    public String customChatLocalChatExemptPermission;
-    public String customChatFormat;
-    public boolean customChatEnableGroupFormats;
-    public HashMap<String, String> customChatGroupFormats;
-    public String customChatShoutFormat;
-    public String customChatQuestionFormat;
-    public boolean customChatShoutEnabled;
-    public String customChatShoutPermission;
-    public String customChatShoutPrefix;
-    public boolean customChatQuestionEnabled;
-    public String customChatQuestionPermission;
-    public String customChatQuestionPrefix;
-    public String customChatLegacyRichTextPermission;
-    public String customChatHexRichTextPermission;
-
-    // Custom Greeting
-    public boolean customGreetingEnabled;
-    public boolean customGreetingIgnoreVanished;
-    public boolean customGreetingOverrideJoinMessage;
-    public String customGreetingJoinMessage;
-    public boolean customGreetingOverrideLeaveMessage;
-    public String customGreetingLeaveMessage;
-
-    // Custom Motds
-    public boolean customMotdsEnabled;
-    public List<String> customMotds;
-
-    // Mentions
-    public boolean mentionsEnabled;
-    public String mentionsDefaultDisplay, mentionsDefaultPreference, mentionsDefaultSound;
-    public double mentionsVolume, mentionsPitch;
-    public int mentionsCooldown, mentionsLimitPerMessage;
-    public boolean mentionsAllowSelfMention;
-
     @Override
-    protected void loadDefaults() {
+    public void loadDefaults() {
         Set<ViolationAction> violationActions;
-
-        //#region General
-        locale = resolveGet("locale", "eng");
-        usePlayerLocale = resolveGet("usePlayerLocale", true);
-        checkForUpdates = resolveGet("checkForUpdates", true);
-        debug = resolveGet("debug", false);
-        prefix = resolveGet("prefix", "&bOpen&3Chat &8»");
-        //#endregion
-
-        //#region Storage
-        storageType = resolveGet("storage.type", "sqlite");
-        storageFilename = resolveGet("storage.filename", "database");
-        storageHost = resolveGet("storage.host", "localhost");
-        storagePort = resolveGet("storage.port", 3306);
-        storageDatabase = resolveGet("storage.database", "minecraft");
-        storageUsername = resolveGet("storage.username", "root");
-        storagePassword = resolveGet("storage.password", "ascent");
-        storageTablePrefix = resolveGet("storage.tablePrefix", "openchat");
-        //#endregion
 
         //#region Violations
         violationDurationMilliseconds = resolveGet("violations.ResetTime", 60) * 60 * 1000L;
@@ -140,18 +71,25 @@ public class OpenChatConfiguration extends ConfigurationBase {
 
         //#region Anti-Spam
         antiSpamEnabled = resolveGet("antiSpam.enabled", true);
+        resolveComment("antiSpam.enabled", List.of("Enables or disables the anti-spam system."));
         antiSpamRegexEnabled = resolveGet("antiSpam.regexEnabled", false);
+        resolveComment("antiSpam.regexEnabled", List.of("Enables or disables regex to filter unwanted characters."));
         antiSpamRegex = resolveGet("antiSpam.regex", "(?i)[^aáÁbcdeéÉfghiíÍjklmnoóÓöÖőŐpqrstuúÚüŰűÜvwxyz0-9:)(<>;.*+?'\"+!%/=¸÷×$€|\\\\ ,-]");
         resolveComment("antiSpam.regex", List.of("Regex pattern to remove unwanted characters from messages before similarity checks.",
                 "Prevents users from bypassing filters by converting letters to similar-looking characters."));
-        antiSpamRegexCancel = true;
+        antiSpamRegexCancel = resolveGet("antiSpam.regexCancel", false);
+        resolveComment("antiSpam.regexCancel", List.of("If enabled, messages that exceed the regex cancel threshold will be cancelled entirely."));
         antiSpamRegexCancelThreshold = resolveGet("antiSpam.regexCancelThreshold", 0.5);
         resolveComment("antiSpam.regexCancelThreshold", List.of("Threshold (0.0 - 1.0) for cancelling messages based on regex filtering.",
                 "If the ratio of removed characters to total characters exceeds this value, the message will be cancelled."));
         antiSpamChatDelay = resolveGet("antiSpam.chatDelay", 2);
+        resolveComment("antiSpam.chatDelay", List.of("Minimum delay in seconds between consecutive chat messages from the same player."));
         antiSpamMaxDuplicates= resolveGet("antiSpam.maxDuplicates", 3);
+        resolveComment("antiSpam.maxDuplicates", List.of("Maximum number of identical messages allowed within the violation duration."));
         antiSpamCommandDelay = resolveGet("antiSpam.commandDelay", 2);
+        resolveComment("antiSpam.commandDelay", List.of("Minimum delay in seconds between consecutive commands from the same player."));
         antiSpamMaxCommandDuplicates= resolveGet("antiSpam.maxCommandDuplicates", 3);
+        resolveComment("antiSpam.maxCommandDuplicates", List.of("Maximum number of identical commands allowed within the violation duration."));
         antiSpamMessageSimilarityThreshold = resolveGet("antiSpam.messageSimilarityThreshold", 0.8);
         resolveComment("antiSpam.messageSimilarityThreshold", List.of("Value between 0.0 and 1.0, where 1.0 is 100% identical messages."));
         antiSpamCommandSimilarityThreshold = resolveGet("antiSpam.commandSimilarityThreshold", 0.8);
@@ -175,7 +113,9 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "/kits",
                 "/party"
         )));
+        resolveComment("antiSpam.commandWhitelist", List.of("List of commands that are exempt from anti-spam checks."));
         antiSpamExemptPermission = resolveGet("antiSpam.exemptPermission", "openchat.bypass.antispam");
+        resolveComment("antiSpam.exemptPermission", List.of("Permission that exempts a player from anti-spam checks."));
         //#region Delay violation actions
         // Fill with default values if not present
         if (get("antiSpam.delayViolationActions") == null) {
@@ -220,7 +160,9 @@ public class OpenChatConfiguration extends ConfigurationBase {
         //#endregion
         //#region Emojis
         antiSpamEmojis = resolveGet("antiSpam.emojis", true);
+        resolveComment("antiSpam.emojis", List.of("Enables or disables emoji filtering in messages."));
         antiSpamEmojiExemptPermission = resolveGet("antiSpam.emojiExemptPermission", "openchat.bypass.antiemoji");
+        resolveComment("antiSpam.emojiExemptPermission", List.of("Permission that exempts a player from emoji filtering."));
         antiSpamEmojiWhitelist = new LinkedHashSet<>(resolveGet("antiSpam.emojiWhitelist", List.of(
                 ":amongus:",
                 ":eyes:",
@@ -265,17 +207,22 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 ":sneeze:",
                 ":gg:"
         )));
+        resolveComment("antiSpam.emojiWhitelist", List.of("List of emojis that are allowed even when emoji filtering is enabled."));
         //#endregion
         //#endregion
 
         //#region Anti-Advertisement
         antiAdvertisementEnabled = resolveGet("antiAdvertisement.enabled", true);
+        resolveComment("antiAdvertisement.enabled", List.of("Enables or disables the anti-advertisement system."));
         antiAdvertisementRegex = resolveGet("antiAdvertisement.regex", "(?i)\\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:[a-z]{2,}))\\b");
+        resolveComment("antiAdvertisement.regex", List.of("Regex pattern to detect advertisements in chat messages."));
         antiAdvertisementWhitelist = new LinkedHashSet<>(resolveGet("antiAdvertisement.whitelist", List.of(
                 "minecraft.com",
                 "discord.gg/minecraft"
         )));
+        resolveComment("antiAdvertisement.whitelist", List.of("List of domain substrings that are exempt from advertisement filtering."));
         antiAdvertisementExemptPermission = resolveGet("antiAdvertisement.exemptPermission", "openchat.bypass.antiadvertisement");
+        resolveComment("antiAdvertisement.exemptPermission", List.of("Permission that exempts a player from anti-advertisement checks."));
         //#region Violation actions
         // Fill with default values if not present
         if (get("antiAdvertisement.violationActions") == null) {
@@ -295,14 +242,19 @@ public class OpenChatConfiguration extends ConfigurationBase {
             }
         }
         antiAdvertisementViolationActions = violationActions;
+        resolveComment("antiAdvertisement.violationActions", List.of("Commands to execute when a player advertises in chat. Use {player} to insert the player's name."));
         //#endregion
         //#endregion
 
         //#region Anti-Caps
         antiCapsEnabled = resolveGet("antiCaps.enabled", true);
+        resolveComment("antiCaps.enabled", List.of("Enables or disables the anti-caps system."));
         antiCapsMinLength = resolveGet("antiCaps.minLength", 10);
+        resolveComment("antiCaps.minLength", List.of("Minimum message length for the anti-caps system to be applied."));
         antiCapsPercentage = resolveGet("antiCaps.percentage", 70);
+        resolveComment("antiCaps.percentage", List.of("Percentage of capital letters in a message that triggers the anti-caps system."));
         antiCapsExemptPermission = resolveGet("antiCaps.exemptPermission", "openchat.bypass.anticaps");
+        resolveComment("antiCaps.exemptPermission", List.of("Permission that exempts a player from anti-caps checks."));
         //#region Violation actions
         // Fill with default values if not present
         if (get("antiCaps.violationActions") == null) {
@@ -322,92 +274,27 @@ public class OpenChatConfiguration extends ConfigurationBase {
             }
         }
         antiCapsViolationActions = violationActions;
+        resolveComment("antiCaps.violationActions", List.of("Commands to execute when a player uses excessive capital letters. Use {player} to insert the player's name."));
         //#endregion
         //#endregion
 
         //#region OP-Protection
         opProtectionEnabled = resolveGet("opProtection.enabled", false);
+        resolveComment("opProtection.enabled", List.of("Enables or disables the OP-protection system."));
         opProtectionOperators = new LinkedHashSet<>(resolveGet("opProtection.operators", List.of(
                 "Steve",
                 "Alex"
         )));
-        //#endregion
-
-        //#region Private Messaging
-        privateMessagingEnabled = resolveGet("privateMessaging.enabled", true);
-        privateMessagingSocialSpyEnabled = resolveGet("privateMessaging.socialSpyEnabled", true);
-        privateMessagingSocialSpyPermission = resolveGet("privateMessaging.socialSpyPermission", "openchat.socialspy");
-        privateMessagingVanishBypassPermission = resolveGet("privateMessaging.vanishBypassPermission", "openchat.bypass.vanish");
-        //#endregion
-
-        //#region Custom Chat
-        customChatEnabled = resolveGet("customChat.enabled", false);
-        customChatLocalChatDistance = resolveGet("customChat.localChatDistance", 200);
-        customChatLocalChatExemptPermission = resolveGet("customChat.localChatExemptPermission", "openchat.bypass.localchat");
-        customChatFormat = resolveGet("customChat.format", "<{player}> {message}");
-        customChatEnableGroupFormats = resolveGet("customChat.enableGroupFormats", false);
-        customChatGroupFormats = new LinkedHashMap<>();
-        if (get("customChat.groupFormats") == null) {
-            Map<String, String> defaultGroupFormats = new LinkedHashMap<>();
-            defaultGroupFormats.put("admin", "<&4Admin&r {player}> {message}");
-            defaultGroupFormats.put("moderator", "<&cModerator&r {player}> {message}");
-            resolve("customChat.groupFormats", defaultGroupFormats);
-        }
-        var groupFormatsSection = getConfigurationSection("customChat.groupFormats");
-        if (groupFormatsSection != null) {
-            for (String key : groupFormatsSection.getKeys(false)) {
-                customChatGroupFormats.put(key, groupFormatsSection.getString(key));
-            }
-        }
-        customChatShoutEnabled = resolveGet("customChat.shoutEnabled", true);
-        customChatShoutFormat = resolveGet("customChat.shoutFormat", "[SHOUT] <{player}> {message}");
-        customChatShoutPermission = resolveGet("customChat.shoutPermission", "openchat.chat.shout");
-        customChatShoutPrefix = resolveGet("customChat.shoutPrefix", "!");
-        customChatQuestionEnabled = resolveGet("customChat.questionEnabled", true);
-        customChatQuestionFormat = resolveGet("customChat.questionFormat", "[QUESTION] <{player}> {message}");
-        customChatQuestionPermission = resolveGet("customChat.questionPermission", "openchat.chat.question");
-        customChatQuestionPrefix = resolveGet("customChat.questionPrefix", "?");
-        customChatLegacyRichTextPermission = resolveGet("customChat.legacyRichTextPermission", "openchat.chat.color");
-        customChatHexRichTextPermission = resolveGet("customChat.hexRichTextPermission", "openchat.chat.hexcolor");
-        //#endregion
-
-        //#region Custom Greeting
-        customGreetingEnabled = resolveGet("customGreeting.enabled", false);
-        customGreetingIgnoreVanished = resolveGet("customGreeting.ignoreVanished", true);
-        customGreetingOverrideJoinMessage = resolveGet("customGreeting.overrideJoinMessage", false);
-        customGreetingJoinMessage = resolveGet("customGreeting.joinMessage", "&8(&a+&8) &a{player}");
-        customGreetingOverrideLeaveMessage = resolveGet("customGreeting.overrideLeaveMessage", false);
-        customGreetingLeaveMessage = resolveGet("customGreeting.leaveMessage", "&8(&c-&8) &c{player}");
-        //#endregion
-
-        //#region Custom Motds
-        customMotdsEnabled = resolveGet("customMotds.enabled", true);
-        customMotds = resolveGet("customMotds.motds", List.of(
-                // Default MOTD 1
-                "&bWelcome to the server, {player}!\n&aEnjoy your stay and have fun!",
-                // Default MOTD 2
-                "&aRemember to check out our website at &n<hover:show_text:'<aqua>Click on me to visit the website.'><click:open_url:'www.example.com'>www.example.com</click></hover>&r&a!\n&aWe have tons of resources and information there.",
-                // Default MOTD 3
-                "&eJoin our Discord server for the latest news: &ndiscord.gg/example&r&e!\n&eConnect with the community and make new friends!"
-        ));
-        //#endregion
-
-        //#region Mentions
-        mentionsEnabled = resolveGet("mentions.enabled", true);
-        mentionsDefaultDisplay = resolveGet("mentions.defaultDisplay", "ALL");
-        mentionsDefaultPreference = resolveGet("mentions.defaultPreference", "ALWAYS");
-        mentionsDefaultSound = resolveGet("mentions.defaultSound", "ENTITY_PLAYER_LEVELUP");
-        mentionsVolume = resolveGet("mentions.volume", 1.0);
-        mentionsPitch = resolveGet("mentions.pitch", 1.0);
-        mentionsCooldown = resolveGet("mentions.mentionCooldown", 3);
-        mentionsLimitPerMessage = resolveGet("mentions.maxMentionsPerMessage", 3);
-        mentionsAllowSelfMention = resolveGet("mentions.allowSelfMention", false);
+        resolveComment("opProtection.operators", List.of("List of player names that are allowed to be OPs on the server."));
         //#endregion
 
         //#region Command Blocker
         commandBlockerEnabled = resolveGet("commandBlocker.enabled", true);
+        resolveComment("commandBlocker.enabled", List.of("Enables or disables the command blocker system."));
         commandBlockerEnableBypass = resolveGet("commandBlocker.enableBypass", true);
+        resolveComment("commandBlocker.enableBypass", List.of("If enabled, players with the bypass permission can use blocked commands."));
         commandBlockerBypassPermission = resolveGet("commandBlocker.bypassPermission", "openchat.bypass.commandblocker");
+        resolveComment("commandBlocker.bypassPermission", List.of("Permission that allows a player to bypass the command blocker."));
         commandBlockerCommands = new LinkedHashSet<>(resolveGet("commandBlocker.commands", List.of(
                 "/?",
                 "/version",
@@ -447,11 +334,16 @@ public class OpenChatConfiguration extends ConfigurationBase {
                 "/pt bc",
                 "/bc"
         )));
+        resolveComment("commandBlocker.commands", List.of(
+                "List of commands that are blocked by the command blocker."
+        ));
         //#endregion
 
         //#region Tab completion
         tabCompletionEnabled = resolveGet("tabCompletion.enabled", true);
+        resolveComment("tabCompletion.enabled", List.of("Enables or disables the tab completion restriction system."));
         tabCompletionExemptPermission = resolveGet("tabCompletion.exemptPermission", "openchat.bypass.tabcompletion");
+        resolveComment("tabCompletion.exemptPermission", List.of("Permission that exempts a player from tab completion restrictions."));
         if (get("tabCompletion.entries") == null) {
             var tabEntriesDefault = new LinkedHashMap<String, Object>();
             var defaultEntries = new LinkedHashMap<String, Object>();
@@ -552,10 +444,17 @@ public class OpenChatConfiguration extends ConfigurationBase {
             staffEntries = null;
             tabEntriesDefault = null;
         }
+        resolveComment("tabCompletion.entries", List.of(
+                "Defines sets of commands for tab completion restrictions.",
+                "'priority' defines the order of application (lower numbers have higher priority).",
+                "'extend' allows inheriting commands from another set.",
+                "'commands' is the list of commands in this set."
+        ));
         //#endregion
 
         //#region Anti-swear
         antiSwearEnabled = resolveGet("antiSwear.enabled", true);
+        resolveComment("antiSwear.enabled", List.of("Enables or disables the anti-swear system."));
         //noinspection ExtractMethodRecommender
         Map<Character, String> characterMappings = new LinkedHashMap<>();
         characterMappings.put('a', "[aA@4]");
@@ -571,50 +470,12 @@ public class OpenChatConfiguration extends ConfigurationBase {
         characterMappings.put('b', "[bB8]");
         characterMappings.put('z', "[zZ2]");
         resolveGet("antiSwear.characterMapping", characterMappings);
-        //#region Swear words
-        resolveGet("antiSwear.swearWords", new String[]{
-                "asshole",
-                "bitch",
-                "bastard",
-                "cunt",
-                "damn",
-                "dick",
-                "fuck",
-                "hell",
-                "piss",
-                "pussy",
-                "retard",
-                "shit",
-                "slut",
-                "twat",
-                "whore",
-                "chink",
-                "dyke",
-                "faggot",
-                "gook",
-                "kike",
-                "nigger",
-                "spic",
-                "tranny",
-                "wetback",
-                "blowjob",
-                "cock",
-                "ejaculate",
-                "jerkoff",
-                "masturbate",
-                "orgasm",
-                "penis",
-                "semen",
-                "vagina",
-        });
-        //#endregion
-        //#region Swear whitelist
-        resolveGet("antiSwear.whitelist", new String[]{
-                "hello",
-                "shuttle"
-        });
-        //#endregion
+        resolveComment("antiSwear.characterMapping", List.of(
+                "Character mappings used to detect obfuscated swear words.",
+                "Each entry maps a character to a regex pattern that matches common substitutions."
+        ));
         antiSwearExemptPermission = resolveGet("antiSwear.exemptPermission", "openchat.bypass.antiswear");
+        resolveComment("antiSwear.exemptPermission", List.of("Permission that exempts a player from anti-swear checks."));
         //#region Violation actions
         // Fill with default values if not present
         if (get("antiSwear.violationActions") == null) {
@@ -634,6 +495,7 @@ public class OpenChatConfiguration extends ConfigurationBase {
             }
         }
         antiSwearViolationActions = violationActions;
+        resolveComment("antiSwear.violationActions", List.of("Commands to execute when a player uses swear words. Use {player} to insert the player's name."));
         //#endregion
         //#endregion
 

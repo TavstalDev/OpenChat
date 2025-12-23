@@ -3,6 +3,7 @@ package io.github.tavstaldev.openChat.commands;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.Patterns;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
 import io.github.tavstaldev.openChat.util.VanishUtil;
@@ -115,7 +116,7 @@ public class CommandWhisper implements CommandExecutor {
         String message = String.join(" ", args).substring(args[0].length()).trim();
 
         // Escape emojis if necessary
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (config.antiSpamEmojis && !sender.hasPermission(config.antiSpamEmojiExemptPermission)) {
             var emojiMatcher = Patterns.emojiPattern.matcher(message);
             StringBuilder sb = new StringBuilder();

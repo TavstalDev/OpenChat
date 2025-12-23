@@ -1,6 +1,7 @@
 package io.github.tavstaldev.openChat.models.systems;
 
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.models.TabGroup;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +29,8 @@ public class CommandCheckerSystem {
     public CommandCheckerSystem() {
         // Combine all whitelist entries into a single regex pattern.
         StringBuilder combinedPattern = new StringBuilder();
-        Set<String> entries = OpenChat.config().antiSpamCommandWhitelist;
+        ModerationConfig config = OpenChat.moderationConfig();
+        Set<String> entries = config.antiSpamCommandWhitelist;
         if (!entries.isEmpty()) {
             for (String entry : entries) {
                 if (entry == null || entry.isEmpty()) continue;
@@ -50,7 +52,7 @@ public class CommandCheckerSystem {
             whitelistPattern = null;
 
         combinedPattern = new StringBuilder();
-        entries = OpenChat.config().commandBlockerCommands;
+        entries = config.commandBlockerCommands;
         if (!entries.isEmpty()) {
             for (String entry : entries) {
                 if (entry == null || entry.isEmpty()) continue;
@@ -129,7 +131,7 @@ public class CommandCheckerSystem {
      * @param completions The collection of available tab completions.
      */
     public void getTabCompletions(Player player, Collection<String> completions) {
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (player.isOp() || player.hasPermission("*") || player.hasPermission(config.tabCompletionExemptPermission))
             return;
 

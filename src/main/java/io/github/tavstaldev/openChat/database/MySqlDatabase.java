@@ -6,7 +6,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.openChat.OpenChat;
-import io.github.tavstaldev.openChat.OpenChatConfiguration;
+import io.github.tavstaldev.openChat.config.GeneralConfig;
+import io.github.tavstaldev.openChat.config.StorageConfig;
 import io.github.tavstaldev.openChat.models.database.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +25,8 @@ import java.util.stream.Collectors;
 public class MySqlDatabase implements IDatabase {
     private final PluginLogger _logger = OpenChat.logger().withModule(MySqlDatabase.class);
     private HikariDataSource _dataSource;
-    private OpenChatConfiguration _config;
+    private GeneralConfig generalConfig;
+    private StorageConfig storageConfig;
     private final Cache<@NotNull UUID, PlayerData> _playerCache = Caffeine.newBuilder()
             .maximumSize(1000)
             .expireAfterWrite(3, TimeUnit.MINUTES)
@@ -61,7 +63,8 @@ public class MySqlDatabase implements IDatabase {
 
     @Override
     public void load() {
-        _config = OpenChat.config();
+        generalConfig = OpenChat.config();
+        storageConfig = OpenChat.storageConfig();
         _dataSource = createDataSource();
         update();
     }
@@ -70,43 +73,43 @@ public class MySqlDatabase implements IDatabase {
     public void update() {
         addPlayerDataSql = String.format("INSERT INTO %s_players (PlayerId, PublicChatDisabled, WhisperEnabled, SocialSpyEnabled, Sound, Display, Preference, CustomJoinMessage, CustomQuitMessage) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         removePlayerDataSql = String.format("DELETE FROM %s_players WHERE PlayerId=? LIMIT 1;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         updatePlayerDataSql = String.format("UPDATE %s_players SET PublicChatDisabled=?, WhisperEnabled=?, SocialSpyEnabled=?, Sound=?, Display=?, Preference=?, " +
                         "CustomJoinMessage=?, CustomQuitMessage=? " +
                         "WHERE PlayerId=? LIMIT 1;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         getPlayerDataSql = String.format("SELECT * FROM %s_players WHERE PlayerId=?;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
 
         addIgnoredPlayerSql = String.format("INSERT INTO %s_ignores (PlayerId, IgnoredId) " +
                         "VALUES (?, ?);",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         removeIgnoredPlayerSql = String.format("DELETE FROM %s_ignores WHERE PlayerId=? AND IgnoredId=? LIMIT 1;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         getIgnoredPlayersSql = String.format("SELECT * FROM %s_ignores WHERE PlayerId=?;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         addViolationSql = String.format("INSERT INTO %s_violations (Id, PlayerId, Type, Details, Timestamp) " +
                         "VALUES (?, ?, ?, ?, ?);",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         removeViolationSql = String.format("DELETE FROM %s_violations WHERE Id=? LIMIT 1;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         getViolationsSql = String.format("SELECT * FROM %s_violations WHERE PlayerId=?;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
 
         // second ? is current time in millis, minus the duration threshold until it is considered active
         getActiveViolationsSql = String.format("SELECT * FROM %s_violations WHERE PlayerId=? AND (?-Timestamp)<?;",
-                _config.storageTablePrefix);
+                storageConfig.tablePrefix);
     }
 
     @Override
@@ -121,11 +124,11 @@ public class MySqlDatabase implements IDatabase {
         try {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s",
-                    _config.storageHost,
-                    _config.storagePort,
-                    _config.storageDatabase));
-            config.setUsername(_config.storageUsername);
-            config.setPassword(_config.storagePassword);
+                    storageConfig.host,
+                    storageConfig.port,
+                    storageConfig.database));
+            config.setUsername(storageConfig.username);
+            config.setPassword(storageConfig.password);
             config.setMaximumPoolSize(10); // Pool size defaults to 10
             config.setMaxLifetime(30000);
             return new HikariDataSource(config);
@@ -149,7 +152,7 @@ public class MySqlDatabase implements IDatabase {
                             "Preference VARCHAR(32) NOT NULL, " +
                             "CustomJoinMessage VARCHAR(128), " +
                             "CustomQuitMessage VARCHAR(128));",
-                    _config.storageTablePrefix);
+                    storageConfig.tablePrefix);
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.executeUpdate();
 
@@ -158,7 +161,7 @@ public class MySqlDatabase implements IDatabase {
                             "PlayerId VARCHAR(36) NOT NULL, " +
                             "IgnoredId VARCHAR(36) NOT NULL, " +
                             "PRIMARY KEY (PlayerId, IgnoredId));",
-                    _config.storageTablePrefix
+                    storageConfig.tablePrefix
             );
             statement = connection.prepareStatement(sql);
             statement.executeUpdate();
@@ -170,7 +173,7 @@ public class MySqlDatabase implements IDatabase {
                             "Type VARCHAR(32) NOT NULL, " +
                             "Details VARCHAR(255) NOT NULL, " +
                             "Timestamp BIGINT NOT NULL);",
-                    _config.storageTablePrefix
+                    storageConfig.tablePrefix
             );
             statement = connection.prepareStatement(sql);
             statement.executeUpdate();
@@ -188,18 +191,18 @@ public class MySqlDatabase implements IDatabase {
                 statement.setBoolean(2, false);
                 statement.setBoolean(3, true);
                 statement.setBoolean(4, false);
-                statement.setString(5, _config.mentionsDefaultSound);
-                statement.setString(6, _config.mentionsDefaultDisplay);
-                statement.setString(7, _config.mentionsDefaultPreference);
+                statement.setString(5, generalConfig.mentionsDefaultSound);
+                statement.setString(6, generalConfig.mentionsDefaultDisplay);
+                statement.setString(7, generalConfig.mentionsDefaultPreference);
                 statement.setString(8, null);
                 statement.setString(9, null);
                 statement.executeUpdate();
             }
 
             _playerCache.put(playerId, new PlayerData(playerId, false, true, false,
-                    _config.mentionsDefaultSound,
-                    EMentionDisplay.valueOf(_config.mentionsDefaultDisplay),
-                    EMentionPreference.valueOf(_config.mentionsDefaultPreference),
+                    generalConfig.mentionsDefaultSound,
+                    EMentionDisplay.valueOf(generalConfig.mentionsDefaultDisplay),
+                    EMentionPreference.valueOf(generalConfig.mentionsDefaultPreference),
                     null, null));
         } catch (Exception ex) {
             _logger.error(String.format("Unknown error happened while adding player data...\n%s", ex.getMessage()));
@@ -471,7 +474,7 @@ public class MySqlDatabase implements IDatabase {
             try (PreparedStatement statement = connection.prepareStatement(getActiveViolationsSql)) {
                 statement.setString(1, playerId.toString());
                 statement.setLong(2, System.currentTimeMillis());
-                statement.setLong(3, _config.violationDurationMilliseconds);
+                statement.setLong(3, OpenChat.moderationConfig().violationDurationMilliseconds);
                 try (ResultSet result = statement.executeQuery()) {
                     while (result.next()) {
                         data.add(new ViolationData(

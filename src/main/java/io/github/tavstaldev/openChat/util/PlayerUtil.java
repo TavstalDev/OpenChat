@@ -1,7 +1,8 @@
 package io.github.tavstaldev.openChat.util;
 
 import io.github.tavstaldev.openChat.OpenChat;
-import io.github.tavstaldev.openChat.OpenChatConfiguration;
+import io.github.tavstaldev.openChat.config.GeneralConfig;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.managers.IPermissionManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -26,7 +27,7 @@ public class PlayerUtil {
 
     public static String getChatFormat(Player player) {
         IPermissionManager permissionManager = OpenChat.permissionManager();
-        OpenChatConfiguration config = OpenChat.config();
+        GeneralConfig config = OpenChat.config();
         if (!config.customChatEnableGroupFormats) {
             return config.customChatFormat;
         }

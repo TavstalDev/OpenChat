@@ -1,7 +1,7 @@
 package io.github.tavstaldev.openChat.events;
 
 import io.github.tavstaldev.openChat.OpenChat;
-import io.github.tavstaldev.openChat.OpenChatConfiguration;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
@@ -37,7 +37,7 @@ public class ItemEventListener implements Listener {
     public void onBookEdit(PlayerEditBookEvent event) {
         BookMeta bookMeta = event.getNewBookMeta(); // The metadata of the edited book.
         Player player = event.getPlayer(); // The player editing the book.
-        OpenChatConfiguration config = OpenChat.config(); // Retrieve the plugin configuration.
+        ModerationConfig config = OpenChat.moderationConfig();
 
         // TODO: Add anti-advertisement check
 

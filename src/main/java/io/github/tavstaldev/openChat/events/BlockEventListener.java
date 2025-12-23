@@ -1,7 +1,7 @@
 package io.github.tavstaldev.openChat.events;
 
 import io.github.tavstaldev.openChat.OpenChat;
-import io.github.tavstaldev.openChat.OpenChatConfiguration;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
@@ -37,7 +37,7 @@ public class BlockEventListener implements Listener {
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Player player = event.getPlayer();
-        OpenChatConfiguration config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
 
         // Check if anti-swear is enabled and the player is not exempt.
         if (!config.antiSwearEnabled || player.hasPermission(config.antiSwearExemptPermission)) {
@@ -66,7 +66,7 @@ public class BlockEventListener implements Listener {
             return;
         }
 
-        OpenChatConfiguration config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
 
         // Check if anti-swear is enabled and the player is not exempt.
         if (!config.antiSwearEnabled || player.hasPermission(config.antiSwearExemptPermission)) {

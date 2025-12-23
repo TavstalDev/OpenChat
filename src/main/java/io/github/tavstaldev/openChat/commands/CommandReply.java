@@ -4,6 +4,7 @@ import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.Patterns;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
@@ -119,7 +120,7 @@ public class CommandReply implements CommandExecutor {
         String sourceName = PlayerUtil.getPlayerPlainDisplayName(player);
 
         // Escape emojis if necessary
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (config.antiSpamEmojis && !sender.hasPermission(config.antiSpamEmojiExemptPermission)) {
             var emojiMatcher = Patterns.emojiPattern.matcher(message);
             StringBuilder sb = new StringBuilder();

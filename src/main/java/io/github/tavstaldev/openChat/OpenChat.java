@@ -5,6 +5,10 @@ import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.core.PluginTranslator;
 import io.github.tavstaldev.minecorelib.utils.VersionUtils;
 import io.github.tavstaldev.openChat.commands.*;
+import io.github.tavstaldev.openChat.config.BadWordsConfig;
+import io.github.tavstaldev.openChat.config.GeneralConfig;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
+import io.github.tavstaldev.openChat.config.StorageConfig;
 import io.github.tavstaldev.openChat.database.IDatabase;
 import io.github.tavstaldev.openChat.database.MySqlDatabase;
 import io.github.tavstaldev.openChat.database.SqlLiteDatabase;
@@ -26,6 +30,9 @@ import org.bukkit.plugin.Plugin;
  */
 public final class OpenChat extends PluginBase {
     public static OpenChat Instance; // Singleton instance of the plugin.
+    private StorageConfig storageConfig;
+    private ModerationConfig moderationConfig;
+    private BadWordsConfig badWordsConfig;
     private IDatabase database; // Database manager for handling player data storage.
     private ICombatManager combatManager; // Combat manager for handling combat-related features.
     private IPermissionManager permissionManager; // Permission manager for handling player permissions.
@@ -67,8 +74,20 @@ public final class OpenChat extends PluginBase {
      *
      * @return The OpenChatConfiguration instance.
      */
-    public static OpenChatConfiguration config() {
-        return (OpenChatConfiguration) Instance._config;
+    public static GeneralConfig config() {
+        return (GeneralConfig) Instance._config;
+    }
+
+    public static StorageConfig storageConfig() {
+        return Instance.storageConfig;
+    }
+
+    public static ModerationConfig moderationConfig() {
+        return Instance.moderationConfig;
+    }
+
+    public static BadWordsConfig badWordsConfig() {
+        return Instance.badWordsConfig;
     }
 
     /**
@@ -108,8 +127,14 @@ public final class OpenChat extends PluginBase {
     @Override
     public void onEnable() {
         Instance = this;
-        _config = new OpenChatConfiguration();
+        _config = new GeneralConfig();
         _config.load(); // Fix load bug
+        storageConfig = new StorageConfig();
+        storageConfig.load();
+        moderationConfig = new ModerationConfig();
+        moderationConfig.load();
+        badWordsConfig = new BadWordsConfig();
+        badWordsConfig.load();
         _translator = new PluginTranslator(this, new String[]{"eng", "hun"});
         _logger.info(String.format("Loading %s...", getProjectName()));
 
@@ -159,7 +184,7 @@ public final class OpenChat extends PluginBase {
         }
 
         // Create Database
-        String databaseType = config().storageType;
+        String databaseType = storageConfig.type;
         if (databaseType == null)
             databaseType = "sqlite";
         switch (databaseType.toLowerCase()) {
@@ -268,6 +293,9 @@ public final class OpenChat extends PluginBase {
         _logger.debug("Localizations reloaded.");
         _logger.debug("Reloading configuration...");
         this._config.load();
+        storageConfig.load();
+        moderationConfig.load();
+        badWordsConfig.load();
         _logger.debug("Configuration reloaded.");
 
         // Reinitialize systems

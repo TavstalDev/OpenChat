@@ -1,7 +1,7 @@
 package io.github.tavstaldev.openChat.models.systems;
 
 import io.github.tavstaldev.openChat.OpenChat;
-import io.github.tavstaldev.openChat.OpenChatConfiguration;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 
 import java.util.regex.Pattern;
 
@@ -18,14 +18,14 @@ public class AntiAdvertisementSystem {
      * Initializes the advertisement and whitelist patterns based on the plugin configuration.
      */
     public AntiAdvertisementSystem() {
-        OpenChatConfiguration _config = (OpenChatConfiguration) OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         adPattern = Pattern.compile(
-                _config.antiAdvertisementRegex, // Regex for detecting advertisements.
+                config.antiAdvertisementRegex, // Regex for detecting advertisements.
                 Pattern.CASE_INSENSITIVE // Case-insensitive matching.
         );
 
         // Combine all whitelist entries into a single regex pattern.
-        String combinedWhitelistRegex = "(" + String.join("|", _config.antiAdvertisementWhitelist) + ")";
+        String combinedWhitelistRegex = "(" + String.join("|", config.antiAdvertisementWhitelist) + ")";
         whitelistPattern = Pattern.compile(combinedWhitelistRegex, Pattern.CASE_INSENSITIVE);
     }
 

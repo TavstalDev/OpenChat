@@ -3,6 +3,7 @@ package io.github.tavstaldev.openChat.events;
 import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.config.ModerationConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
@@ -44,7 +45,7 @@ public class OpEventListener implements Listener {
      */
     @EventHandler
     public void onLoginOpCheck(AsyncPlayerPreLoginEvent event) {
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (!config.opProtectionEnabled)
             return;
 
@@ -72,7 +73,7 @@ public class OpEventListener implements Listener {
         if (event.isCancelled())
             return;
 
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (!config.opProtectionEnabled)
             return;
 
@@ -102,7 +103,7 @@ public class OpEventListener implements Listener {
         if (event.isCancelled())
             return;
 
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (!config.opProtectionEnabled)
             return;
 
@@ -132,7 +133,7 @@ public class OpEventListener implements Listener {
      * De-ops any operators not in the allowed list.
      */
     public void updateAllowedOperators() {
-        var config = OpenChat.config();
+        ModerationConfig config = OpenChat.moderationConfig();
         if (!config.opProtectionEnabled)
             return;
 
