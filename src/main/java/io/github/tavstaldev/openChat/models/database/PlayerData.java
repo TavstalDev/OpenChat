@@ -16,6 +16,14 @@ public class PlayerData {
 
     private boolean socialSpyEnabled; // Indicates if the player has enabled social spy functionality.
 
+    private boolean antiAdLogsEnabled; // Indicates if the player wants to receive anti-advertisement logs.
+
+    private boolean antiSpamLogsEnabled; // Indicates if the player wants to receive anti-spam logs.
+
+    private boolean antiSwearLogsEnabled; // Indicates if the player wants to receive anti-swear logs.
+
+    private @Nullable String messageColor; // The player's preferred message color, if any.
+
     private String mentionSound; // The sound to play when the player is mentioned.
 
     private EMentionDisplay mentionDisplay; // The display style for mentions.
@@ -39,12 +47,17 @@ public class PlayerData {
      * @param customJoinMessage  The player's custom join message, or null if none.
      * @param customLeaveMessage The player's custom leave message, or null if none.
      */
-    public PlayerData(UUID uuid, boolean publicChatDisabled, boolean whisperEnabled, boolean socialSpyEnabled, String mentionSound, EMentionDisplay mentionDisplay, EMentionPreference mentionPreference,
-                      @Nullable String customJoinMessage, @Nullable String customLeaveMessage) {
+    public PlayerData(UUID uuid, boolean publicChatDisabled, boolean whisperEnabled, boolean socialSpyEnabled, boolean antiAdLogsEnabled,
+                      boolean antiSpamLogsEnabled, boolean antiSwearLogsEnabled, @Nullable String messageColor, String mentionSound,
+                      EMentionDisplay mentionDisplay, EMentionPreference mentionPreference,  @Nullable String customJoinMessage, @Nullable String customLeaveMessage) {
         this.uuid = uuid;
         this.publicChatDisabled = publicChatDisabled;
         this.whisperEnabled = whisperEnabled;
         this.socialSpyEnabled = socialSpyEnabled;
+        this.antiAdLogsEnabled = antiAdLogsEnabled;
+        this.antiSpamLogsEnabled = antiSpamLogsEnabled;
+        this.antiSwearLogsEnabled = antiSwearLogsEnabled;
+        this.messageColor = messageColor;
         this.mentionSound = mentionSound;
         this.mentionDisplay = mentionDisplay;
         this.mentionPreference = mentionPreference;
@@ -113,6 +126,45 @@ public class PlayerData {
      */
     public void setSocialSpyEnabled(boolean socialSpyEnabled) {
         this.socialSpyEnabled = socialSpyEnabled;
+    }
+
+    public boolean isAntiAdLogsEnabled() {
+        return antiAdLogsEnabled;
+    }
+
+    public void setAntiAdLogsEnabled(boolean antiAdLogsEnabled) {
+        this.antiAdLogsEnabled = antiAdLogsEnabled;
+    }
+
+    public boolean isAntiSpamLogsEnabled() {
+        return antiSpamLogsEnabled;
+    }
+
+    public void setAntiSpamLogsEnabled(boolean antiSpamLogsEnabled) {
+        this.antiSpamLogsEnabled = antiSpamLogsEnabled;
+    }
+
+    public boolean isAntiSwearLogsEnabled() {
+        return antiSwearLogsEnabled;
+    }
+
+    public void setAntiSwearLogsEnabled(boolean antiSwearLogsEnabled) {
+        this.antiSwearLogsEnabled = antiSwearLogsEnabled;
+    }
+
+    public @Nullable String getMessageColor() {
+        return messageColor;
+    }
+
+    public String formatMessage(String message) {
+        if (messageColor != null) {
+            return String.format("<color:%s>%s</color:%s>", messageColor, message, messageColor);
+        }
+        return message;
+    }
+
+    public void setMessageColor(@Nullable String messageColor) {
+        this.messageColor = messageColor;
     }
 
     /**

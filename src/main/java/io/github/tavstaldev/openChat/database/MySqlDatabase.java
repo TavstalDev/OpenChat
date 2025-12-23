@@ -71,14 +71,16 @@ public class MySqlDatabase implements IDatabase {
 
     @Override
     public void update() {
-        addPlayerDataSql = String.format("INSERT INTO %s_players (PlayerId, PublicChatDisabled, WhisperEnabled, SocialSpyEnabled, Sound, Display, Preference, CustomJoinMessage, CustomQuitMessage) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+        addPlayerDataSql = String.format("INSERT INTO %s_players (PlayerId, PublicChatDisabled, WhisperEnabled, SocialSpyEnabled, AntiAdLogsEnabled, AntiSpamLogsEnabled, AntiSwearLogsEnabled, MessageColor, Sound, Display, Preference, CustomJoinMessage, CustomQuitMessage) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
                 storageConfig.tablePrefix);
 
         removePlayerDataSql = String.format("DELETE FROM %s_players WHERE PlayerId=? LIMIT 1;",
                 storageConfig.tablePrefix);
 
-        updatePlayerDataSql = String.format("UPDATE %s_players SET PublicChatDisabled=?, WhisperEnabled=?, SocialSpyEnabled=?, Sound=?, Display=?, Preference=?, " +
+        updatePlayerDataSql = String.format("UPDATE %s_players SET PublicChatDisabled=?, WhisperEnabled=?, SocialSpyEnabled=?," +
+                        "AntiAdLogsEnabled=?, AntiSpamLogsEnabled=?, AntiSwearLogsEnabled=?, MessageColor=?," +
+                        " Sound=?, Display=?, Preference=?, " +
                         "CustomJoinMessage=?, CustomQuitMessage=? " +
                         "WHERE PlayerId=? LIMIT 1;",
                 storageConfig.tablePrefix);
@@ -147,6 +149,10 @@ public class MySqlDatabase implements IDatabase {
                             "PublicChatDisabled BOOLEAN NOT NULL," +
                             "WhisperEnabled BOOLEAN NOT NULL," +
                             "SocialSpyEnabled BOOLEAN NOT NULL," +
+                            "AntiAdLogsEnabled BOOLEAN NOT NULL," +
+                            "AntiSpamLogsEnabled BOOLEAN NOT NULL," +
+                            "AntiSwearLogsEnabled BOOLEAN NOT NULL," +
+                            "MessageColor VARCHAR(7)," +
                             "Sound VARCHAR(200) NOT NULL, " +
                             "Display VARCHAR(32) NOT NULL, " +
                             "Preference VARCHAR(32) NOT NULL, " +
@@ -191,15 +197,20 @@ public class MySqlDatabase implements IDatabase {
                 statement.setBoolean(2, false);
                 statement.setBoolean(3, true);
                 statement.setBoolean(4, false);
-                statement.setString(5, generalConfig.mentionsDefaultSound);
-                statement.setString(6, generalConfig.mentionsDefaultDisplay);
-                statement.setString(7, generalConfig.mentionsDefaultPreference);
+                statement.setBoolean(5, false);
+                statement.setBoolean(6, false);
+                statement.setBoolean(7, false);
                 statement.setString(8, null);
-                statement.setString(9, null);
+                statement.setString(9, generalConfig.mentionsDefaultSound);
+                statement.setString(10, generalConfig.mentionsDefaultDisplay);
+                statement.setString(11, generalConfig.mentionsDefaultPreference);
+                statement.setString(12, null);
+                statement.setString(13, null);
                 statement.executeUpdate();
             }
 
             _playerCache.put(playerId, new PlayerData(playerId, false, true, false,
+                    false, false, false, null,
                     generalConfig.mentionsDefaultSound,
                     EMentionDisplay.valueOf(generalConfig.mentionsDefaultDisplay),
                     EMentionPreference.valueOf(generalConfig.mentionsDefaultPreference),
@@ -216,12 +227,16 @@ public class MySqlDatabase implements IDatabase {
                 statement.setBoolean(1, newData.isPublicChatDisabled());
                 statement.setBoolean(2, newData.isWhisperEnabled());
                 statement.setBoolean(3, newData.isSocialSpyEnabled());
-                statement.setString(4, newData.getMentionSound());
-                statement.setString(5, newData.getMentionDisplay().name());
-                statement.setString(6, newData.getMentionPreference().name());
-                statement.setString(7, newData.getCustomJoinMessage());
-                statement.setString(8,  newData.getCustomLeaveMessage());
-                statement.setString(9, newData.getUuid().toString());
+                statement.setBoolean(4, newData.isAntiAdLogsEnabled());
+                statement.setBoolean(5, newData.isAntiSpamLogsEnabled());
+                statement.setBoolean(6, newData.isAntiSwearLogsEnabled());
+                statement.setString(7, newData.getMessageColor());
+                statement.setString(8, newData.getMentionSound());
+                statement.setString(9, newData.getMentionDisplay().name());
+                statement.setString(10, newData.getMentionPreference().name());
+                statement.setString(11, newData.getCustomJoinMessage());
+                statement.setString(12,  newData.getCustomLeaveMessage());
+                statement.setString(13, newData.getUuid().toString());
                 statement.executeUpdate();
             }
 
@@ -262,6 +277,10 @@ public class MySqlDatabase implements IDatabase {
                                 result.getBoolean("PublicChatDisabled"),
                                 result.getBoolean("WhisperEnabled"),
                                 result.getBoolean("SocialSpyEnabled"),
+                                result.getBoolean("AntiAdLogsEnabled"),
+                                result.getBoolean("AntiSpamLogsEnabled"),
+                                result.getBoolean("AntiSwearLogsEnabled"),
+                                result.getString("MessageColor"),
                                 result.getString("Sound"),
                                 EMentionDisplay.valueOf(result.getString("Display")),
                                 EMentionPreference.valueOf(result.getString("Preference")),

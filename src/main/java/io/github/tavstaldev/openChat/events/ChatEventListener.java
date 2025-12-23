@@ -9,6 +9,7 @@ import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.models.database.EViolationType;
+import io.github.tavstaldev.openChat.models.database.PlayerData;
 import io.github.tavstaldev.openChat.util.MentionUtils;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
 import io.github.tavstaldev.openChat.util.VanishUtil;
@@ -188,7 +189,10 @@ public class ChatEventListener implements Listener {
                     rawMessage = rawMessage.replaceAll("<(?!#)", "\\\\<");
                 }
             }
-
+            var playerData = OpenChat.database().getPlayerData(sourceId);
+            if (playerData.isPresent()) {
+                rawMessage = playerData.get().formatMessage(rawMessage);
+            }
             event.message(ChatUtils.translateColors(rawMessage, true));
             return;
         }
@@ -291,6 +295,11 @@ public class ChatEventListener implements Listener {
 
         // Mentions
         rawMessage = handleMentions(source, rawMessage);
+
+        var playerData = OpenChat.database().getPlayerData(sourceId);
+        if (playerData.isPresent()) {
+            rawMessage = playerData.get().formatMessage(rawMessage);
+        }
 
         // Other replacements are handled by PlaceholderAPI above
         chatFormat = chatFormat.replace("{player}", source.getName())
