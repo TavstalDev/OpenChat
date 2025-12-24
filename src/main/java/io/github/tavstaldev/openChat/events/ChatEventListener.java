@@ -9,7 +9,6 @@ import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.managers.PlayerCacheManager;
 import io.github.tavstaldev.openChat.models.PlayerCache;
 import io.github.tavstaldev.openChat.models.database.EViolationType;
-import io.github.tavstaldev.openChat.models.database.PlayerData;
 import io.github.tavstaldev.openChat.util.MentionUtils;
 import io.github.tavstaldev.openChat.util.PlayerUtil;
 import io.github.tavstaldev.openChat.util.VanishUtil;

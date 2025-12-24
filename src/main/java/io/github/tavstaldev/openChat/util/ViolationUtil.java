@@ -5,6 +5,7 @@ import io.github.tavstaldev.openChat.models.ViolationAction;
 import io.github.tavstaldev.openChat.models.database.EViolationType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +21,7 @@ public class ViolationUtil {
      * @param details     additional details about the violation
      * @param actionSet   the set of violation actions to evaluate and execute
      */
-    public static void handleViolationAsync(Player player, EViolationType type, String details, Set<ViolationAction> actionSet) {
+    public static void handleViolationAsync(@NotNull Player player, @NotNull EViolationType type, @NotNull String details, Set<ViolationAction> actionSet) {
         // Run the violation handling logic asynchronously
         Bukkit.getScheduler().runTaskAsynchronously(OpenChat.Instance, () -> {
             // Log the violation in the database

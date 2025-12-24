@@ -390,9 +390,9 @@ public class MySqlDatabase implements IDatabase {
     //#region Violations
 
     @Override
-    public void addViolation(UUID playerId, EViolationType type, String details) {
+    public void addViolation(@NotNull UUID playerId, @NotNull EViolationType type, @NotNull String details) {
         try (Connection connection = _dataSource.getConnection()) {
-            var violationId = UUID.randomUUID();
+            UUID violationId = UUID.randomUUID();
             long timestamp = System.currentTimeMillis();
             try (PreparedStatement statement = connection.prepareStatement(addViolationSql)) {
                 statement.setString(1, violationId.toString());
@@ -423,7 +423,7 @@ public class MySqlDatabase implements IDatabase {
                 _violationActiveCache.put(playerId, Set.of(newViolation));
             }
         } catch (Exception ex) {
-            _logger.error(String.format("Unknown error happened while adding violation...\n%s", ex.getMessage()));
+            _logger.error(String.format("Unknown error happened while adding violation...\n%s", ex));
         }
     }
 
@@ -445,7 +445,7 @@ public class MySqlDatabase implements IDatabase {
                 activeViolationSet.removeIf(v -> v.getId().equals(violationId));
             }
         } catch (Exception ex) {
-            _logger.error(String.format("Unknown error happened while removing violation...\n%s", ex.getMessage()));
+            _logger.error(String.format("Unknown error happened while removing violation...\n%s", ex));
         }
     }
 
