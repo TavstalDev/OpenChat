@@ -67,7 +67,7 @@ public class PlayerEventListener implements Listener {
                 Bukkit.getScheduler().runTaskLater(OpenChat.Instance, () -> {
                     String message;
                     if (finalPlayerData.isPresent() && finalPlayerData.get().getCustomJoinMessage() != null)
-                        message = finalPlayerData.get().getCustomJoinMessage();
+                        message = finalPlayerData.get().getCustomJoinMessage().replaceAll("%", ""); // Remove % to prevent PAPI issues
                     else
                         message = config.customGreetingJoinMessage;
 
@@ -115,7 +115,7 @@ public class PlayerEventListener implements Listener {
                 String message;
                 var playerData = OpenChat.database().getPlayerData(playerId);
                 if (playerData.isPresent() && playerData.get().getCustomLeaveMessage() != null)
-                    message = playerData.get().getCustomLeaveMessage();
+                    message = playerData.get().getCustomLeaveMessage().replaceAll("%", ""); // Remove % to prevent PAPI issues
                 else
                     message = config.customGreetingLeaveMessage;
 
