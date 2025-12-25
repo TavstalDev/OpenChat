@@ -10,10 +10,7 @@ import io.github.tavstaldev.openChat.models.database.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -152,6 +149,34 @@ public class SqlLiteDatabase implements IDatabase {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.executeUpdate();
 
+            //#region Alter Table - Players
+            String table = storageConfig.tablePrefix + "_players";
+            if (!columnExists(connection, table, "AntiAdLogsEnabled")) {
+                connection.prepareStatement(
+                        "ALTER TABLE " + table + " ADD AntiAdLogsEnabled BOOLEAN NOT NULL DEFAULT FALSE"
+                ).executeUpdate();
+            }
+
+            if (!columnExists(connection, table, "AntiSpamLogsEnabled")) {
+                connection.prepareStatement(
+                        "ALTER TABLE " + table + " ADD AntiSpamLogsEnabled BOOLEAN NOT NULL DEFAULT FALSE"
+                ).executeUpdate();
+            }
+
+            if (!columnExists(connection, table, "AntiSwearLogsEnabled")) {
+                connection.prepareStatement(
+                        "ALTER TABLE " + table + " ADD AntiSwearLogsEnabled BOOLEAN NOT NULL DEFAULT FALSE"
+                ).executeUpdate();
+            }
+
+            if (!columnExists(connection, table, "MessageColor")) {
+                connection.prepareStatement(
+                        "ALTER TABLE " + table + " ADD MessageColor VARCHAR(7)"
+                ).executeUpdate();
+            }
+            //#endregion
+
+            // Ignores table
             sql = String.format("CREATE TABLE IF NOT EXISTS %s_ignores (" +
                             "PlayerId VARCHAR(36) NOT NULL, " +
                             "IgnoredId VARCHAR(36) NOT NULL, " +
@@ -174,6 +199,13 @@ public class SqlLiteDatabase implements IDatabase {
             statement.executeUpdate();
         } catch (Exception ex) {
             _logger.error(String.format("Unknown error happened while creating tables...\n%s", ex.getMessage()));
+        }
+    }
+
+    private boolean columnExists(Connection connection, String table, String column) throws SQLException {
+        DatabaseMetaData meta = connection.getMetaData();
+        try (ResultSet rs = meta.getColumns(null, null, table, column)) {
+            return rs.next();
         }
     }
 
