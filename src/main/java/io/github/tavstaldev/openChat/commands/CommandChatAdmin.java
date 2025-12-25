@@ -4,6 +4,8 @@ import io.github.tavstaldev.minecorelib.core.PluginLogger;
 import io.github.tavstaldev.minecorelib.models.command.SubCommandData;
 import io.github.tavstaldev.minecorelib.utils.ChatUtils;
 import io.github.tavstaldev.openChat.OpenChat;
+import io.github.tavstaldev.openChat.models.database.PlayerData;
+import io.github.tavstaldev.openChat.util.StringUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.OfflinePlayer;
@@ -53,19 +55,24 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                     "description", "Commands.Admin.Help.Desc"
             )));
             // RELOAD subcommand
-            add(new SubCommandData("reload", "openchat.commands.chatadmin", Map.of(
+            add(new SubCommandData("reload", "openchat.commands.chatadmin.reload", Map.of(
                     "syntax", "",
                     "description", "Commands.Reload.Desc"
             )));
             // GREETING subcommand
-            add(new SubCommandData("greeting", "openchat.commands.chatadmin", Map.of(
+            add(new SubCommandData("greeting", "openchat.commands.chatadmin.greeting", Map.of(
                     "syntax", "Commands.Admin.Greeting.Syntax",
                     "description", "Commands.Admin.Greeting.Desc"
             )));
             // CHATCOLOR subcommand
-            add(new SubCommandData("chatcolor", "openchat.commands.chatadmin", Map.of(
+            add(new SubCommandData("chatcolor", "openchat.commands.chatadmin.chatcolor", Map.of(
                     "syntax", "Commands.Admin.ChatColor.Syntax",
                     "description", "Commands.Admin.ChatColor.Desc"
+            )));
+            // LOG toggle subcommand
+            add(new SubCommandData("log", "openchat.commands.chatadmin.log", Map.of(
+                    "syntax", "Commands.Admin.Log.Syntax",
+                    "description", "Commands.Admin.Log.Desc"
             )));
         }
     };
@@ -104,7 +111,7 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
             case "help":
             case "?": {
                 // Handle the help subcommand
-                if (!sender.hasPermission("openchat.commands.help")) {
+                if (!sender.hasPermission("openchat.commands.chatadmin")) {
                     OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
                     return true;
                 }
@@ -124,7 +131,7 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
             }
             case "reload": {
                 // Handle the reload subcommand
-                if (!sender.hasPermission("openchat.commands.reload")) {
+                if (!sender.hasPermission("openchat.commands.chatadmin.reload")) {
                     OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
                     return true;
                 }
@@ -135,7 +142,7 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
             }
             case "greeting": {
                 // Handle the greeting subcommand
-                if (!sender.hasPermission("openchat.commands.chatadmin")) {
+                if (!sender.hasPermission("openchat.commands.chatadmin.greeting")) {
                     OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
                     return true;
                 }
@@ -253,7 +260,7 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                 }
             }
             case "chatcolor": {
-                if (!sender.hasPermission("openchat.commands.chatadmin")) {
+                if (!sender.hasPermission("openchat.commands.chatadmin.chatcolor")) {
                     OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
                     return true;
                 }
@@ -280,8 +287,6 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                // TODO: Add messages to lang files
-
                 String subCommand = args[1].toLowerCase();
                 switch (subCommand) {
                     case "set": {
@@ -291,21 +296,25 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                         }
 
                         String color = args[3].toLowerCase();
-                        // TODO: Add support for hex colors
-                        if (!colorCodes.containsKey(color)) {
-                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.InvalidColor", Map.of(
-                                    "color", color
+                        boolean isHex = StringUtil.isValidHexColor(color);
+
+                        if (!(colorCodes.containsKey(color) || isHex)) {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidColor", Map.of(
+                                    "value", color
                             ));
                             return true;
                         }
-                        color = colorCodes.get(color);
+                        String hexColor = isHex ? color : colorCodes.get(color);
 
                         var playerData = playerDataOpt.get();
-                        playerData.setMessageColor(color);
+                        playerData.setMessageColor(hexColor);
                         OpenChat.database().updatePlayerData(playerData);
-                        OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Success", Map.of("player", targetPlayerName));
+                        OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Success", Map.of(
+                                "player", targetPlayerName,
+                                "color", hexColor
+                        ));
                         if (targetPlayer.isOnline())
-                            OpenChat.Instance.sendLocalizedMsg(targetPlayer.getPlayer(), "Commands.Admin.ChatColor.SuccessOther");
+                            OpenChat.Instance.sendLocalizedMsg(targetPlayer.getPlayer(), "Commands.Admin.ChatColor.SuccessOther", Map.of("color", hexColor));
                         return true;
                     }
                     case "get": {
@@ -314,7 +323,10 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                         if (messageColor == null) {
                             OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.None", Map.of("player", targetPlayerName));
                         } else {
-                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Get", Map.of("color", messageColor));
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Get", Map.of(
+                                    "player", targetPlayerName,
+                                    "color", messageColor
+                            ));
                         }
                         return true;
                     }
@@ -322,12 +334,92 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                         var playerData = playerDataOpt.get();
                         playerData.setMessageColor(null);
                         OpenChat.database().updatePlayerData(playerData);
-                        OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Success", Map.of("player", targetPlayerName));
+                        OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Clear", Map.of("player", targetPlayerName));
                         if (targetPlayer.isOnline())
-                            OpenChat.Instance.sendLocalizedMsg(targetPlayer.getPlayer(), "Commands.Admin.ChatColor.SuccessOther");
+                            OpenChat.Instance.sendLocalizedMsg(targetPlayer.getPlayer(), "Commands.Admin.ChatColor.ClearOther");
                         return true;
                     }
                 }
+            }
+            case "log": {
+                if (!(sender instanceof Player player)) {
+                    OpenChat.Instance.sendCommandReply(sender, "Commands.ConsoleCaller");
+                    return true;
+                }
+
+                if (!sender.hasPermission("openchat.commands.chatadmin.log")) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                    return true;
+                }
+
+                if (args.length != 2) {
+                    OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
+                    return true;
+                }
+
+                String subCommand = args[1].toLowerCase();
+                switch (subCommand) {
+                    case "swear":
+                    case "antiswear":
+                    case "anti-swear": {
+                        Optional<PlayerData> playerData = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerData.isEmpty()) {
+                            OpenChat.Instance.sendCommandReply(sender, "General.Error");
+                            return true;
+                        }
+
+                        boolean isEnabled = playerData.get().isAntiSwearLogsEnabled();
+                        playerData.get().setAntiSwearLogsEnabled(!isEnabled);
+                        OpenChat.database().updatePlayerData(playerData.get());
+                        if (isEnabled) {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.Log.Disabled.Swear");
+                        } else {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.Log.Enabled.Swear");
+                        }
+                        return true;
+                    }
+                    case "advertisement":
+                    case "antiadvertisement":
+                    case "antiad":
+                    case "anti-advertisement":
+                    case "anti-ad": {
+                        Optional<PlayerData> playerData = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerData.isEmpty()) {
+                            OpenChat.Instance.sendCommandReply(sender, "General.Error");
+                            return true;
+                        }
+
+                        boolean isEnabled = playerData.get().isAntiAdLogsEnabled();
+                        playerData.get().setAntiAdLogsEnabled(!isEnabled);
+                        OpenChat.database().updatePlayerData(playerData.get());
+                        if (isEnabled) {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.Log.Disabled.Advertisement");
+                        } else {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.Log.Enabled.Advertisement");
+                        }
+                        return true;
+                    }
+                    case "spam":
+                    case "antispam":
+                    case "anti-spam": {
+                        Optional<PlayerData> playerData = OpenChat.database().getPlayerData(player.getUniqueId());
+                        if (playerData.isEmpty()) {
+                            OpenChat.Instance.sendCommandReply(sender, "General.Error");
+                            return true;
+                        }
+
+                        boolean isEnabled = playerData.get().isAntiSpamLogsEnabled();
+                        playerData.get().setAntiSpamLogsEnabled(!isEnabled);
+                        OpenChat.database().updatePlayerData(playerData.get());
+                        if (isEnabled) {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.Log.Disabled.Spam");
+                        } else {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.Log.Enabled.Spam");
+                        }
+                        return true;
+                    }
+                }
+                break;
             }
         }
 
@@ -350,7 +442,7 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0:
             case 1: {
-                return List.of("help", "reload", "greeting", "chatcolor");
+                return List.of("help", "reload", "greeting", "chatcolor", "log");
             }
             case 2: {
                 String subCommand = args[0].toLowerCase();
@@ -362,6 +454,9 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                     case "greeting":
                     case "chatcolor": {
                         return List.of("set", "get", "clear");
+                    }
+                    case "log": {
+                        return List.of("swear", "advertisement", "spam");
                     }
                     default:
                         return List.of();
