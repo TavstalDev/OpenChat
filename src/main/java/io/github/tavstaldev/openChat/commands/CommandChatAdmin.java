@@ -15,10 +15,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Handles the `/openchatadmin` command and its subcommands.
@@ -28,6 +25,24 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
     private final PluginLogger _logger = OpenChat.logger().withModule(CommandChatAdmin.class);
     @SuppressWarnings("FieldCanBeLocal")
     private final String baseCommand = "openchatadmin";
+    private final Map<String, String> colorCodes = Map.ofEntries(
+            Map.entry("black", "#000000"),
+            Map.entry("dark_blue", "#0000AA"),
+            Map.entry("dark_green", "#00AA00"),
+            Map.entry("dark_aqua", "#00AAAA"),
+            Map.entry("dark_red", "#AA0000"),
+            Map.entry("dark_purple", "#AA00AA"),
+            Map.entry("gold", "#FFAA00"),
+            Map.entry("gray", "#AAAAAA"),
+            Map.entry("dark_gray", "#555555"),
+            Map.entry("blue", "#5555FF"),
+            Map.entry("green", "#55FF55"),
+            Map.entry("aqua", "#55FFFF"),
+            Map.entry("red", "#FF5555"),
+            Map.entry("light_purple", "#FF55FF"),
+            Map.entry("yellow", "#FFFF55"),
+            Map.entry("white", "#FFFFFF")
+    );
 
     // List of subcommands with their metadata
     private final List<SubCommandData> _subCommands = new ArrayList<>() {
@@ -46,6 +61,11 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
             add(new SubCommandData("greeting", "openchat.commands.chatadmin", Map.of(
                     "syntax", "Commands.Admin.Greeting.Syntax",
                     "description", "Commands.Admin.Greeting.Desc"
+            )));
+            // CHATCOLOR subcommand
+            add(new SubCommandData("chatcolor", "openchat.commands.chatadmin", Map.of(
+                    "syntax", "Commands.Admin.ChatColor.Syntax",
+                    "description", "Commands.Admin.ChatColor.Desc"
             )));
         }
     };
@@ -232,6 +252,83 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                     }
                 }
             }
+            case "chatcolor": {
+                if (!sender.hasPermission("openchat.commands.chatadmin")) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.NoPermission");
+                    return true;
+                }
+
+                if (args.length < 3 || args.length > 4) {
+                    OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
+                    return true;
+                }
+
+                OfflinePlayer targetPlayer = OpenChat.Instance.getServer().getOfflinePlayer(args[2]);
+                if (!targetPlayer.hasPlayedBefore()) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.PlayerNotFound", Map.of(
+                            "player", args[2]
+                    ));
+                    return true;
+                }
+                String targetPlayerName = targetPlayer.getName();
+                if (targetPlayerName == null)
+                    targetPlayerName = args[2];
+
+                var playerDataOpt = OpenChat.database().getPlayerData(targetPlayer.getUniqueId());
+                if (playerDataOpt.isEmpty()) {
+                    OpenChat.Instance.sendCommandReply(sender, "General.Error");
+                    return true;
+                }
+
+                // TODO: Add messages to lang files
+
+                String subCommand = args[1].toLowerCase();
+                switch (subCommand) {
+                    case "set": {
+                        if (args.length < 4) {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
+                            return true;
+                        }
+
+                        String color = args[3].toLowerCase();
+                        // TODO: Add support for hex colors
+                        if (!colorCodes.containsKey(color)) {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.InvalidColor", Map.of(
+                                    "color", color
+                            ));
+                            return true;
+                        }
+                        color = colorCodes.get(color);
+
+                        var playerData = playerDataOpt.get();
+                        playerData.setMessageColor(color);
+                        OpenChat.database().updatePlayerData(playerData);
+                        OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Success", Map.of("player", targetPlayerName));
+                        if (targetPlayer.isOnline())
+                            OpenChat.Instance.sendLocalizedMsg(targetPlayer.getPlayer(), "Commands.Admin.ChatColor.SuccessOther");
+                        return true;
+                    }
+                    case "get": {
+                        var playerData = playerDataOpt.get();
+                        String messageColor = playerData.getMessageColor();
+                        if (messageColor == null) {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.None", Map.of("player", targetPlayerName));
+                        } else {
+                            OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Get", Map.of("color", messageColor));
+                        }
+                        return true;
+                    }
+                    case "clear": {
+                        var playerData = playerDataOpt.get();
+                        playerData.setMessageColor(null);
+                        OpenChat.database().updatePlayerData(playerData);
+                        OpenChat.Instance.sendCommandReply(sender, "Commands.Admin.ChatColor.Success", Map.of("player", targetPlayerName));
+                        if (targetPlayer.isOnline())
+                            OpenChat.Instance.sendLocalizedMsg(targetPlayer.getPlayer(), "Commands.Admin.ChatColor.SuccessOther");
+                        return true;
+                    }
+                }
+            }
         }
 
         OpenChat.Instance.sendCommandReply(sender, "Commands.InvalidArguments");
@@ -253,7 +350,7 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
         switch (args.length) {
             case 0:
             case 1: {
-                return List.of("help", "reload", "greeting");
+                return List.of("help", "reload", "greeting", "chatcolor");
             }
             case 2: {
                 String subCommand = args[0].toLowerCase();
@@ -262,7 +359,8 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                     case "?": {
                         return List.of("1", "5", "10");
                     }
-                    case "greeting": {
+                    case "greeting":
+                    case "chatcolor": {
                         return List.of("set", "get", "clear");
                     }
                     default:
@@ -271,7 +369,7 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
             }
             case 3: {
                 String subCommand = args[0].toLowerCase();
-                if (subCommand.equals("greeting")) {
+                if (subCommand.equals("greeting") || subCommand.equals("chatcolor")) {
                     return null; // Allow player names to be tab-completed by the server
                 }
                 return List.of();
@@ -280,6 +378,9 @@ public class CommandChatAdmin implements CommandExecutor, TabCompleter {
                 String subCommand = args[0].toLowerCase();
                 if (subCommand.equals("greeting")) {
                     return List.of("join", "leave");
+                }
+                else if (subCommand.equals("chatcolor")) {
+                    return new ArrayList<>(colorCodes.keySet());
                 }
                 return List.of();
             }
