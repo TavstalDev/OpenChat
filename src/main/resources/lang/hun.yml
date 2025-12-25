@@ -11,6 +11,7 @@ Commands:
   InGame: "%prefix% &cEzt a parancsot nem használhatod aktív játék közben."
   InvalidPage: "%prefix% &cÉrvénytelen oldalszám."
   InvalidArguments: "%prefix% &cÉrvénytelen argumentumok."
+  InvalidColor: "%prefix% &cA(z) &e%value%&c szín érvénytelen."
   Help:
     Syntax: " [oldal]"
     Desc: "Információkat mutat a parancsokról."
@@ -123,6 +124,26 @@ Commands:
       SuccessOther: "%prefix% &aAz egyedi köszöntésedet egy admin módosította."
       Get: "%prefix% &e%player%&a egyedi köszöntése: &e%message%"
       None: "%prefix% &e%player%&c-nak/nek nincs egyedi köszöntése beállítva."
+    ChatColor:
+      Desc: "Beállítja a játékos chat színét."
+      Syntax: " [set|clear|get] [player] [color]"
+      None: "%prefix% &e%player% &cnak/nek nincs beállítva chat színe."
+      Get: "%prefix% &e%player%&a chat színe: &e%color%"
+      Success: "%prefix% &e%player%&a chat színe beállítva erre: &e%color%"
+      SuccessOther: "%prefix% &aA chat színedet egy admin módosította erre: &e%color%."
+      Clear: "%prefix% &e%player%&a chat színe törölve."
+      ClearOther: "%prefix% &aA chat színedet egy admin törölte."
+    Log:
+      Desc: "Be- vagy kikapcsolja a különböző anti-spam naplózást."
+      Syntax: " [advertisement|spam|swear]"
+      Enabled:
+        Advertisement: "%prefix% &aA hirdetés naplózás engedélyezve."
+        Spam: "%prefix% &aA spam naplózás engedélyezve."
+        Swear: "%prefix% &aA szitokszó naplózás engedélyezve."
+      Disabled:
+        Advertisement: "%prefix% &cA hirdetés naplózás letiltva."
+        Spam: "%prefix% &cA spam naplózás letiltva."
+        Swear: "%prefix% &cA szitokszó naplózás letiltva."
 
 AntiSpam:
   ChatCooldown: "%prefix% &cKérlek várj %time% másodpercet mielőtt újra írsz a chatre."

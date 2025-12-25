@@ -10,9 +10,6 @@ website: https://tavstaldev.github.io
 softdepend: [CombatLogX, PlaceholderAPI, Vault]
 
 Permissions:
-  openchat.commands.reload:
-    description: Allows the player to use the /openchat reload command.
-    default: op
   openchat.commands.version:
     description: Allows the player to use the /openchat version command.
     default: op
@@ -46,6 +43,21 @@ Permissions:
   openchat.commands.chatadmin:
     description: Allows the player to use the /chatadmin command.
     default: op
+  openchat.commands.customgreeting:
+    description: Allows the player to use the /customgreeting command.
+    default: false
+  openchat.commands.chatadmin.reload:
+    description: Allows the player to use the /chatadmin reload command.
+    default: op
+  openchat.commands.chatadmin.greeting:
+    description: Allows the player to use the /chatadmin greeting command.
+    default: op
+  openchat.commands.chatadmin.chatcolor:
+    description: Allows the player to use the /chatadmin chatcolor command.
+    default: op
+  openchat.commands.chatadmin.log:
+    description: Allows the player to use the /chatadmin log command.
+    default: op
   openchat.bypass.clear:
     description: Bypass the chat clear
     default: op
@@ -75,11 +87,15 @@ Permissions:
     default: op
     children:
       openchat.bypass: true
-      openchat.commands.reload: true
       openchat.commands.version: true
       openchat.commands.help: true
       openchat.commands.clear: true
       openchat.commands.socialspy: true
+      openchat.commands.chatadmin: true
+      openchat.commands.chatadmin.reload: true
+      openchat.commands.chatadmin.greeting: true
+      openchat.commands.chatadmin.chatcolor: true
+      openchat.commands.chatadmin.log: true
 
 commands:
     openchat:

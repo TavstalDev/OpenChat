@@ -11,6 +11,7 @@ Commands:
   InGame: "%prefix% &cYou can't use this command while in an active game."
   InvalidPage: "%prefix% &cInvalid page number."
   InvalidArguments: "%prefix% &cInvalid arguments."
+  InvalidColor: "%prefix% &cThe color &e%value%&c is invalid."
   Help:
     Syntax: " [page]"
     Desc: "Shows info about the commands."
@@ -123,6 +124,26 @@ Commands:
       SuccessOther: "%prefix% &aCustom greeting has been changed for you by an admin."
       Get: "%prefix% &e%player%&a's current message is: &e%message%"
       None: "%prefix% &e%player%&e doesn't have a custom message set."
+    ChatColor:
+      Desc: "Manage chat colors for players."
+      Syntax: " [set|clear|get] [player] [color]"
+      None: "%prefix% &e%player% &chas no chat color set."
+      Get: "%prefix% &e%player%&a's chat color is: &e%color%"
+      Success: "%prefix% &aChat color for &e%player% &ahas been set to &e%color%&a."
+      SuccessOther: "%prefix% &aYour chat color has been changed to &e%color% &aby an admin."
+      Clear: "%prefix% &aChat color for &e%player% &ahas been cleared."
+      ClearOther: "%prefix% &aYour chat color has been cleared by an admin."
+    Log:
+      Desc: "Toggle logging notifications for violations."
+      Syntax: " [advertisement|spam|swear]"
+      Enabled:
+        Advertisement: "%prefix% &aAdvertisement logging enabled."
+        Spam: "%prefix% &aSpam logging enabled."
+        Swear: "%prefix% &aSwear word logging enabled."
+      Disabled:
+        Advertisement: "%prefix% &cAdvertisement logging disabled."
+        Spam: "%prefix% &cSpam logging disabled."
+        Swear: "%prefix% &cSwear word logging disabled."
 
 AntiSpam:
   ChatCooldown: "%prefix% &cPlease wait %time% seconds before chatting again."
