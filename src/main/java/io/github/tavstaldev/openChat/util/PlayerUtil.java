@@ -2,7 +2,6 @@ package io.github.tavstaldev.openChat.util;
 
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.config.GeneralConfig;
-import io.github.tavstaldev.openChat.config.ModerationConfig;
 import io.github.tavstaldev.openChat.managers.IPermissionManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -25,6 +24,12 @@ public class PlayerUtil {
         return PlainTextComponentSerializer.plainText().serialize(component);
     }
 
+    /**
+     * Retrieves the chat format for a given player.
+     *
+     * @param player The player whose chat format is to be retrieved.
+     * @return The chat format string for the player.
+     */
     public static String getChatFormat(Player player) {
         IPermissionManager permissionManager = OpenChat.permissionManager();
         GeneralConfig config = OpenChat.config();

@@ -69,6 +69,15 @@ public class SoundUtils {
         }
     }
 
+    /**
+     * Retrieves all available sound names from the registry.
+     * <br>
+     * This method checks if the cache of sound names is empty. If it is, it populates
+     * the cache by iterating through the sound registry and adding each sound's name.
+     * The cached sound names are then returned.
+     *
+     * @return A set of all sound names available in the registry.
+     */
     public static Set<String> getAllSoundNames() {
         if (cachedSoundNames.isEmpty()) {
             for (var key : Registry.SOUNDS.keyStream().toList()) {
