@@ -214,7 +214,7 @@ public class ModerationConfig extends ConfigurationBase {
         //#region Anti-Advertisement
         antiAdvertisementEnabled = resolveGet("antiAdvertisement.enabled", true);
         resolveComment("antiAdvertisement.enabled", List.of("Enables or disables the anti-advertisement system."));
-        antiAdvertisementRegex = resolveGet("antiAdvertisement.regex", "(?i)\\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]|\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|\\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+(?:[a-z]{2,}))\\b");
+        antiAdvertisementRegex = resolveGet("antiAdvertisement.regex", "(?i)((?:[a-z0-9-]+\\.)+[a-z]{2,}|(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})");
         resolveComment("antiAdvertisement.regex", List.of("Regex pattern to detect advertisements in chat messages."));
         antiAdvertisementWhitelist = new LinkedHashSet<>(resolveGet("antiAdvertisement.whitelist", List.of(
                 "minecraft.com",

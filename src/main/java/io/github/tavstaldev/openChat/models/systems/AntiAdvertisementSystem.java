@@ -4,6 +4,7 @@ import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.config.ModerationConfig;
 
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * System for detecting and preventing advertisements in chat messages.
@@ -25,7 +26,9 @@ public class AntiAdvertisementSystem {
         );
 
         // Combine all whitelist entries into a single regex pattern.
-        String combinedWhitelistRegex = "(" + String.join("|", config.antiAdvertisementWhitelist) + ")";
+        String combinedWhitelistRegex = config.antiAdvertisementWhitelist.stream()
+                .map(Pattern::quote)
+                .collect(Collectors.joining("|"));
         whitelistPattern = Pattern.compile(combinedWhitelistRegex, Pattern.CASE_INSENSITIVE);
     }
 
@@ -40,6 +43,6 @@ public class AntiAdvertisementSystem {
         // Remove whitelisted content from the message.
         String sanitizedMessage = whitelistPattern.matcher(message).replaceAll("");
         // Check if the sanitized message matches the advertisement pattern.
-        return adPattern.matcher(sanitizedMessage).matches();
+        return adPattern.matcher(sanitizedMessage).find();
     }
 }
