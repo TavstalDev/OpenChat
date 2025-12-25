@@ -3,11 +3,14 @@ package io.github.tavstaldev.openChat.util;
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.models.ViolationAction;
 import io.github.tavstaldev.openChat.models.database.EViolationType;
+import io.github.tavstaldev.openChat.models.database.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class ViolationUtil {
@@ -42,10 +45,60 @@ public class ViolationUtil {
                 commandsToRun.add(action.getCommand().replace("{player}", playerName));
             }
 
+            String logMessageKey;
+            switch (type) {
+                case ADVERTISEMENT: {
+                    logMessageKey = "Logging.AntiAd";
+                    break;
+                }
+                case SPAM_REPETITION:
+                case SPAM_DELAY: {
+                    logMessageKey = "Logging.AntiSpam";
+                    break;
+                }
+                case CURSE_WORDS: {
+                    logMessageKey = "Logging.AntiSwear";
+                    break;
+                }
+                case CAPS_LOCK: {
+                    logMessageKey = "Logging.AntiCaps";
+                    break;
+                }
+                default: {
+                    logMessageKey = null;
+                    break;
+                }
+            }
+
+            Set<Player> logRecipients = new HashSet<>();
+            Map<String, Object> args = new HashMap<>();
+            if (logMessageKey != null) {
+                args.put("player", playerName);
+                args.put("message", details);
+
+                for (Player target : Bukkit.getOnlinePlayers()) {
+                    if (!target.hasPermission("openchat.notify.violation")) {
+                        continue;
+                    }
+
+                    PlayerData targetData = OpenChat.database().getPlayerData(target.getUniqueId()).orElse(null);
+                    if (targetData == null)
+                        continue;
+
+                    if (type == EViolationType.ADVERTISEMENT && !targetData.isAntiAdLogsEnabled() || type == EViolationType.CURSE_WORDS && !targetData.isAntiSwearLogsEnabled() ||
+                            (type == EViolationType.SPAM_DELAY || type == EViolationType.SPAM_REPETITION) && !targetData.isAntiSpamLogsEnabled()) {
+                        continue;
+                    }
+
+                    logRecipients.add(target);
+                }
+            }
+
             // Schedule the execution of commands on the main server thread
-            Bukkit.getScheduler().runTask(OpenChat.Instance, () ->
-                    commandsToRun.forEach(cmd -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd))
-            );
+            Bukkit.getScheduler().runTask(OpenChat.Instance, () -> {
+                logRecipients.forEach(p -> OpenChat.Instance.sendCommandReply(p, logMessageKey, args));
+                commandsToRun.forEach(cmd -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
+            });
         });
     }
 }
