@@ -66,13 +66,17 @@ public class PlayerEventListener implements Listener {
             if (!config.customGreetingIgnoreVanished || !VanishUtil.isVanished(player)) {
                 Bukkit.getScheduler().runTaskLater(OpenChat.Instance, () -> {
                     String message;
-                    if (finalPlayerData.isPresent() && finalPlayerData.get().getCustomJoinMessage() != null)
-                        message = finalPlayerData.get().getCustomJoinMessage().replaceAll("%", ""); // Remove % to prevent PAPI issues
-                    else
-                        message = config.customGreetingJoinMessage;
-
                     String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-                    message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
+                    // Avoid PAPI placeholders in custom messages because of potential exploits.
+                    if (finalPlayerData.isPresent() && finalPlayerData.get().getCustomJoinMessage() != null) {
+                        message = finalPlayerData.get().getCustomJoinMessage();
+                        message = message.replace("{player}", playerName);
+                    }
+                    else {
+                        message = config.customGreetingJoinMessage;
+                        message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
+                    }
+
                     player.getServer().broadcast(ChatUtils.translateColors(message, true));
                 }, 10L);
             }
@@ -114,13 +118,17 @@ public class PlayerEventListener implements Listener {
             if (!config.customGreetingIgnoreVanished || !VanishUtil.isVanished(player)) {
                 String message;
                 var playerData = OpenChat.database().getPlayerData(playerId);
-                if (playerData.isPresent() && playerData.get().getCustomLeaveMessage() != null)
-                    message = playerData.get().getCustomLeaveMessage().replaceAll("%", ""); // Remove % to prevent PAPI issues
-                else
-                    message = config.customGreetingLeaveMessage;
-
                 String playerName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-                message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
+                // Avoid PAPI placeholders in custom messages because of potential exploits.
+                if (playerData.isPresent() && playerData.get().getCustomLeaveMessage() != null) {
+                    message = playerData.get().getCustomLeaveMessage();
+                    message = message.replace("{player}", playerName);
+                }
+                else {
+                    message = config.customGreetingLeaveMessage;
+                    message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
+                }
+
                 player.getServer().broadcast(ChatUtils.translateColors(message, true));
             }
         }
