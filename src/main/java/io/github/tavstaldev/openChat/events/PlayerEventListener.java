@@ -8,6 +8,7 @@ import io.github.tavstaldev.openChat.util.VanishUtil;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
 
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -109,7 +111,8 @@ public class PlayerEventListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        var playerId = player.getUniqueId();
+        Server server = player.getServer();
+        UUID playerId = player.getUniqueId();
 
         var config = OpenChat.config();
         // TODO: Consider making this asynchronous
@@ -129,7 +132,11 @@ public class PlayerEventListener implements Listener {
                     message = PlaceholderAPI.setPlaceholders(player, message.replace("{player}", playerName));
                 }
 
-                player.getServer().broadcast(ChatUtils.translateColors(message, true));
+                // Apply a slight delay to prevent issues with join/leave message order.
+                String finalMessage = message;
+                Bukkit.getScheduler().runTaskLater(OpenChat.Instance, () -> {
+                    server.broadcast(ChatUtils.translateColors(finalMessage, true));
+                }, 10L);
             }
         }
 
