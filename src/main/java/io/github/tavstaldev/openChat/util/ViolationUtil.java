@@ -46,26 +46,33 @@ public class ViolationUtil {
             }
 
             String logMessageKey;
+            String highlightedDetails;
+            // TODO: Try make a better system for highlighting to prevent running regex multiple times
             switch (type) {
                 case ADVERTISEMENT: {
                     logMessageKey = "Logging.AntiAd";
+                    highlightedDetails = OpenChat.advertisementSystem().highlight(details).resultMessage;
                     break;
                 }
                 case SPAM_REPETITION:
                 case SPAM_DELAY: {
                     logMessageKey = "Logging.AntiSpam";
+                    highlightedDetails = details;
                     break;
                 }
                 case CURSE_WORDS: {
                     logMessageKey = "Logging.AntiSwear";
+                    highlightedDetails = OpenChat.antiSwearSystem().highlight(details).resultMessage;
                     break;
                 }
                 case CAPS_LOCK: {
                     logMessageKey = "Logging.AntiCaps";
+                    highlightedDetails = details;
                     break;
                 }
                 default: {
                     logMessageKey = null;
+                    highlightedDetails = details;
                     break;
                 }
             }
@@ -74,7 +81,7 @@ public class ViolationUtil {
             Map<String, Object> args = new HashMap<>();
             if (logMessageKey != null) {
                 args.put("player", playerName);
-                args.put("message", details);
+                args.put("message", highlightedDetails);
 
                 for (Player target : Bukkit.getOnlinePlayers()) {
                     if (!target.hasPermission("openchat.notify.violation")) {
