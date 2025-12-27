@@ -180,10 +180,13 @@ Whisper:
   Disabled: "%prefix% &e%player% &cis not accepting private messages."
 
 Logging:
-  AntiSpam: "&8[&cAntiSpam&8] &7Violation, &3%player%&8: &7%message%"
-  AntiCaps: "&8[&cAntiCaps&8] &7Violation, &3%player%&8: &7%message%"
-  AntiAd: "&8[&cAntiAd&8] &7Violation, &3%player%&8: &7%message%"
-  AntiSwear: "&8[&cAntiSwear&8] &7Violation, &3%player%&8: &7%message%"
+  Highlight:
+    Start: "&c"
+    End: "&7"
+  AntiSpam: "&8[&cAntiSpam&8] &3%player%&8: &7%message%"
+  AntiCaps: "&8[&cAntiCaps&8] &3%player%&8: &7%message%"
+  AntiAd: "&8[&cAntiAd&8] &3%player%&8: &7%message%"
+  AntiSwear: "&8[&cAntiSwear&8] &3%player%&8: &7%message%"
 
 
 # 2025. 11. 30.
