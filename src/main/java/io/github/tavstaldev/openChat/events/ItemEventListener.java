@@ -37,6 +37,9 @@ public class ItemEventListener implements Listener {
      */
     @EventHandler
     public void onBookEdit(PlayerEditBookEvent event) {
+        if (event.isCancelled())
+            return;
+
         BookMeta bookMeta = event.getNewBookMeta(); // The metadata of the edited book.
         Player player = event.getPlayer(); // The player editing the book.
         ModerationConfig config = OpenChat.moderationConfig();
