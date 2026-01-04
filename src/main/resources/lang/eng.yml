@@ -157,6 +157,8 @@ AntiCaps:
 
 AntiAd:
   AdvertisementDetected: "%prefix% &cAdvertisement detected in your message."
+  BookTitle: "%prefix% &cAdvertisement detected in the book title."
+  BookContent: "%prefix% &cAdvertisement detected in the book content."
 
 AntiSwear:
   WordDetected: "%prefix% &cSwear word detected in your message."

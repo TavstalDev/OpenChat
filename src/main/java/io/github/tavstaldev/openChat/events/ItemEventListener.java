@@ -2,6 +2,8 @@ package io.github.tavstaldev.openChat.events;
 
 import io.github.tavstaldev.openChat.OpenChat;
 import io.github.tavstaldev.openChat.config.ModerationConfig;
+import io.github.tavstaldev.openChat.models.systems.AntiAdvertisementSystem;
+import io.github.tavstaldev.openChat.models.systems.AntiSwearSystem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
@@ -39,19 +41,23 @@ public class ItemEventListener implements Listener {
         Player player = event.getPlayer(); // The player editing the book.
         ModerationConfig config = OpenChat.moderationConfig();
 
-        // TODO: Add anti-advertisement check
-
-        // Check if anti-swear is enabled and the player is not exempt.
-        if (!config.antiSwearEnabled || player.hasPermission(config.antiSwearExemptPermission)) {
-            return;
-        }
+        boolean checkForSwearWords = config.antiSwearEnabled && !player.hasPermission(config.antiSwearExemptPermission);
+        boolean checkForAdvertisement = config.antiAdvertisementEnabled && !player.hasPermission(config.antiAdvertisementExemptPermission);
+        final AntiAdvertisementSystem advertisementSystem = OpenChat.advertisementSystem();
+        final AntiSwearSystem swearSystem = OpenChat.antiSwearSystem();
 
         // Check the book title for swear words.
         if (bookMeta.hasTitle()) {
             //noinspection DataFlowIssue
-            if (OpenChat.antiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(bookMeta.title()))) {
+            String title = PlainTextComponentSerializer.plainText().serialize(bookMeta.title());
+            if (checkForSwearWords && swearSystem.containsSwearWord(title)) {
                 event.setCancelled(true); // Cancel the event if a swear word is detected in the title.
                 OpenChat.Instance.sendLocalizedMsg(player, "AntiSwear.BookTitle"); // Notify the player.
+                return;
+            }
+            if (checkForAdvertisement && advertisementSystem.containsAdvertisement(title)) {
+                event.setCancelled(true); // Cancel the event if an advertisement is detected in the title.
+                OpenChat.Instance.sendLocalizedMsg(player, "AntiAd.BookTitle"); // Notify the player.
                 return;
             }
         }
@@ -62,9 +68,15 @@ public class ItemEventListener implements Listener {
 
         // Check the book pages for swear words.
         for (Component page : bookMeta.pages()) {
-            if (OpenChat.antiSwearSystem().containsSwearWord(PlainTextComponentSerializer.plainText().serialize(page))) {
+            String pageText = PlainTextComponentSerializer.plainText().serialize(page);
+            if (checkForSwearWords && swearSystem.containsSwearWord(pageText)) {
                 event.setCancelled(true); // Cancel the event if a swear word is detected in the content.
                 OpenChat.Instance.sendLocalizedMsg(player, "AntiSwear.BookContent"); // Notify the player.
+                return;
+            }
+            if (checkForAdvertisement && advertisementSystem.containsAdvertisement(pageText)) {
+                event.setCancelled(true); // Cancel the event if an advertisement is detected in the content.
+                OpenChat.Instance.sendLocalizedMsg(player, "AntiAd.BookContent"); // Notify the player.
                 return;
             }
         }

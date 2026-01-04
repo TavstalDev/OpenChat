@@ -157,6 +157,8 @@ AntiCaps:
 
 AntiAd:
   AdvertisementDetected: "%prefix% &cHirdetés észlelve az üzenetedben."
+  BookTitle: "%prefix% &cA könyv címében hirdetés észlelve."
+  BookContent: "%prefix% &cA könyv tartalmában hirdetés észlelve."
 
 AntiSwear:
   WordDetected: "%prefix% &cSzitokszó észlelve az üzenetedben."
