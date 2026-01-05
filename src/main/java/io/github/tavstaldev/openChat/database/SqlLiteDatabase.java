@@ -455,7 +455,7 @@ public class SqlLiteDatabase implements IDatabase {
                 _logger.error("Could not create database connection!");
                 return;
             }
-            var violationId = UUID.randomUUID();
+            UUID violationId = UUID.randomUUID();
             long timestamp = System.currentTimeMillis();
             try (PreparedStatement statement = connection.prepareStatement(addViolationSql)) {
                 statement.setString(1, violationId.toString());
@@ -466,26 +466,26 @@ public class SqlLiteDatabase implements IDatabase {
                 statement.executeUpdate();
             }
 
-            var newViolation = new ViolationData(violationId, playerId, type, details, timestamp);
+            ViolationData newViolation = new ViolationData(violationId, playerId, type, details, timestamp);
 
             // Add to whole cache
-            var violationSet = _violationCache.getIfPresent(playerId);
+            Set<ViolationData> violationSet = _violationCache.getIfPresent(playerId);
             if (violationSet != null) {
                 violationSet.add(newViolation);
             }
             else {
-                var tempSet = new HashSet<ViolationData>();
+                Set<ViolationData> tempSet = new HashSet<>();
                 tempSet.add(newViolation);
                 _violationCache.put(playerId, tempSet);
             }
 
             // Add to active cache
-            var activeViolationSet = _violationActiveCache.getIfPresent(playerId);
+            Set<ViolationData> activeViolationSet = _violationActiveCache.getIfPresent(playerId);
             if (activeViolationSet != null) {
                 activeViolationSet.add(newViolation);
             }
             else {
-                var tempSet = new HashSet<ViolationData>();
+                Set<ViolationData> tempSet = new HashSet<ViolationData>();
                 tempSet.add(newViolation);
                 _violationActiveCache.put(playerId, tempSet);
             }

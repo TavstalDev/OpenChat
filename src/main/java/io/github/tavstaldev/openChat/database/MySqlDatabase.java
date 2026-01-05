@@ -435,24 +435,28 @@ public class MySqlDatabase implements IDatabase {
                 statement.executeUpdate();
             }
 
-            var newViolation = new ViolationData(violationId, playerId, type, details, timestamp);
+            ViolationData newViolation = new ViolationData(violationId, playerId, type, details, timestamp);
 
             // Add to whole cache
-            var violationSet = _violationCache.getIfPresent(playerId);
+            Set<ViolationData> violationSet = _violationCache.getIfPresent(playerId);
             if (violationSet != null) {
                 violationSet.add(newViolation);
             }
             else {
-                _violationCache.put(playerId, Set.of(newViolation));
+                Set<ViolationData> tempSet = new HashSet<>();
+                tempSet.add(newViolation);
+                _violationCache.put(playerId, tempSet);
             }
 
             // Add to active cache
-            var activeViolationSet = _violationActiveCache.getIfPresent(playerId);
+            Set<ViolationData> activeViolationSet = _violationActiveCache.getIfPresent(playerId);
             if (activeViolationSet != null) {
                 activeViolationSet.add(newViolation);
             }
             else {
-                _violationActiveCache.put(playerId, Set.of(newViolation));
+                Set<ViolationData> tempSet = new HashSet<>();
+                tempSet.add(newViolation);
+                _violationActiveCache.put(playerId, tempSet);
             }
         } catch (Exception ex) {
             _logger.error(String.format("Unknown error happened while adding violation...\n%s", ex));
